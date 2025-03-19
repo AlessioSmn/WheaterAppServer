@@ -4,9 +4,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.4.3</version>
+		<relativePath/>
+	</parent>
+
     <groupId>it.unipi-lsmsd</groupId>
     <artifactId>WheaterApp</artifactId>
     <version>1.0.0-SNAPSHOT</version>
+    <name>WeatherApp</name>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -15,17 +23,67 @@
     </properties>
 
     <dependencies>
-        <dependency>
+
+        <!-- <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
             <version>5.2.0</version>
-        </dependency>
+        </dependency> -->
 
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
             <version>4.3.0</version>
         </dependency>
+
+        <!-- Spring Boot Data MongoDB -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+        
+        <!-- Spring BCrypt for Password Hashing-->
+         <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+            <version>5.7.3</version>
+        </dependency>
+
+        <!-- JWT API Interfaces-->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.11.5</version>
+        </dependency>
+        <!-- API implementation of the JWT API-->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- JSON serialization and deserialization -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Spring REST API Support -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Spring Security -->
+        <!-- Spring Security automatically secures all endpoints by default and expects authentication for all requests -->
+        <!--
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency> -->
+
     </dependencies>
 
 </project>
