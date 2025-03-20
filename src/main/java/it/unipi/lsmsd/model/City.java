@@ -15,7 +15,7 @@ public class City {
     private LocalDateTime lastUpdate;
 
 
-    public City() {}
+    public City () {}
 
     public City (String name, String region, Double latitude, Double longitude, Integer elevation, Integer followers, String lastUpdate) {
         this.name = name;
