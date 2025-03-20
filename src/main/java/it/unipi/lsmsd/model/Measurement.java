@@ -13,7 +13,7 @@ public class Measurement {
     private Double windSpeed;
     private LocalDateTime lastUpdate;
 
-    public Measurement( String city, Double temperature, Double rainfall, Double snowfall, Double windSpeed, String lastUpdate) {
+    public Measurement (String city, Double temperature, Double rainfall, Double snowfall, Double windSpeed, String lastUpdate) {
         this.city = city;
         this.temperature = temperature;
         this.rainfall = rainfall;

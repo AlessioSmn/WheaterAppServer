@@ -17,7 +17,7 @@ public class City {
 
     public City() {}
 
-    public City(String name, String region, Double latitude, Double longitude, Integer elevation, Integer followers, String lastUpdate) {
+    public City (String name, String region, Double latitude, Double longitude, Integer elevation, Integer followers, String lastUpdate) {
         this.name = name;
         this.region = region;
         this.latitude = latitude;
