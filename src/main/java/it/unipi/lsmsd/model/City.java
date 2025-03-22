@@ -5,7 +5,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "cities")
 public class City {
-    private String id;
     private String name;
     private String region;
     private Double latitude;

@@ -60,5 +60,6 @@ public class User {
 
     public List<City> getListCity() { return listCity; }
 
+    public void setListCity(List<City> listCity) { this.listCity = listCity; }
 }
 
