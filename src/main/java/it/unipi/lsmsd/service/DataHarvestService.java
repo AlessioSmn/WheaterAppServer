@@ -1,7 +1,7 @@
 package it.unipi.lsmsd.service;
 
 import it.unipi.lsmsd.DTO.APIResponseDTO;
-import it.unipi.lsmsd.utility.APIResponseMapper;
+import it.unipi.lsmsd.utility.Mapper;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +33,7 @@ public class DataHarvestService {
 
     // Get the weather data of the specific location for specific time frame
     @Retry(name = "OpenMeteoApiRetry")
-    public APIResponseDTO getData(double latitude, double longitude, String startDate, String endDate) throws JsonProcessingException{
+    public APIResponseDTO getCityData(double latitude, double longitude, String startDate, String endDate) throws JsonProcessingException{
         // Append the parameters (Hourly Measurements of Temperature_2m, Rain, Snowfall and Wind_speed_10m) to the base URL
         String url = String.format("%s?latitude=%f&longitude=%f&start_date=%s&end_date=%s&hourly=temperature_2m,rain,snowfall,wind_speed_10m",
             API_URL, latitude, longitude, startDate, endDate);
@@ -57,7 +57,7 @@ public class DataHarvestService {
         }
 
         // On success get the data and Map to the DTO
-        APIResponseDTO responseDTO = APIResponseMapper.mapAPIResponse(apiResponse.getBody());
+        APIResponseDTO responseDTO = Mapper.mapAPIResponse(apiResponse.getBody());
         return responseDTO;
     }
 }

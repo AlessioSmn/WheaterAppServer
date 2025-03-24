@@ -12,6 +12,7 @@ import org.springframework.web.client.HttpServerErrorException;
 
 import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.DTO.CityDTO;
+import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
 import it.unipi.lsmsd.service.DataHarvestService;
 import it.unipi.lsmsd.service.DataStoreService;
 
@@ -44,7 +45,7 @@ public class DataHarvestStoreController {
             // TODO: Validate CityDTO.latitude and CityDTO.longitude with valid inputs (only numbers)
 
             // Get data from Open Meteo
-            APIResponseDTO responseDTO = dataHarvestService.getData(
+            APIResponseDTO responseDTO = dataHarvestService.getCityData(
                 cityDTO.getLatitude(),
                 cityDTO.getLongitude(), 
                 cityDTO.getStartDate(), 
@@ -52,9 +53,11 @@ public class DataHarvestStoreController {
 
             // Save the city if the city doesn't exist in the DB and get the city Id
             String cityId = dataStoreService.saveCity(cityDTO.getName(), cityDTO.getRegion(), responseDTO);
-           
-            // Save the Measurement of the given City
-            dataStoreService.saveHourlyMeasurements(responseDTO.getHourly(), cityId);
+            
+            //Save the Measurement of the given City
+            HourlyMeasurementDTO hourlyMeasurementDTO = responseDTO.getHourly();
+            hourlyMeasurementDTO.setCityId(cityId);
+            dataStoreService.saveHourlyMeasurements(hourlyMeasurementDTO);
 
         }catch (HttpServerErrorException | IllegalArgumentException ex ){
             // 503 standard HTTP response when a dependent service is down
@@ -76,6 +79,5 @@ public class DataHarvestStoreController {
         return ResponseEntity
             .status(HttpStatus.OK)
             .body("Added to the MongoDB Database:WeatherApp successfully"+ cityDTO.getName());
-
     }
 }
