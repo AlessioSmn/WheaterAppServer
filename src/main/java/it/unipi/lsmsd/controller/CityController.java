@@ -1,5 +1,6 @@
 package it.unipi.lsmsd.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import it.unipi.lsmsd.DTO.CityTEMPORARY_NAME_DTO;
 import it.unipi.lsmsd.service.CityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,12 +47,17 @@ public class CityController {
             // Returns all city's information into the body
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body(cityDto.toString());
+                    .body(cityDto.toJson());
         }
         catch(NoSuchElementException NSEe){
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body("City not found: " + NSEe.getMessage());
+        }
+        catch (JsonProcessingException JPe) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("JsonProcessingException: " + JPe.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity
