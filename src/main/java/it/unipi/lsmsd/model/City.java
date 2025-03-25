@@ -3,6 +3,7 @@ package it.unipi.lsmsd.model;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 
+import it.unipi.lsmsd.DTO.CityTEMPORARY_NAME_DTO;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -17,6 +18,21 @@ public class City {
     private Double elevation;
     private Integer followers;
     private LocalDateTime lastUpdate;
+    private EWEThreshold eweThresholds;
+
+    // Constructors
+    public City() { }
+
+    public City(CityTEMPORARY_NAME_DTO cityTEMPORARYNameDto) {
+        this.name = cityTEMPORARYNameDto.getName();
+        this.region = cityTEMPORARYNameDto.getRegion();
+        this.latitude = cityTEMPORARYNameDto.getLatitude();
+        this.longitude = cityTEMPORARYNameDto.getLongitude();
+        this.elevation = cityTEMPORARYNameDto.getElevation();
+        this.followers = cityTEMPORARYNameDto.getFollowers();
+        this.lastUpdate = cityTEMPORARYNameDto.getLastUpdate();
+        this.eweThresholds = cityTEMPORARYNameDto.getEweThresholds();
+    }
 
     // Custom cityId generation logic
     // Pisa,Tuscany, (43.690685, 10.452489) --> pis-tus-43.6907-10.4525 
@@ -41,6 +57,7 @@ public class City {
     public Double getElevation() { return elevation; }
     public Integer getFollowers() { return followers; }
     public LocalDateTime getLastUpdate() { return lastUpdate; }
+    public EWEThreshold getEweThresholds() { return eweThresholds; }
     
     // Setters
     public void setId(String id) { this.id = id; }
@@ -51,5 +68,6 @@ public class City {
     public void setElevation(Double elevation) { this.elevation = elevation; }
     public void setFollowers(Integer followers) { this.followers = followers; }
     public void setLastUpdate(LocalDateTime lastUpdate) { this.lastUpdate = lastUpdate; }
-    
+    public void setEweThresholds(EWEThreshold eweThreshold) { this.eweThresholds = eweThreshold; }
+
 }
