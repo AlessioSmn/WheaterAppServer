@@ -1,7 +1,7 @@
 package it.unipi.lsmsd.controller;
 
 import it.unipi.lsmsd.DTO.UserDTO;
-import it.unipi.lsmsd.service.AuthService;
+import it.unipi.lsmsd.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,17 +9,17 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.dao.DuplicateKeyException;
 
 @RestController
-@RequestMapping("/auth")
-public class AuthController {
+@RequestMapping("/user")
+public class UserController {
 
     @Autowired
-    private AuthService authService;
+    private UserService userService;
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody UserDTO userDTO){
         try {
              // returns token on successful login
-            String token = authService.login(userDTO); 
+            String token = userService.login(userDTO); 
             return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(String.format("Logged in successfully, JWTToken: %s", token));
@@ -38,7 +38,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader("Authorization") String token) {
         try{
-            authService.logout(token);
+            userService.logout(token);
             // Successful Logout
             return ResponseEntity
                 .status(HttpStatus.OK)
@@ -54,7 +54,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody UserDTO userDTO) {
         try {
-            authService.register(userDTO);
+            userService.register(userDTO);
             // User created
             return ResponseEntity
                     .status(HttpStatus.CREATED)

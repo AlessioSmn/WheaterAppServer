@@ -1,7 +1,9 @@
 package it.unipi.lsmsd.utility;
 
 import it.unipi.lsmsd.DTO.APIResponseDTO;
+import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
+import it.unipi.lsmsd.model.City;
 import it.unipi.lsmsd.model.HourlyMeasurement;
 
 import java.time.Instant;
@@ -18,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public final class Mapper {
     // Single reusable instance of objectMapper throughout the application's lifecycle
     private static final ObjectMapper objectMapper = new ObjectMapper();
-
 
     // Private constructor to prevent instantiation
     private Mapper() { }
@@ -55,7 +56,34 @@ public final class Mapper {
         return measurements;
     }
     
-    // returns ISO Date with 
+    // Maps cityDTO to city
+    public static City mapCity(CityDTO cityDTO){
+        
+        // Get the required fields for cityID generation
+        String name = cityDTO.getName();
+        String region =  cityDTO.getRegion();
+        Double latitude = cityDTO.getLatitude(); 
+        Double longitude = cityDTO.getLongitude();
+        // generate custom city Id
+        String cityId = CityUtility.generateCityId(name, region , latitude, longitude);
+        // Map the cityDTO to city
+        return new City(cityId, name, region, latitude, longitude, cityDTO.getElevation(),0,LocalDateTime.now());
+    }
+    
+    // Maps city to cityDTO
+    public static CityDTO mapCity(City city){
+        CityDTO cityDTO = new CityDTO();
+        // Map each required fields
+        cityDTO.setName(city.getName());
+        cityDTO.setRegion(city.getRegion());
+        cityDTO.setLatitude(city.getLatitude());
+        cityDTO.setLongitude(city.getLongitude());
+        cityDTO.setElevation(city.getElevation());
+        cityDTO.setEweThresholds(city.getEweThresholds());
+        return cityDTO;
+    }
+
+    // Helper method for mapHourlyMeasurement() : returns ISO Date for given time
     private static Date getISODate(String time){
         // Parse the time string (without timezone)
         DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");

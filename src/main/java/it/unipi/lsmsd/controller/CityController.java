@@ -1,7 +1,8 @@
 package it.unipi.lsmsd.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import it.unipi.lsmsd.DTO.CityTEMPORARY_NAME_DTO;
+import com.mongodb.DuplicateKeyException;
+
+import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.service.CityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,14 +18,19 @@ public class CityController {
     @Autowired
     private CityService cityService;
 
-    @PutMapping("/add")
-    public ResponseEntity<String> addCity(@RequestBody CityTEMPORARY_NAME_DTO cityName) {
+    @PostMapping("/add")
+    public ResponseEntity<String> addCity(@RequestBody CityDTO cityDTO) {
         try{
-            cityService.insertNewCity(cityName);
+            cityService.saveCity(cityDTO);
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)  // 201 for creation
                     .body("City added successfully");
+        }
+        catch(DuplicateKeyException ex){
+            return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body("City already exits: " + ex.getMessage());
         }
         catch(IllegalArgumentException IAe){
             return ResponseEntity
@@ -39,25 +45,20 @@ public class CityController {
     }
 
     @GetMapping("/info")
-    public ResponseEntity<String> getCityByName(@RequestParam String cityName){
+    public ResponseEntity<Object> getCityByName(@RequestParam String cityName){
         try{
             // Retrieves the city
-            CityTEMPORARY_NAME_DTO cityDto = cityService.getCity(cityName);
+            CityDTO cityDto = cityService.getCity(cityName);
 
             // Returns all city's information into the body
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body(cityDto.toJson());
+                    .body(cityDto); // Spring automatically converts CityDTO to JSON
         }
         catch(NoSuchElementException NSEe){
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body("City not found: " + NSEe.getMessage());
-        }
-        catch (JsonProcessingException JPe) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("JsonProcessingException: " + JPe.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity

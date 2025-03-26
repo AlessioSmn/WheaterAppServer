@@ -1,6 +1,6 @@
 package it.unipi.lsmsd.controller;
 
-import it.unipi.lsmsd.service.MeasurementService;
+import it.unipi.lsmsd.service.HourlyMeasurementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UpdateEWEController {
 
     @Autowired
-    private MeasurementService measurementService;
+    private HourlyMeasurementService measurementService;
 
     @GetMapping("/count-by-city")
     public ResponseEntity<String> countOutOfThresholdMeasurementsByCity(@RequestParam String city) {
