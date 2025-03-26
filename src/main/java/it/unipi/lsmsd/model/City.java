@@ -8,11 +8,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "cities")
 public class City {
-<<<<<<< HEAD
     @Id
     private String id; // MongoDB Id which is a custom id 
-=======
->>>>>>> 0fec31d (add favorite-cities functionalities)
     private String name;
     private String region;
     private Double latitude;

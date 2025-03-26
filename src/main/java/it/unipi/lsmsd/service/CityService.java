@@ -8,7 +8,7 @@ import it.unipi.lsmsd.utility.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.mongodb.MongoWriteException;
+import org.springframework.dao.DuplicateKeyException;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -36,8 +36,8 @@ public class CityService {
     }
 
     // Saves the city to the DB and returns the cityID
-    // Alert!!! : Automatically throws DuplicateKeyException so need to handle the exception by the class that calls this method
-    public String saveCity(CityDTO cityDTO) throws Exception{
+    // Alert!!! : Throws DuplicateKeyException -> Need to handle it by the class that calls this method
+    public String saveCity(CityDTO cityDTO) throws DuplicateKeyException{
         // Map the DTO and get the city
         City city = Mapper.mapCity(cityDTO);
         // Insert to the DB

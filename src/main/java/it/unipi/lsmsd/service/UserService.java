@@ -6,6 +6,8 @@ import it.unipi.lsmsd.model.User;
 import it.unipi.lsmsd.repository.UserRepository;
 import it.unipi.lsmsd.utility.JWTUtil;
 import it.unipi.lsmsd.utility.PasswordHashUtil;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -43,7 +45,9 @@ public class UserService {
             // Save the session in Redis
             sessionRedisService.saveSession(token, userDTO.getUsername());
             return token;
-            
+        } catch (JedisConnectionException e) {
+            // TODO: LOG exception
+            throw new JedisConnectionException("Reddis Server Error: " + e.getMessage(), e);
         } catch (Exception ex) {
             throw ex;
         }  
