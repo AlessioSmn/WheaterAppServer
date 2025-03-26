@@ -21,7 +21,10 @@ public class RedisConfig {
         poolConfig.setMaxIdle(10); // maximum number of idle (unused) connections in the pool
         poolConfig.setMinIdle(5); // minimum number of idle connections to keep in the pool
         poolConfig.setTestOnBorrow(true); // connections are validated(checks if alive) before being borrowed from the pool
-        
+
+        // Disable JMX monitoring to avoid conflicts
+        poolConfig.setJmxEnabled(false);
+
         String host = "localhost";
         int port = 6379;
         //A thread-safe pool of Redis connections

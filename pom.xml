@@ -55,6 +55,7 @@
             <artifactId>jjwt-api</artifactId>
             <version>0.11.5</version>
         </dependency>
+
         <!-- API implementation of the JWT API-->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -62,6 +63,7 @@
             <version>0.11.5</version>
             <scope>runtime</scope>
         </dependency>
+
         <!-- JSON serialization and deserialization -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -83,6 +85,25 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency> -->
+
+        <!-- Resilience4j for Retry Mechanism -->
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot3</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+
+        <!-- Jackson dependencies, for JSON conversion -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.13.0</version>
+        </dependency>
 
     </dependencies>
 
