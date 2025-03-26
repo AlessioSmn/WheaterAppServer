@@ -1,9 +1,9 @@
 package it.unipi.lsmsd.controller;
 
-import com.mongodb.DuplicateKeyException;
-
 import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.service.CityService;
+
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
