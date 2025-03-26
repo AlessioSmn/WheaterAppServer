@@ -1,47 +1,42 @@
 package it.unipi.lsmsd.DTO;
 
-import java.time.LocalDateTime;
+import it.unipi.lsmsd.model.EWEThreshold;
 
+// DTO for requesting Weather Info from Open-Meteo API
 public class CityDTO {
-    private String id;
     private String name;
     private String region;
     private Double latitude;
     private Double longitude;
-    private Integer elevation;
-    private Integer followers;
-    private LocalDateTime lastUpdate;
+    //NOTE: The Dates should be in format: 2025-03-15
+    private String startDate;
+    private String endDate;
+    private Double elevation;
+    private EWEThreshold eweThresholds;
 
     // Setters and Getters
-    public String getId() { return id; }
-
-    public void setId(String id) { this.id = id; }
-
     public String getName() { return name; }
-
     public void setName(String name) { this.name = name; }
 
     public String getRegion() { return region; }
-
     public void setRegion(String region) { this.region = region; }
 
     public Double getLatitude() { return latitude; }
-
     public void setLatitude(Double latitude) { this.latitude = latitude; }
 
     public Double getLongitude() { return longitude; }
-
     public void setLongitude(Double longitude) { this.longitude = longitude; }
 
-    public Integer getElevation() { return elevation; }
+    public String getStartDate() { return startDate; }
+    public void setStartDate(String startDate) { this.startDate = startDate; }
+    
+    public void setEndDate(String endDate) { this.endDate = endDate; }
+    public String getEndDate() { return endDate; }
 
-    public void setElevation(Integer elevation) { this.elevation = elevation; }
+    public Double getElevation() { return elevation; }
+    public void setElevation(Double elevation) { this.elevation = elevation; }
 
-    public Integer getFollowers() { return followers; }
+    public EWEThreshold getEweThresholds() { return eweThresholds; }
+    public void setEweThresholds(EWEThreshold eweThresholds) { this.eweThresholds = eweThresholds;}
 
-    public void setFollowers(Integer followers) { this.followers = followers; }
-
-    public LocalDateTime getLastUpdate() { return lastUpdate; }
-
-    public void setLastUpdate(LocalDateTime lastUpdate) { this.lastUpdate = lastUpdate; }
 }
