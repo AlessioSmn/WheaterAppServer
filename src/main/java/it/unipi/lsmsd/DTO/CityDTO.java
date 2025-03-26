@@ -1,5 +1,7 @@
 package it.unipi.lsmsd.DTO;
 
+import it.unipi.lsmsd.model.EWEThreshold;
+
 // DTO for requesting Weather Info from Open-Meteo API
 public class CityDTO {
     private String name;
@@ -9,7 +11,8 @@ public class CityDTO {
     //NOTE: The Dates should be in format: 2025-03-15
     private String startDate;
     private String endDate;
-    // private Integer elevation;
+    private Double elevation;
+    private EWEThreshold eweThresholds;
 
     // Setters and Getters
     public String getName() { return name; }
@@ -30,6 +33,10 @@ public class CityDTO {
     public void setEndDate(String endDate) { this.endDate = endDate; }
     public String getEndDate() { return endDate; }
 
-    // public Integer getElevation() { return elevation; }
-    // public void setElevation(Integer elevation) { this.elevation = elevation; }  
+    public Double getElevation() { return elevation; }
+    public void setElevation(Double elevation) { this.elevation = elevation; }
+
+    public EWEThreshold getEweThresholds() { return eweThresholds; }
+    public void setEweThresholds(EWEThreshold eweThresholds) { this.eweThresholds = eweThresholds;}
+
 }

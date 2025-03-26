@@ -1,6 +1,10 @@
 package it.unipi.lsmsd.model;
 
+import org.springframework.data.annotation.Id;
+
 public class EWEThreshold {
+    @Id
+    private String id;
     double rainfall;
     double snowfall;
     double maxTemperature;

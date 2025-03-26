@@ -13,7 +13,7 @@ import org.springframework.dao.DuplicateKeyException;
 import java.util.Optional;
 
 @Service
-public class AuthService {
+public class UserService {
     
     // Dependency Injection (using @Autowired)
     @Autowired
@@ -61,9 +61,10 @@ public class AuthService {
     // Register User 
     public void register(UserDTO userDTO){
         try {
+            // Hash the password to be stored in DB
             String hashedPassword = PasswordHashUtil.hashPassword(userDTO.getPassword());
             // Create User model from UserDTO
-            User user = new User(userDTO.getUsername(), hashedPassword, userDTO.getEmail(), Role.USER){};
+            User user = new User(userDTO.getUsername(), hashedPassword, userDTO.getEmail(), Role.USER);
             userRepository.save(user);
         } catch (Exception ex) {
             if (!(ex instanceof DuplicateKeyException)) {
