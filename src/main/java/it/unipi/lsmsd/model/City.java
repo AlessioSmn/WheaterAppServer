@@ -1,6 +1,7 @@
 package it.unipi.lsmsd.model;
 
 import java.time.LocalDateTime;
+import java.lang.Math;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -33,6 +34,33 @@ public class City {
         this.elevation = elevation;
         this.followers = followers;
         this.lastUpdate = lastUpdate;
+    }
+
+    // Method that calculates the distance between 2 cities
+    public static Double distance(City a, City b) {
+        // Mean Earth radius in km
+        final double R = 6371.0;
+
+        // Latitude and Longitude in radians
+        double latA = Math.toRadians(a.getLatitude());
+        double lonA = Math.toRadians(a.getLongitude());
+        double latB = Math.toRadians(b.getLatitude());
+        double lonB = Math.toRadians(b.getLongitude());
+
+        // Difference between latitudes e longitudes
+        double dLat = latB - latA;
+        double dLon = lonB - lonA;
+
+        // Haversine's formula
+        double a1 = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(latA) * Math.cos(latB) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a1), Math.sqrt(1 - a1));
+
+        // Distance in km
+        double distance = R * c;
+
+        return (Double) distance;
     }
 
     // Getters

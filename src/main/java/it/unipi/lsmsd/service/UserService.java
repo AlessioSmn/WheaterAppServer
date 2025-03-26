@@ -7,8 +7,12 @@ import it.unipi.lsmsd.repository.UserRepository;
 import it.unipi.lsmsd.utility.JWTUtil;
 import it.unipi.lsmsd.utility.PasswordHashUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import java.util.Optional;
 
@@ -41,37 +45,47 @@ public class UserService {
             return token;
             
         } catch (Exception ex) {
-            // TODO: LOG exception
             throw ex;
         }  
     }
 
     // Logout
-    public void logout(String token) {
+    public void logout(String token) throws Exception{
         try {
             // delete the session
             sessionRedisService.deleteSession(token);
         } catch (Exception ex) {
-            // TODO: LOG Excpetion
             throw ex;
         }
         
     }
 
     // Register User 
-    public void register(UserDTO userDTO){
+    public void register(UserDTO userDTO) throws Exception{
         try {
-            // Hash the password to be stored in DB
+            // Validate user data (example: email validation)
+            if (!isValidEmail(userDTO.getEmail())) {
+                throw new IllegalArgumentException("Invalid email format");
+            }
+
+            // Hash password
             String hashedPassword = PasswordHashUtil.hashPassword(userDTO.getPassword());
+
             // Create User model from UserDTO
             User user = new User(userDTO.getUsername(), hashedPassword, userDTO.getEmail(), Role.USER);
+
+            // Save the user in the database
             userRepository.save(user);
         } catch (Exception ex) {
-            if (!(ex instanceof DuplicateKeyException)) {
-                // TODO: Log Exceptions other than DuplicateKeyException
-            }
             throw ex;
         }
     }
-        
+
+    // Validate email format using regex
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+        Pattern pattern = Pattern.compile(emailRegex);
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
+    }
 }
