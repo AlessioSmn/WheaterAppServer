@@ -69,6 +69,20 @@ public final class Mapper {
         // Map the cityDTO to city
         return new City(cityId, name, region, latitude, longitude, cityDTO.getElevation(),0,LocalDateTime.now());
     }
+
+    // Maps cityDTO with thresholds to city
+    public static City mapCityWithThresholds(CityDTO cityDTO){
+
+        // Get the required fields for cityID generation
+        String name = cityDTO.getName();
+        String region =  cityDTO.getRegion();
+        Double latitude = cityDTO.getLatitude();
+        Double longitude = cityDTO.getLongitude();
+        // generate custom city Id
+        String cityId = CityUtility.generateCityId(name, region , latitude, longitude);
+        // Map the cityDTO to city
+        return new City(cityId, name, region, latitude, longitude, cityDTO.getElevation(),0,LocalDateTime.now(), cityDTO.getEweThresholds());
+    }
     
     // Maps city to cityDTO
     public static CityDTO mapCity(City city){
