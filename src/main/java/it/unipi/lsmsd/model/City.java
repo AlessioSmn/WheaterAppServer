@@ -32,6 +32,18 @@ public class City {
         this.followers = followers;
         this.lastUpdate = lastUpdate;
     }
+    public City(String id, String name, String region, Double latitude, Double longitude, Double elevation,
+                Integer followers, LocalDateTime lastUpdate, EWEThreshold eweThresholds) {
+        this.id = id;
+        this.name = name;
+        this.region = region;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.elevation = elevation;
+        this.followers = followers;
+        this.lastUpdate = lastUpdate;
+        this.eweThresholds = eweThresholds;
+    }
 
     // Method that calculates the distance between 2 cities
     public static Double distance(City a, City b) {

@@ -45,4 +45,15 @@ public class CityService {
         cityRepository.insert(city);
         return city.getId();
     }
+
+    // Saves the city to the DB and returns the cityID
+    // Alert!!! : Throws DuplicateKeyException -> Need to handle it by the class that calls this method
+    public String saveCityWithThresholds(CityDTO cityDTO) throws DuplicateKeyException{
+        // Map the DTO and get the city
+        City city = Mapper.mapCityWithThresholds(cityDTO);
+        // Insert to the DB
+        // NOTE: Attempt to "insert" a document with an existing id throws DuplicateKeyException
+        cityRepository.insert(city);
+        return city.getId();
+    }
 }

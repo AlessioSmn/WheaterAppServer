@@ -44,6 +44,32 @@ public class CityController {
         }
     }
 
+    @PostMapping("/add-with-thresholds")
+    public ResponseEntity<String> addCityWithThresholds(@RequestBody CityDTO cityDTO) {
+        try{
+            cityService.saveCityWithThresholds(cityDTO);
+
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)  // 201 for creation
+                    .body("City added successfully");
+        }
+        catch(DuplicateKeyException ex){
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body("City already exits: " + ex.getMessage());
+        }
+        catch(IllegalArgumentException IAe){
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body("Illegal argument: " + IAe.getMessage());
+        }
+        catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occurred: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/info")
     public ResponseEntity<Object> getCityByName(@RequestParam String cityName){
         try{
