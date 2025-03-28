@@ -31,6 +31,18 @@ public class City {
         this.followers = followers;
         this.lastUpdate = lastUpdate;
     }
+    public City(String id, String name, String region, Double latitude, Double longitude, Double elevation,
+                Integer followers, LocalDateTime lastUpdate, EWEThreshold eweThresholds) {
+        this.id = id;
+        this.name = name;
+        this.region = region;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.elevation = elevation;
+        this.followers = followers;
+        this.lastUpdate = lastUpdate;
+        this.eweThresholds = eweThresholds;
+    }
 
     // Getters
     public String getId() { return id; }
