@@ -8,9 +8,10 @@ public class CityDTO {
     private String region;
     private Double latitude;
     private Double longitude;
-    //NOTE: The Dates should be in format: 2025-03-15
-    private String startDate;
-    private String endDate;
+    private String start;
+    private String end;
+    private Integer pastHours;
+    private Integer forecastHours;
     private Double elevation;
     private EWEThreshold eweThresholds;
 
@@ -27,11 +28,19 @@ public class CityDTO {
     public Double getLongitude() { return longitude; }
     public void setLongitude(Double longitude) { this.longitude = longitude; }
 
-    public String getStartDate() { return startDate; }
-    public void setStartDate(String startDate) { this.startDate = startDate; }
+    public String getStart() { return start; }
+    public void setStart(String startDate) { this.start = startDate; }
     
-    public void setEndDate(String endDate) { this.endDate = endDate; }
-    public String getEndDate() { return endDate; }
+    public void setEnd(String endDate) { this.end = endDate; }
+    public String getEnd() { return end; }
+
+    public Integer getPastHours() { return pastHours; }
+
+    public void setPastHours(Integer pastHours) { this.pastHours = pastHours; }
+
+    public Integer getForecastHours() { return forecastHours; }
+
+    public void setForecastHours(Integer forecastHours) { this.forecastHours = forecastHours; }
 
     public Double getElevation() { return elevation; }
     public void setElevation(Double elevation) { this.elevation = elevation; }
