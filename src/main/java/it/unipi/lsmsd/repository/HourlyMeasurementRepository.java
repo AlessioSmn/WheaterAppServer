@@ -9,6 +9,6 @@ import java.util.List;
 
 @Repository
 public interface HourlyMeasurementRepository extends MongoRepository<HourlyMeasurement, String> {
-    List<HourlyMeasurement> findByCityIdAndTimeBetween(String cityId, Date startTime, Date endTime);
+    List<HourlyMeasurement> findByCityIdAndTimeBetweenOrderByTimeTimeAsc(String cityId, Date startTime, Date endTime);
 }
 
