@@ -76,7 +76,9 @@ public class ExtremeWeatherEventService {
         // Gets all measurements for a given city
         Date startTime = Date.from(startTimeInterval.toInstant(ZoneOffset.UTC));
         Date endTime = Date.from(endTimeInterval.toInstant(ZoneOffset.UTC));
-        List<HourlyMeasurement> hourlyMeasurements = hourlyMeasurementRepository.findByCityIdAndTimeBetween(cityId, startTime, endTime);
+        List<HourlyMeasurement> hourlyMeasurements = hourlyMeasurementRepository.findByCityIdAndTimeBetweenOrderByTimeTimeAsc(cityId, startTime, endTime);
+
+System.out.println("Found measurements: " + hourlyMeasurements.size());
 
         // Gets the target city, in order to get the thresholds
         Optional<City> city = cityRepository.findById(cityId);
@@ -87,13 +89,16 @@ public class ExtremeWeatherEventService {
         EWEThreshold eweThresholds = city.get().getEweThresholds();
 
         // Array of cyclically found EWE
-        List<Pair<ExtremeWeatherEventCategory, Integer>> foundEWEs = new ArrayList<>(5);
+        List<Pair<ExtremeWeatherEventCategory, Integer>> foundEWEs;
 
         // Array of ongoing EWE
         List<QuadrupleEWEInformationHolder> ongoingExtremeWeatherEvents = new ArrayList<>(getEmptyListOfEWEs());
+        int counter = 0;
 
         // Checks all measurements against all thresholds
         for (HourlyMeasurement measurement : hourlyMeasurements) {
+            System.out.println("\nMeasurement: " + measurement);
+            System.out.println("\ttime: " + measurement.getTime());
 
             // Gets the list of current EWE
             foundEWEs = getCurrentEWEs(measurement, eweThresholds);
@@ -110,12 +115,14 @@ public class ExtremeWeatherEventService {
                 if (foundStrength > 0 &&  ongoingStrength == 0){
                     ongoingExtremeWeatherEvents.get(i).setStrength(foundStrength);
                     ongoingExtremeWeatherEvents.get(i).setDateStart(measurement.getTime());
+                    System.out.println("New EWE found");
                 }
 
                 // Update ongoing event strength if a greater strength is detected
                 if (foundStrength > ongoingStrength && ongoingStrength > 0) {
                     // Updated the strength with the max value
                     ongoingExtremeWeatherEvents.get(i).setStrength(foundStrength);
+                    System.out.println("Updating EWE");
                 }
 
                 // If the found strength is 0 but the event was ongoing, it means the event has ended
@@ -129,9 +136,12 @@ public class ExtremeWeatherEventService {
 
                     // add it to repos
                     eweRepository.save(newEWE);
+                    counter = counter + 1;
 
                     // Reset the strength to zero
                     ongoingExtremeWeatherEvents.get(i).setStrength(0);
+
+                    System.out.println("Ended EWE");
                 }
             }
         }
@@ -143,7 +153,7 @@ public class ExtremeWeatherEventService {
         //  return nothing
         //  return count of found and inserted EWEs
         //  return list of IDs of found and inserted EWEs
-        return 0;
+        return counter;
     }
 
     // Utility method to be used by updateExtremeWeatherEvent

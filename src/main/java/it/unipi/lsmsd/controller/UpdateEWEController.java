@@ -6,10 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
@@ -41,6 +38,7 @@ public class UpdateEWEController {
 
     // To check past EWE
     // TODO decide the HTTP method (put or post)
+    @PostMapping("/automatic")
     public ResponseEntity<String> updatePastExtremeWeatherEvent(@RequestParam String cityId, @RequestParam LocalDateTime startTime, @RequestParam LocalDateTime endTime){
 
         try {
@@ -50,7 +48,7 @@ public class UpdateEWEController {
             // TODO return information properly formatted
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body("0");
+                    .body("Created EWEs: " + createdEWEs);
         }
         catch (Exception e) {
             return ResponseEntity
