@@ -36,14 +36,14 @@ public class HourlyMeasurementService {
         
         // Suggestion: Use Parallel/ Multitask
     }
-
+/*
     // Get all the measurements with city name
     public List<HourlyMeasurement> getMeasurementsByCity(String cityName) {
         // TODO: Why cityName? Need Lat and Long as index?????
         // TODO: if cityName need to get cityID(eventually need the lat long)
         return hourlyMeasurementRepository.findByCityId(cityName);
     }
-
+*/
 }
 
 
