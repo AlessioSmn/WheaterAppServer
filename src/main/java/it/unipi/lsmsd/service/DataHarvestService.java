@@ -15,6 +15,8 @@ import org.springframework.web.client.RestTemplate;
 import io.github.resilience4j.retry.annotation.Retry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import java.util.Locale;
+
 // Hit the Open Meteo API to retrieve Weather Data
 @Service
 public class DataHarvestService {
@@ -35,9 +37,9 @@ public class DataHarvestService {
     @Retry(name = "OpenMeteoApiRetry")
     public APIResponseDTO getCityData(double latitude, double longitude, String startDate, String endDate) throws JsonProcessingException{
         // Append the parameters (Hourly Measurements of Temperature_2m, Rain, Snowfall and Wind_speed_10m) to the base URL
-        String url = String.format("%s?latitude=%f&longitude=%f&start_date=%s&end_date=%s&hourly=temperature_2m,rain,snowfall,wind_speed_10m",
+        String url = String.format(Locale.US, "%s?latitude=%f&longitude=%f&start_date=%s&end_date=%s&hourly=temperature_2m,rain,snowfall,wind_speed_10m",
             API_URL, latitude, longitude, startDate, endDate);
-    
+        
         // API call and Response
         ResponseEntity<String> apiResponse = restTemplate.getForEntity(url, String.class);
         HttpStatusCode statusCode = apiResponse.getStatusCode();
