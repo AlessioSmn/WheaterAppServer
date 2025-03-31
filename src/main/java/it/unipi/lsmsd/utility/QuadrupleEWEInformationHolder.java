@@ -17,6 +17,12 @@ public class QuadrupleEWEInformationHolder {
         this.dateEnd = dateEnd;
     }
 
+    public void resetData(){
+        this.setStrength(0);
+        this.setDateStart(null);
+        this.setDateEnd(null);
+    }
+
     public ExtremeWeatherEventCategory getCategory() { return category; }
     public Integer getStrength() { return strength; }
     public Date getDateStart() { return dateStart; }
