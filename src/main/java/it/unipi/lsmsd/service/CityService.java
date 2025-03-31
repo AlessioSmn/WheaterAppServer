@@ -10,8 +10,10 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.dao.DuplicateKeyException;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CityService {
@@ -55,5 +57,15 @@ public class CityService {
         // NOTE: Attempt to "insert" a document with an existing id throws DuplicateKeyException
         cityRepository.insert(city);
         return city.getId();
+    }
+
+    // Return the list of cities belonging to a given region
+    public List<CityDTO> getCityByRegion(String region) {
+        List<City> cities = cityRepository.findByRegion(region);
+
+        // Convert the list to List<CityDTO>
+        return cities.stream()
+                .map(Mapper::mapCity)
+                .collect(Collectors.toList());
     }
 }
