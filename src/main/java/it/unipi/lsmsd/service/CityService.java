@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.dao.DuplicateKeyException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -67,5 +68,25 @@ public class CityService {
         return cities.stream()
                 .map(Mapper::mapCity)
                 .collect(Collectors.toList());
+    }
+
+    public LocalDateTime getLastEweUpdateById(String cityId) throws IllegalArgumentException{
+        Optional<City> city = cityRepository.findById(cityId);
+
+        if(city.isEmpty()){
+            throw new IllegalArgumentException("City not found");
+        }
+
+        return city.get().getLastEweUpdate();
+    }
+
+    public void setLastEweUpdateById(String cityId, LocalDateTime newLastEweUpdate) throws IllegalArgumentException{
+        Optional<City> city = cityRepository.findById(cityId);
+
+        if(city.isEmpty()){
+            throw new IllegalArgumentException("City not found");
+        }
+
+        city.get().setLastEweUpdate(newLastEweUpdate);
     }
 }

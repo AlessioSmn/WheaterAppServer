@@ -18,6 +18,7 @@ public class City {
     private Integer followers;
     private LocalDateTime lastUpdate;
     private EWEThreshold eweThresholds;
+    private LocalDateTime lastEweUpdate;
 
     // Constructors   
     public City(){}
@@ -82,6 +83,7 @@ public class City {
     public Integer getFollowers() { return followers; }
     public LocalDateTime getLastUpdate() { return lastUpdate; }
     public EWEThreshold getEweThresholds() { return eweThresholds; }
+    public LocalDateTime getLastEweUpdate() { return lastEweUpdate; }
     
     // Setters
     public void setId(String id) { this.id = id; }
@@ -93,5 +95,6 @@ public class City {
     public void setFollowers(Integer followers) { this.followers = followers; }
     public void setLastUpdate(LocalDateTime lastUpdate) { this.lastUpdate = lastUpdate; }
     public void setEweThresholds(EWEThreshold eweThreshold) { this.eweThresholds = eweThreshold; }
+    public void setLastEweUpdate(LocalDateTime lastEweUpdate) { this.lastEweUpdate = lastEweUpdate; }
 
 }
