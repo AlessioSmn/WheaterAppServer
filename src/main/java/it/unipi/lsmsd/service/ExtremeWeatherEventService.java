@@ -13,10 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static it.unipi.lsmsd.utility.EWEUtility.getCurrentEWEs;
@@ -34,44 +31,16 @@ public class ExtremeWeatherEventService {
 
     private static final Integer DEFAULT_LOCAL_EWE_RANGE = 0;
 
-    // Insert new EWE
-    public String addNewEWE(ExtremeWeatherEventDTO eweDTO) throws Exception{
-        try{
-            if (eweDTO == null)
-                throw new IllegalArgumentException("ExtremeWeatherEvent is null: Check if request parameters are correct.");
-
-            if (eweDTO.getCategory() == null)
-                throw new IllegalArgumentException("Invalid ExtremeWeatherEvent: Missing required field 'category'.");
-
-            if (eweDTO.getDateStart() == null)
-                throw new IllegalArgumentException("Invalid ExtremeWeatherEvent: Missing required field 'dateStart'.");
-
-            if (eweDTO.getDateEnd() == null)
-                throw new IllegalArgumentException("Invalid ExtremeWeatherEvent: Missing required field 'dateEnd'.");
-
-            if (eweDTO.getLongitude() == null)
-                throw new IllegalArgumentException("Invalid ExtremeWeatherEvent: Missing required field 'longitude'.");
-
-            if (eweDTO.getLatitude() == null)
-                throw new IllegalArgumentException("Invalid ExtremeWeatherEvent: Missing required field 'latitude'.");
-
-            if (eweDTO.getStrength() == null)
-                throw new IllegalArgumentException("Invalid ExtremeWeatherEvent: Missing required field 'strength'.");
-
-            if (eweDTO.getRadius() == null)
-                throw new IllegalArgumentException("Invalid ExtremeWeatherEvent: Missing required field 'radius'.");
-
-            ExtremeWeatherEvent eweEvent = new ExtremeWeatherEvent(eweDTO);
-
-            eweRepository.save(eweEvent);
-            return "Extreme Weather Event added successfully";
-        }
-        catch(Exception e){
-            throw e;
-        }
-    }
-
-
+    /**
+     * Scans the measurements stored in the database to identify values that exceed predefined thresholds.
+     * If such values are found, a new Extreme Weather Event is created for the corresponding category.
+     *
+     * @param cityId The ID of the city for which measurements should be analyzed.
+     * @param startTimeInterval The start time of the interval from which to retrieve measurements.
+     * @param endTimeInterval The end time of the interval up to which measurements should be retrieved.
+     * @return A list of newly inserted Extreme Weather Events.
+     * @throws IllegalArgumentException If the specified city is not found.
+     */
     public List<String> updateExtremeWeatherEvent(
             String cityId,
             LocalDateTime startTimeInterval,
@@ -109,6 +78,7 @@ public class ExtremeWeatherEventService {
         //  in case a new ewe of same type is found and later needs to be inserted
         // Ongoing EWE already present in the db
         List<QuadrupleEWEInformationHolder> currentLocalEWEs = getListOfCurrentLocalEWEs(city.get());
+
         // Putting the currentLocalEWEs into the ongoingExtremeWeatherEvents array
         for (QuadrupleEWEInformationHolder dbEWE : currentLocalEWEs) {
             int index = dbEWE.getCategory().ordinal();
@@ -202,6 +172,127 @@ public class ExtremeWeatherEventService {
         return compltedEWEs;
     }
 
+    // TODO
+    //  1) Get the first and last ewe (in terms of the first startTime and the last endTime)
+    //      1.1) Attention to endDate not set
+    //  2) Call cleanExtremeWeatherEventDuplicates over that interval or more
+    public void cleanExtremeWeatherEventDuplicatesAll(
+            String cityId
+    ) {
+        // TODO Get the first and last ewe (in terms of the first startTime and the last endTime), attention to endDate not set
+        // TODO call cleanExtremeWeatherEventDuplicates over that interval or more
+    }
+
+    public Map<String, Integer> cleanExtremeWeatherEventDuplicates(
+            String cityId,
+            LocalDateTime startTimeInterval,
+            LocalDateTime endTimeInterval
+    ) {
+        // Counters for removed and inserted EWEs
+        int removedCount = 0;
+        int insertedCount = 0;
+
+        // loop over all EWE categories
+        for (ExtremeWeatherEventCategory eweCategory : ExtremeWeatherEventCategory.values()) {
+
+            // Get all EWE for that category over given time interval, ordered by startTime
+            List<ExtremeWeatherEvent> eweList = eweRepository.findByCityIdAndCategoryAndDateStartBetweenOrderByDateStart(
+                    cityId, eweCategory, startTimeInterval, endTimeInterval);
+
+            if (eweList.size() <= 1) continue;
+
+            List<ExtremeWeatherEvent> eweToRemove = new ArrayList<>();
+            List<ExtremeWeatherEvent> eweToInsert = new ArrayList<>();
+
+            ExtremeWeatherEvent mergeEwe = eweList.get(0);
+            int overlappingCounter = 1;
+
+            // Loop over all events
+            for (int i = 1; i < eweList.size(); i++) {
+
+                ExtremeWeatherEvent currentEwe = eweList.get(i);
+
+                // If dateStart is null then we have no way to check if overlapping
+                if(currentEwe.getDateStart() == null) continue;
+
+                // Check if the current ewe is overlapping with the previous / merge ewe
+                // If they are overlapping
+                if(areOrderedEwesOverlapping(mergeEwe, currentEwe)) {
+                    // Increase the counter
+                    overlappingCounter++;
+
+                    // Set the strength to the max of margeEwe's and currentEwe's
+                    mergeEwe.setStrength(Math.max(mergeEwe.getStrength(), currentEwe.getStrength()));
+
+                    // If either is set to null then null is set
+                    if (mergeEwe.getDateEnd() == null || currentEwe.getDateEnd() == null) {
+                        mergeEwe.setDateEnd(null);
+                    }
+                    // Set the dateEnd to the max of margeEwe's and currentEwe's.
+                    else {
+                        mergeEwe.setDateEnd(mergeEwe.getDateEnd().isAfter(currentEwe.getDateEnd())
+                                ? mergeEwe.getDateEnd()
+                                : currentEwe.getDateEnd()
+                        );
+                    }
+
+                }
+
+                // If they are not overlapping
+                else {
+                    // We passed some overlapping ewe, they are to be marked as toRemove and the mergeEwe to be inserted
+                    if(overlappingCounter != 1) {
+
+                        // Insert all overlapping EWEs into the eweToRemove array
+                        for (int j = i - overlappingCounter; j < i; j++)
+                            eweToRemove.add(eweList.get(j));
+
+                        // insert mergeEwe into eweToInsert array
+                        eweToInsert.add(mergeEwe);
+
+                        // Update counters
+                        removedCount += overlappingCounter;
+                        insertedCount++;
+                    }
+
+                    // Overwrite the mergeEwe
+                    mergeEwe = currentEwe;
+
+                    // Reset the counter
+                    overlappingCounter = 1;
+                }
+            }
+
+            // Handle eventual remaining overlapping EWEs
+            if(overlappingCounter != 1) {
+
+                // Insert all overlapping EWEs into the eweToRemove array
+                for (int j = eweList.size() - overlappingCounter; j < eweList.size(); j++)
+                    eweToRemove.add(eweList.get(j));
+
+                // insert mergeEwe into eweToInsert array
+                eweToInsert.add(mergeEwe);
+
+                // Update counters
+                removedCount += overlappingCounter;
+                insertedCount++;
+            }
+
+            // Delete all marked EWEs
+            eweRepository.deleteAll(eweToRemove);
+
+            // Insert all new merged EWEs
+            eweRepository.saveAll(eweToInsert);
+        }
+
+        // Return the counts of removed and inserted EWEs in a Map
+        Map<String, Integer> result = new HashMap<>();
+        result.put("EWEs Removed", removedCount);
+        result.put("EWEs Inserted", insertedCount);
+        return result;
+    }
+
+
     /**
      * Utility method to be used by updateExtremeWeatherEvent
      * @param city City model
@@ -221,19 +312,17 @@ public class ExtremeWeatherEventService {
         // Set start date
         ewe.setDateStart(eweInfo.getDateStart().toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime());
 
+System.out.println("NEW EWE Date start:" + ewe.getDateStart());
+
         // Set end date only on terminated ewe
         if(terminated){
             ewe.setDateEnd(eweInfo.getDateEnd().toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime());
+System.out.println("NEW EWE Date end__:" + ewe.getDateEnd());
         }
+        System.out.println("NEW EWE Date end__: null");
 
-        // Default value for radius covering a single city
-        // TODO decide on a default value
-        // TODO decide on a unit of measurements, here i supposed Kilometers
-        ewe.setRadius(DEFAULT_LOCAL_EWE_RANGE);
-
-        // Set longitude and latitude from city attributes
-        ewe.setLongitude(city.getLongitude());
-        ewe.setLatitude(city.getLatitude());
+        // Set city id
+        ewe.setCityId(city.getId());
 
         return ewe;
     }
@@ -246,14 +335,11 @@ public class ExtremeWeatherEventService {
      * @return List<QuadrupleEWEInformationHolder> list of current local EWEs
      */
     public List<QuadrupleEWEInformationHolder> getListOfCurrentLocalEWEs(City city){
+
         List<QuadrupleEWEInformationHolder> currentLocalEWEs = new ArrayList<>();
 
-        // Searches the ongoing EWE in the db
-        List<ExtremeWeatherEvent> ongoingLocalEWEs = eweRepository.findByLongitudeAndLatitudeAndRadiusAndDateEndIsNull(
-                city.getLongitude(),
-                city.getLatitude(),
-                DEFAULT_LOCAL_EWE_RANGE // searches only for EWE in a single city
-        );
+        // Searches the ongoing EWEs in the db
+        List<ExtremeWeatherEvent> ongoingLocalEWEs = eweRepository.findByCityIdAndDateEndIsNull(city.getId());
 
         // TODO decide if to switch to the updating of ongoing EWE instead of replacing them
         eweRepository.deleteAll(ongoingLocalEWEs);
@@ -267,5 +353,25 @@ public class ExtremeWeatherEventService {
                         null
                 ))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Checks if two ExtremeWeatherEvent already ordered by startDate are overlapping in time, by checking EweB endDate against EweA dates.
+     * dateEnd set to null is intended as ongoing ExtremeWeatherEvent and treated as such
+     *
+     * @param EweA First ExtremeWeatherEvent
+     * @param EweB Second ExtremeWeatherEvent
+     * @return Returns true if the two EWEs are overlapping, false otherwise
+     */
+    private Boolean areOrderedEwesOverlapping(ExtremeWeatherEvent EweA, ExtremeWeatherEvent EweB) {
+
+        // If EweA is still ongoing then the two EweB are necessarily overlapping
+        if(EweA.getDateEnd() == null){
+            return true;
+        }
+
+        // Given that they're already order by startDate we can check if they are overlapping by
+        // checking if EweB startDate is before EweA endDate
+        return !EweB.getDateStart().isAfter(EweA.getDateEnd());
     }
 }
