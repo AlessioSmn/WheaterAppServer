@@ -48,4 +48,14 @@ public class CityDTO {
     public EWEThreshold getEweThresholds() { return eweThresholds; }
     public void setEweThresholds(EWEThreshold eweThresholds) { this.eweThresholds = eweThresholds;}
 
+    /**
+     * Checks if the DTO has the necessary fields to construct the id (Name, region, latitude and longitude)
+     * @return true if it has them, false otherwise
+     */
+    public boolean hasIdFields(){
+        return getName() != null && !getName().isEmpty() &&
+                getRegion() != null && !getRegion().isEmpty() &&
+                getLatitude() != null &&
+                getLongitude() != null;
+    }
 }

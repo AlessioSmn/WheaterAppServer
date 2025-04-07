@@ -1,6 +1,8 @@
 package it.unipi.lsmsd.service;
 
 import it.unipi.lsmsd.DTO.CityDTO;
+import it.unipi.lsmsd.exception.CityException;
+import it.unipi.lsmsd.exception.CityNotFoundException;
 import it.unipi.lsmsd.model.City;
 import it.unipi.lsmsd.repository.CityRepository;
 import it.unipi.lsmsd.utility.Mapper;
@@ -58,6 +60,36 @@ public class CityService {
         // NOTE: Attempt to "insert" a document with an existing id throws DuplicateKeyException
         cityRepository.insert(city);
         return city.getId();
+    }
+
+
+    /**
+     * Updates the city thresholds
+     * @param cityDTO CityDTO with the new thresholds included
+     * @throws CityNotFoundException on city not found
+     * @throws CityException on city not identifiable
+     */
+    public void updateCityThresholds(CityDTO cityDTO) throws CityException {
+
+        // Check if the DTO has the necessary fields for city identification
+        if(!cityDTO.hasIdFields()){
+            throw new CityException("City id fields not provided: name, region, longitude, latitude");
+        }
+
+        // Maps to the city model
+        City city = Mapper.mapCityWithThresholds(cityDTO);
+
+        // Gets the city
+        Optional<City> cityOpt = cityRepository.findById(city.getId());
+
+        if(cityOpt.isEmpty()){
+            throw new CityNotFoundException("City not found, add the city before updating");
+        }
+
+        // If the city is already present it updates the EweThresholds field
+        City existingCity = cityOpt.get();
+        existingCity.setEweThresholds(cityDTO.getEweThresholds());
+        cityRepository.save(existingCity);
     }
 
     // Return the list of cities belonging to a given region
