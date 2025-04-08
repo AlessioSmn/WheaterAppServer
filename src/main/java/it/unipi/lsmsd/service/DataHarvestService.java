@@ -32,7 +32,6 @@ public class DataHarvestService {
     private static final String API_URL_OLD = "https://archive-api.open-meteo.com/v1/archive";
     private static final String API_URL_RECENT = "https://api.open-meteo.com/v1/forecast";
 
-    //
     private static String getTimeMinusHours(int hours) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime timeAgo = now.minusHours(hours);

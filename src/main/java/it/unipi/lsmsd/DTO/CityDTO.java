@@ -2,6 +2,8 @@ package it.unipi.lsmsd.DTO;
 
 import it.unipi.lsmsd.model.EWEThreshold;
 
+import java.time.LocalDateTime;
+
 // DTO for requesting Weather Info from Open-Meteo API
 public class CityDTO {
     private String name;
@@ -14,6 +16,7 @@ public class CityDTO {
     private Integer forecastHours;
     private Double elevation;
     private EWEThreshold eweThresholds;
+    private LocalDateTime lastUpdate;
 
     // Setters and Getters
     public String getName() { return name; }
@@ -35,11 +38,9 @@ public class CityDTO {
     public String getEnd() { return end; }
 
     public Integer getPastHours() { return pastHours; }
-
     public void setPastHours(Integer pastHours) { this.pastHours = pastHours; }
 
     public Integer getForecastHours() { return forecastHours; }
-
     public void setForecastHours(Integer forecastHours) { this.forecastHours = forecastHours; }
 
     public Double getElevation() { return elevation; }
@@ -48,4 +49,6 @@ public class CityDTO {
     public EWEThreshold getEweThresholds() { return eweThresholds; }
     public void setEweThresholds(EWEThreshold eweThresholds) { this.eweThresholds = eweThresholds;}
 
+    public LocalDateTime getLastUpdate() { return lastUpdate; }
+    public void setLastUpdate(LocalDateTime lastUpdate) { this.lastUpdate = lastUpdate; }
 }

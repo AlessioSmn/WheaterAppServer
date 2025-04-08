@@ -19,6 +19,9 @@ import it.unipi.lsmsd.service.DataHarvestService;
 import it.unipi.lsmsd.service.HourlyMeasurementService;
 import it.unipi.lsmsd.utility.Mapper;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 @RestController
 @RequestMapping("/hourly")
 public class HourlyMeasurementController {
@@ -56,42 +59,20 @@ public class HourlyMeasurementController {
     @PostMapping("/add-historical-measurements")
     public ResponseEntity<String> addHistoricalMeasurements(@RequestBody CityDTO cityDTO) throws JsonProcessingException {
         APIResponseDTO responseDTO = dataHarvestService.getCityHistoricalMeasurement(cityDTO.getLatitude(), cityDTO.getLongitude(), cityDTO.getStart(), cityDTO.getEnd());
-        return handleMeasurementRequest(responseDTO, cityDTO);
+        return hourlyMeasurementService.handleMeasurementRequest(responseDTO, cityDTO);
     }
 
     @PostMapping("/add-recent-measurements-using-hours")
-    public ResponseEntity<String> addRecentMeasurements(@RequestBody CityDTO cityDTO) throws JsonProcessingException {
+    public ResponseEntity<String> addRecentMeasurementsUsingHours(@RequestBody CityDTO cityDTO) throws JsonProcessingException {
         APIResponseDTO responseDTO = dataHarvestService.getCityRecentMeasurementUsingHours(cityDTO.getLatitude(), cityDTO.getLongitude(), cityDTO.getPastHours(), cityDTO.getForecastHours());
-        return handleMeasurementRequest(responseDTO, cityDTO);
+        return hourlyMeasurementService.handleMeasurementRequest(responseDTO, cityDTO);
     }
 
-    private ResponseEntity<String> handleMeasurementRequest(APIResponseDTO responseDTO, CityDTO cityDTO) {
-        // NOTE: Validate the CityDTO values which can prevent unnecessary API calls to Open Meteo
-        // TODO: Validate and handle CityDTO.name and CityDTO.region valid inputs (no null/empty values
-        //      and only string(no spaces, numbers and special characters))
-        // TODO: Validate CityDTO.latitude and CityDTO.longitude with valid inputs (only numbers)
-
-        try {
-            // Upadte elevation in cityDTO
-            cityDTO.setElevation(responseDTO.getElevation());
-            String cityId = saveOrRetrieveCityId(cityDTO);
-
-            HourlyMeasurementDTO hourlyMeasurementDTO = responseDTO.getHourly();
-            hourlyMeasurementDTO.setCityId(cityId);
-            hourlyMeasurementService.saveHourlyMeasurements(hourlyMeasurementDTO);
-
-            return ResponseEntity.status(HttpStatus.OK).body("Added to the MongoDB Database: WeatherApp successfully");
-
-        } catch (HttpServerErrorException | IllegalArgumentException ex) {
-            // 503 standard HTTP response when a dependent service is down
-            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ex.getMessage());
-        } catch (HttpClientErrorException ex) {
-            // Error on Client side
-            return ResponseEntity.status(ex.getStatusCode()).body(ex.getMessage());
-        } catch (Exception ex) {
-            // Unexpected error
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected Error: " + ex.getMessage());
-        }
+    @PostMapping("/add-recent-measurements")
+    public ResponseEntity<String> addRecentMeasurements(@RequestBody CityDTO cityDTO) throws JsonProcessingException {
+        Duration duration = Duration.between(cityDTO.getLastUpdate(), LocalDateTime.now());
+        APIResponseDTO responseDTO = dataHarvestService.getCityRecentMeasurementUsingHours(cityDTO.getLatitude(), cityDTO.getLongitude(), (int) duration.toHours(), 0);
+        return hourlyMeasurementService.handleMeasurementRequest(responseDTO, cityDTO);
     }
 
     private String saveOrRetrieveCityId(CityDTO cityDTO) {
