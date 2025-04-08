@@ -38,9 +38,11 @@ public class CityDTO {
     public String getEnd() { return end; }
 
     public Integer getPastHours() { return pastHours; }
+
     public void setPastHours(Integer pastHours) { this.pastHours = pastHours; }
 
     public Integer getForecastHours() { return forecastHours; }
+
     public void setForecastHours(Integer forecastHours) { this.forecastHours = forecastHours; }
 
     public Double getElevation() { return elevation; }
@@ -49,6 +51,16 @@ public class CityDTO {
     public EWEThreshold getEweThresholds() { return eweThresholds; }
     public void setEweThresholds(EWEThreshold eweThresholds) { this.eweThresholds = eweThresholds;}
 
+    /**
+     * Checks if the DTO has the necessary fields to construct the id (Name, region, latitude and longitude)
+     * @return true if it has them, false otherwise
+     */
+    public boolean hasIdFields(){
+        return getName() != null && !getName().isEmpty() &&
+                getRegion() != null && !getRegion().isEmpty() &&
+                getLatitude() != null &&
+                getLongitude() != null;
+    }
     public LocalDateTime getLastUpdate() { return lastUpdate; }
     public void setLastUpdate(LocalDateTime lastUpdate) { this.lastUpdate = lastUpdate; }
 }
