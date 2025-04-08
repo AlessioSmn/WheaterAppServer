@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
@@ -57,30 +54,21 @@ public class HourlyMeasurementController {
 
 
     @PostMapping("/add-historical-measurements")
-    public ResponseEntity<String> addHistoricalMeasurements(@RequestBody CityDTO cityDTO) throws JsonProcessingException {
+    public ResponseEntity<String> addHistoricalMeasurements(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) throws JsonProcessingException {
         APIResponseDTO responseDTO = dataHarvestService.getCityHistoricalMeasurement(cityDTO.getLatitude(), cityDTO.getLongitude(), cityDTO.getStart(), cityDTO.getEnd());
-        return hourlyMeasurementService.handleMeasurementRequest(responseDTO, cityDTO);
+        return hourlyMeasurementService.handleMeasurementRequest(responseDTO, cityDTO, token);
     }
 
     @PostMapping("/add-recent-measurements-using-hours")
-    public ResponseEntity<String> addRecentMeasurementsUsingHours(@RequestBody CityDTO cityDTO) throws JsonProcessingException {
+    public ResponseEntity<String> addRecentMeasurementsUsingHours(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) throws JsonProcessingException {
         APIResponseDTO responseDTO = dataHarvestService.getCityRecentMeasurementUsingHours(cityDTO.getLatitude(), cityDTO.getLongitude(), cityDTO.getPastHours(), cityDTO.getForecastHours());
-        return hourlyMeasurementService.handleMeasurementRequest(responseDTO, cityDTO);
+        return hourlyMeasurementService.handleMeasurementRequest(responseDTO, cityDTO, token);
     }
 
     @PostMapping("/add-recent-measurements")
-    public ResponseEntity<String> addRecentMeasurements(@RequestBody CityDTO cityDTO) throws JsonProcessingException {
+    public ResponseEntity<String> addRecentMeasurements(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) throws JsonProcessingException {
         Duration duration = Duration.between(cityDTO.getLastUpdate(), LocalDateTime.now());
         APIResponseDTO responseDTO = dataHarvestService.getCityRecentMeasurementUsingHours(cityDTO.getLatitude(), cityDTO.getLongitude(), (int) duration.toHours(), 0);
-        return hourlyMeasurementService.handleMeasurementRequest(responseDTO, cityDTO);
-    }
-
-    private String saveOrRetrieveCityId(CityDTO cityDTO) {
-        // Save the city if the city doesn't exist in the DB and get the city Id
-        try {
-            return cityService.saveCity(cityDTO);
-        } catch (Exception e) {
-            return Mapper.mapCity(cityDTO).getId();
-        }
+        return hourlyMeasurementService.handleMeasurementRequest(responseDTO, cityDTO, token);
     }
 }

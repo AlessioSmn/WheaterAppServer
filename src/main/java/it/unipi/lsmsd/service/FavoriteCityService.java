@@ -1,10 +1,10 @@
 package it.unipi.lsmsd.service;
 
+import it.unipi.lsmsd.model.Role;
 import it.unipi.lsmsd.model.User;
 import it.unipi.lsmsd.model.City;
 import it.unipi.lsmsd.repository.UserRepository;
 import it.unipi.lsmsd.repository.CityRepository;
-import it.unipi.lsmsd.utility.JWTUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,23 +18,8 @@ public class FavoriteCityService {
     private UserRepository userRepository; // Dependency injection for the User repository
     @Autowired
     private CityRepository cityRepository; // Dependency injection for the City repository
-
-    // Helper method to retrieve the User object using the provided token
-    private User getUserFromToken(String token) throws RuntimeException {
-        // Extract the reduced user (just username and role) from the token
-        User reducedUser = JWTUtil.extractUser(token);
-
-        // Fetch the complete user from the database using the username
-        Optional<User> userOpt = userRepository.findByUsername(reducedUser.getUsername());
-
-        // If the user is not found in the database, throw an exception
-        if (userOpt.isEmpty()) {
-            throw new RuntimeException("User not found");
-        }
-
-        // Return the complete User object if found
-        return userOpt.get();
-    }
+    @Autowired
+    private UserService userService;
 
     // Helper method to retrieve the City object by its name
     private City getCityByName(String targetCity) throws RuntimeException {
@@ -54,7 +39,8 @@ public class FavoriteCityService {
     public String addToFavorites(String token, String targetCity) throws Exception {
         try {
             // Retrieve the user and city using the helper methods
-            User user = getUserFromToken(token);
+            User user = userService.getAndCheckUserFromToken(token, Role.USER);
+
             City city = getCityByName(targetCity);
 
             // Get the user's current list of favorite cities
@@ -80,7 +66,7 @@ public class FavoriteCityService {
     public String removeFromFavorites(String token, String targetCity) throws Exception {
         try {
             // Retrieve the user and city using the helper methods
-            User user = getUserFromToken(token);
+            User user = userService.getUserFromToken(token);
             City city = getCityByName(targetCity);
 
             // Get the user's current list of favorite cities

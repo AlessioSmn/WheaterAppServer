@@ -19,11 +19,11 @@ public class FavoriteCitiesController {
 
     public ResponseEntity<String> addToFavorites(@RequestHeader("Authorization") String token, @RequestBody String targetCity){
         try{
-            favoriteCityService.addToFavorites(token, targetCity);
+            String result = favoriteCityService.addToFavorites(token, targetCity);
             // success
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body("City added to fav-list successfully");
+                    .body(result);
 
         }catch(Exception ex){
             return ResponseEntity
@@ -35,11 +35,11 @@ public class FavoriteCitiesController {
     @PostMapping("/remove")
     public ResponseEntity<String> removeFromFavorites(@RequestHeader("Authorization") String token, @RequestBody String targeCity){
         try{
-            favoriteCityService.removeFromFavorites(token, targeCity);
+            String result = favoriteCityService.removeFromFavorites(token, targeCity);
             // success
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body("City removed from fav-list successfully");
+                    .body(result);
 
         }catch(Exception ex){
             return ResponseEntity

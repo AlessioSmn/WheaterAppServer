@@ -5,6 +5,7 @@ import it.unipi.lsmsd.model.*;
 import it.unipi.lsmsd.repository.CityRepository;
 import it.unipi.lsmsd.repository.ExtremeWeatherEventRepository;
 import it.unipi.lsmsd.repository.HourlyMeasurementRepository;
+import it.unipi.lsmsd.service.UserService;
 import it.unipi.lsmsd.utility.QuadrupleEWEInformationHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
@@ -28,6 +29,8 @@ public class ExtremeWeatherEventService {
     private HourlyMeasurementRepository hourlyMeasurementRepository;
     @Autowired
     private CityRepository cityRepository;
+    @Autowired
+    private UserService userService;
 
     private static final Integer DEFAULT_LOCAL_EWE_RANGE = 0;
 
@@ -44,8 +47,11 @@ public class ExtremeWeatherEventService {
     public List<String> updateExtremeWeatherEvent(
             String cityId,
             LocalDateTime startTimeInterval,
-            LocalDateTime endTimeInterval
+            LocalDateTime endTimeInterval,
+            String token
     ) throws Exception{
+        // Check if user role is admin
+        userService.getAndCheckUserFromToken(token, Role.ADMIN);
 
         // Gets all measurements for a given city
         Date startTime = Date.from(startTimeInterval.toInstant(ZoneOffset.UTC));
@@ -186,8 +192,12 @@ public class ExtremeWeatherEventService {
     public Map<String, Integer> cleanExtremeWeatherEventDuplicates(
             String cityId,
             LocalDateTime startTimeInterval,
-            LocalDateTime endTimeInterval
+            LocalDateTime endTimeInterval,
+            String token
     ) {
+        // Check if user role is admin
+        userService.getAndCheckUserFromToken(token, Role.ADMIN);
+
         // Counters for removed and inserted EWEs
         int removedCount = 0;
         int insertedCount = 0;
@@ -305,6 +315,7 @@ public class ExtremeWeatherEventService {
             QuadrupleEWEInformationHolder eweInfo,
             Boolean terminated
     ){
+
         ExtremeWeatherEvent ewe = new ExtremeWeatherEvent();
         ewe.setCategory(eweInfo.getCategory());
         ewe.setStrength(eweInfo.getStrength());

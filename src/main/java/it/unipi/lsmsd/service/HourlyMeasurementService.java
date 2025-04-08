@@ -3,8 +3,10 @@ package it.unipi.lsmsd.service;
 import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
+import it.unipi.lsmsd.model.Role;
 import it.unipi.lsmsd.model.HourlyMeasurement;
 import it.unipi.lsmsd.repository.HourlyMeasurementRepository;
+import it.unipi.lsmsd.service.UserService;
 import it.unipi.lsmsd.utility.Mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,9 @@ public class HourlyMeasurementService {
 
     @Autowired
     private HourlyMeasurementRepository hourlyMeasurementRepository;
+
+    @Autowired
+    private UserService userService;
 
     // TODO : Throw specific error type for every exception
     // Error Type	            HTTP Status Code	        Action
@@ -43,7 +48,10 @@ public class HourlyMeasurementService {
         // Suggestion: Use Parallel/ Multitask
     }
 
-    public ResponseEntity<String> handleMeasurementRequest(APIResponseDTO responseDTO, CityDTO cityDTO) {
+    public ResponseEntity<String> handleMeasurementRequest(APIResponseDTO responseDTO, CityDTO cityDTO, String token) {
+        // Check if the user is an admin
+        userService.getAndCheckUserFromToken(token, Role.ADMIN);
+
         // NOTE: Validate the CityDTO values which can prevent unnecessary API calls to Open Meteo
 
         if (!isValidCityName(cityDTO.getName()) || !isValidCityName(cityDTO.getRegion())) {
