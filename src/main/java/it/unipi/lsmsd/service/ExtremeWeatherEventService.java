@@ -1,6 +1,8 @@
 package it.unipi.lsmsd.service;
 
 import it.unipi.lsmsd.DTO.ExtremeWeatherEventDTO;
+import it.unipi.lsmsd.exception.CityNotFoundException;
+import it.unipi.lsmsd.exception.ThresholdsNotPresentException;
 import it.unipi.lsmsd.model.*;
 import it.unipi.lsmsd.repository.CityRepository;
 import it.unipi.lsmsd.repository.ExtremeWeatherEventRepository;
@@ -16,6 +18,7 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static it.unipi.lsmsd.utility.CityUtility.hasCityAllThresholdsFields;
 import static it.unipi.lsmsd.utility.EWEUtility.getCurrentEWEs;
 import static it.unipi.lsmsd.utility.EWEUtility.getEmptyListOfEWEs;
 
@@ -39,9 +42,10 @@ public class ExtremeWeatherEventService {
      * @param startTimeInterval The start time of the interval from which to retrieve measurements.
      * @param endTimeInterval The end time of the interval up to which measurements should be retrieved.
      * @return A list of newly inserted Extreme Weather Events.
-     * @throws IllegalArgumentException If the specified city is not found.
+     * @throws CityNotFoundException If the specified city is not found.
+     * @throws ThresholdsNotPresentException If the specified city doesn't have the threshold specified.
      */
-    public List<String> updateExtremeWeatherEvent(
+    public List<ExtremeWeatherEvent> updateExtremeWeatherEvent(
             String cityId,
             LocalDateTime startTimeInterval,
             LocalDateTime endTimeInterval
@@ -57,7 +61,11 @@ public class ExtremeWeatherEventService {
         // Gets the target city, in order to get the thresholds
         Optional<City> city = cityRepository.findById(cityId);
         if (city.isEmpty())
-            throw new IllegalArgumentException("City not found");
+            throw new CityNotFoundException("Specified city " + cityId + " was not found");
+
+
+        if(!hasCityAllThresholdsFields(city.get()))
+            throw new ThresholdsNotPresentException("City doesn't have all threshold fields correctly specified");
 
         // Retrieve the city's extreme weather event thresholds
         EWEThreshold eweThresholds = city.get().getEweThresholds();
@@ -86,7 +94,7 @@ public class ExtremeWeatherEventService {
         }
 
         // List of completed EWEs, to be returned
-        List<String> compltedEWEs = new ArrayList<>();
+        List<ExtremeWeatherEvent> compltedEWEs = new ArrayList<>();
 
         // Checks all measurements against all thresholds
         for (HourlyMeasurement measurement : hourlyMeasurements) {
@@ -134,7 +142,7 @@ public class ExtremeWeatherEventService {
                     ExtremeWeatherEvent insertedEwe = eweRepository.save(newEWE);
 
                     // Add its id to the list of completed EWEs
-                    compltedEWEs.add(insertedEwe.getId());
+                    compltedEWEs.add(insertedEwe);
 
                     // Reset the strength to zero and both dates to null
                     ongoingExtremeWeatherEvents.get(i).resetData();
@@ -161,7 +169,7 @@ public class ExtremeWeatherEventService {
                 ExtremeWeatherEvent insertedEwe = eweRepository.save(newEWE);
 
                 // Add its id to the list of completed EWEs
-                compltedEWEs.add(insertedEwe.getId());
+                compltedEWEs.add(insertedEwe);
             }
         }
 

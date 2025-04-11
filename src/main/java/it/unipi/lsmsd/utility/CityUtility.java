@@ -1,5 +1,8 @@
 package it.unipi.lsmsd.utility;
 
+import it.unipi.lsmsd.model.City;
+import it.unipi.lsmsd.model.EWEThreshold;
+
 import java.text.DecimalFormat;
 
 public final class CityUtility {
@@ -19,5 +22,22 @@ public final class CityUtility {
         String nameCode = name.substring(0, 3);
         String regionCode = (region.length() >= 3) ? region.substring(0, 3):region;
         return (nameCode + "-" + regionCode + "-" + latCode + "-" + lonCode).toLowerCase();
+    }
+
+    public static boolean hasCityAllThresholdsFields(City city){
+
+        // Check that the city has the eweThresholds field
+        if (city == null || city.getEweThresholds() == null) {
+            return false;
+        }
+
+        EWEThreshold thresholds = city.getEweThresholds();
+
+        // Check that all fields are specified
+        return  !Double.isNaN(thresholds.getRainfall()) &&
+                !Double.isNaN(thresholds.getSnowfall()) &&
+                !Double.isNaN(thresholds.getMaxTemperature()) &&
+                !Double.isNaN(thresholds.getMinTemperature()) &&
+                !Double.isNaN(thresholds.getWindSpeed());
     }
 }

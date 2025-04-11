@@ -39,7 +39,7 @@ public class EWEUtility {
     }
 
     public static int isRainstormOn(Double rainfall, Double rainfallThreshold) {
-        if (rainfall >= rainfallThreshold) {
+        if (rainfall > rainfallThreshold) {
             // TODO
             //  add logic for the strength
             return 1;
@@ -48,7 +48,7 @@ public class EWEUtility {
     }
 
     public static int isSnowstormOn(Double snowfall, Double snowfallThreshold) {
-        if (snowfall >= snowfallThreshold) {
+        if (snowfall > snowfallThreshold) {
             // TODO
             //  add logic for the strength
             return 1;
@@ -66,7 +66,7 @@ public class EWEUtility {
     }
 
     public static int isHeatwaveOn(Double temperature, Double maxTempThreshold) {
-        if (temperature >= maxTempThreshold) {
+        if (temperature > maxTempThreshold) {
             // TODO
             //  add logic for the strength
             return 1;
@@ -75,7 +75,7 @@ public class EWEUtility {
     }
 
     public static int isColdwaveOn(Double temperature, Double minTempThreshold) {
-        if (temperature <= minTempThreshold) {
+        if (temperature < minTempThreshold) {
             // TODO
             //  add logic for the strength
             return 1;
