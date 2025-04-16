@@ -1,5 +1,6 @@
 package it.unipi.lsmsd.controller;
 
+import it.unipi.lsmsd.exception.CityNotFoundException;
 import it.unipi.lsmsd.service.CityService;
 import it.unipi.lsmsd.service.ExtremeWeatherEventService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,26 +36,22 @@ public class ExtremeWeatherEventController {
             // Calls service updateExtremeWeatherEvent over time interval (lastEweUpdate; Now)
             List<String> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, lastEweUpdate, LocalDateTime.now(), token);
 
-            // TODO return information properly formatted
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(Map.of(
                             "Created EWEs count", createdEWEs.size(),
                             "Created EWEs IDs", createdEWEs
                     ).toString());
-
         }
-        // TODO return proper HttpStatus and error message
-        catch (IllegalArgumentException IAe) {
+        catch (CityNotFoundException ex) {
             return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body("Internal Server error: " + IAe.getMessage());
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(ex.getMessage());
         }
-        // TODO return proper HttpStatus and error message
-        catch (Exception e) {
+        catch (Exception ex) {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Internal Server error: " + e.getMessage());
+                    .body("Internal Server error: " + ex.getMessage());
         }
         finally {
             // Update lastEweUpdate to now

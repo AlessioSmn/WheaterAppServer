@@ -1,6 +1,7 @@
 package it.unipi.lsmsd.service;
 
 import it.unipi.lsmsd.DTO.UserDTO;
+import it.unipi.lsmsd.exception.EmailFormatException;
 import it.unipi.lsmsd.exception.UnauthorizedException;
 import it.unipi.lsmsd.model.Role;
 import it.unipi.lsmsd.model.User;
@@ -99,7 +100,7 @@ public class UserService {
         try {
             // Validate user data (example: email validation)
             if (!isValidEmail(userDTO.getEmail())) {
-                throw new IllegalArgumentException("Invalid email format");
+                throw new EmailFormatException(userDTO.getEmail() + " is not a valid email format");
             }
 
             // Hash password
@@ -122,5 +123,4 @@ public class UserService {
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
     }
-
 }

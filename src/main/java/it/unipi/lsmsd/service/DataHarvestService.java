@@ -1,6 +1,7 @@
 package it.unipi.lsmsd.service;
 
 import it.unipi.lsmsd.DTO.APIResponseDTO;
+import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.utility.Mapper;
 
 import org.springframework.http.HttpStatusCode;

@@ -315,7 +315,6 @@ public class ExtremeWeatherEventService {
             QuadrupleEWEInformationHolder eweInfo,
             Boolean terminated
     ){
-
         ExtremeWeatherEvent ewe = new ExtremeWeatherEvent();
         ewe.setCategory(eweInfo.getCategory());
         ewe.setStrength(eweInfo.getStrength());
@@ -323,13 +322,14 @@ public class ExtremeWeatherEventService {
         // Set start date
         ewe.setDateStart(eweInfo.getDateStart().toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime());
 
-System.out.println("NEW EWE Date start:" + ewe.getDateStart());
+        System.out.println("NEW EWE Date start:" + ewe.getDateStart());
 
         // Set end date only on terminated ewe
         if(terminated){
             ewe.setDateEnd(eweInfo.getDateEnd().toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime());
-System.out.println("NEW EWE Date end__:" + ewe.getDateEnd());
+            System.out.println("NEW EWE Date end__:" + ewe.getDateEnd());
         }
+
         System.out.println("NEW EWE Date end__: null");
 
         // Set city id

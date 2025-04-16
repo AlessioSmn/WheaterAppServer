@@ -5,11 +5,14 @@ import it.unipi.lsmsd.model.User;
 import it.unipi.lsmsd.model.City;
 import it.unipi.lsmsd.repository.UserRepository;
 import it.unipi.lsmsd.repository.CityRepository;
+import it.unipi.lsmsd.exception.CityAlreadyInFavoritesException;
+import it.unipi.lsmsd.exception.CityNotInFavoritesException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class FavoriteCityService {
@@ -28,63 +31,57 @@ public class FavoriteCityService {
 
         // If the city is not found, throw an exception
         if (cityOpt.isEmpty()) {
-            throw new RuntimeException("Target city not found");
+            throw new RuntimeException("Target city not found: " + targetCity);
         }
 
         // Return the City object if found
         return cityOpt.get();
     }
 
-    // Method to add a city to the user's favorite cities list
-    public String addToFavorites(String token, String targetCity) throws Exception {
-        try {
-            // Retrieve the user and city using the helper methods
-            User user = userService.getAndCheckUserFromToken(token, Role.USER);
+    // Method to get user's favorite cities list
+    public String getFavorites(String token){
+        User user = userService.getAndCheckUserFromToken(token, Role.USER);
+        List<City> listCity = user.getListCity();
 
-            City city = getCityByName(targetCity);
-
-            // Get the user's current list of favorite cities
-            List<City> listCity = user.getListCity();
-
-            // Check if the city is already in the user's favorite cities list
-            if (!listCity.contains(city)) {
-                listCity.add(city);
-                user.setListCity(listCity);
-                userRepository.save(user);
-                return "City added to favorites successfully!";
-            } else {
-                return "City is already in your favorites.";
-            }
-
-        } catch (Exception ex) {
-            // TODO: exception
-            throw ex;
+        if(listCity.isEmpty()){
+            return "Favorite cities list is empty";
         }
+
+        return listCity.stream()
+                .map(city -> city.getName() + " (" + city.getRegion() + ")")
+                .collect(Collectors.joining(", "));
     }
 
-    // Method to remove a city from the user's favorite cities list
-    public String removeFromFavorites(String token, String targetCity) throws Exception {
-        try {
-            // Retrieve the user and city using the helper methods
-            User user = userService.getUserFromToken(token);
-            City city = getCityByName(targetCity);
+    // Method to add a city to the user's favorite cities list
+    public String addToFavorites(String token, String targetCity) throws Exception {
+        User user = userService.getAndCheckUserFromToken(token, Role.USER);
+        City city = getCityByName(targetCity);
 
-            // Get the user's current list of favorite cities
-            List<City> listCity = user.getListCity();
+        List<City> listCity = user.getListCity();
 
-            // Check if the city is in the user's favorite cities list
-            if (listCity.contains(city)) {
-                listCity.remove(city);
-                user.setListCity(listCity);
-                userRepository.save(user);
-                return "City removed from favorites successfully!";
-            } else {
-                return "City is not in your favorites.";
-            }
-
-        } catch (Exception ex) {
-            // TODO: exception
-            throw ex;
+        if (listCity.contains(city)) {
+            throw new CityAlreadyInFavoritesException("City is already in your favorites.");
         }
+
+        listCity.add(city);
+        user.setListCity(listCity);
+        userRepository.save(user);
+        return "City added to favorites successfully!";
+    }
+
+    public String removeFromFavorites(String token, String targetCity) throws Exception {
+        User user = userService.getUserFromToken(token);
+        City city = getCityByName(targetCity);
+
+        List<City> listCity = user.getListCity();
+
+        if (!listCity.contains(city)) {
+            throw new CityNotInFavoritesException("City is not in your favorites.");
+        }
+
+        listCity.remove(city);
+        user.setListCity(listCity);
+        userRepository.save(user);
+        return "City removed from favorites successfully!";
     }
 }

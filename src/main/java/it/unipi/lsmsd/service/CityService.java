@@ -117,7 +117,7 @@ public class CityService {
         Optional<City> city = cityRepository.findById(cityId);
 
         if(city.isEmpty()){
-            throw new IllegalArgumentException("City not found");
+            throw new CityNotFoundException("City " + cityId + " not found");
         }
 
         return city.get().getLastEweUpdate();
