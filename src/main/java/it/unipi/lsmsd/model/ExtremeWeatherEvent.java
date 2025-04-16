@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Document(collection = "ExtremeWeatherEvents")
+@Document(collection = "extreme_weather_events")
 public class ExtremeWeatherEvent {
 
     // Attributes
