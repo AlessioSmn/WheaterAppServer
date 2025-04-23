@@ -8,10 +8,10 @@ public class CityDTO {
     private String region;
     private Double latitude;
     private Double longitude;
-    private String start;
-    private String end;
-    private Integer pastHours;
-    private Integer forecastHours;
+    private String startDate; 
+    private String endDate;
+    private Integer pastDays = 0; // Default Open-Meteo provides 0 past day forecast
+    private Integer forecastDays = 7; // Default Open-Meteo provides 7 day forecast
     private Double elevation;
     private EWEThreshold eweThresholds;
 
@@ -28,19 +28,19 @@ public class CityDTO {
     public Double getLongitude() { return longitude; }
     public void setLongitude(Double longitude) { this.longitude = longitude; }
 
-    public String getStart() { return start; }
-    public void setStart(String startDate) { this.start = startDate; }
+    public String getStartDate() { return startDate; }
+    public void setStartDate(String startDate) { this.startDate = startDate; }
     
-    public void setEnd(String endDate) { this.end = endDate; }
-    public String getEnd() { return end; }
+    public void setEndDate(String endDate) { this.endDate = endDate; }
+    public String getEndDate() { return endDate; }
 
-    public Integer getPastHours() { return pastHours; }
+    public Integer getPastDays() { return pastDays; }
 
-    public void setPastHours(Integer pastHours) { this.pastHours = pastHours; }
+    public void setPastDays(Integer pastHours) { this.pastDays = pastHours; }
 
-    public Integer getForecastHours() { return forecastHours; }
+    public Integer getForecastDays() { return forecastDays; }
 
-    public void setForecastHours(Integer forecastHours) { this.forecastHours = forecastHours; }
+    public void setForecastDays(Integer forecastHours) { this.forecastDays = forecastHours; }
 
     public Double getElevation() { return elevation; }
     public void setElevation(Double elevation) { this.elevation = elevation; }
