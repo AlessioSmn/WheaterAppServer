@@ -2,6 +2,8 @@ package it.unipi.lsmsd.controller;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -59,6 +61,24 @@ public class HourlyMeasurementController {
         return ResponseEntity.status(HttpStatus.OK).body("Added to the MongoDB Database: WeatherApp successfully");
     }
 
+    /**
+    Example Request Body :
+    {
+    "name": "Pisa",
+    "region": "Tuscany",
+    "latitude": 43.7085,
+    "longitude": 10.4036,
+    "startDate": "2025-01-20",
+    "endDate": "2025-01-21"
+    }
+    **/
+    @GetMapping("/get-historical-measurements")
+    public ResponseEntity<HourlyMeasurementDTO> getHistoricalMeasurements(@RequestBody CityDTO cityDTO){
+        HourlyMeasurementDTO responseBody  = hourlyMeasurementService.getHourlyMeasurements(cityDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(responseBody);
+    }
+
+
     /** 
     Example Request Body :
     {
@@ -99,11 +119,7 @@ public class HourlyMeasurementController {
     // Gets the 24hr forecast for given city with given date
     @GetMapping("/get-24Hr-forecast")
     public ResponseEntity<String> get24HrForecast(@RequestBody CityDTO cityDTO) {
-        String cityId = CityUtility.generateCityId(cityDTO.getName(), cityDTO.getRegion() , cityDTO.getLatitude(), cityDTO.getLongitude());
-        String dateDto = cityDTO.getStartDate();
-        String date = dateDto != null ? dateDto : LocalDate.now().toString();
-        // Get the forecast from Redis
-        String jsonForecast = forecastRedisService.get24HrForecast(cityId, date);
+        String jsonForecast = forecastRedisService.get24HrForecast(cityDTO);
         return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
     }
 
@@ -119,9 +135,8 @@ public class HourlyMeasurementController {
     // Gets the 7 days forecast for given city starting from the current local date
     @GetMapping("/get-7Day-forecast")
     public ResponseEntity<String> get7DayForecast(@RequestBody CityDTO cityDTO) throws IOException {
-        String cityId = CityUtility.generateCityId(cityDTO.getName(), cityDTO.getRegion() , cityDTO.getLatitude(), cityDTO.getLongitude());
-        // Get the forecast from Redis
-        String jsonForecast = forecastRedisService.get7DayForecast(cityId);
+        String jsonForecast = forecastRedisService.get7DayForecast(cityDTO);
         return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
     }
+
 }

@@ -6,12 +6,16 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
+import it.unipi.lsmsd.utility.CityUtility;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import java.io.IOException;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -70,15 +74,25 @@ public class ForecastRedisService {
     }
     
     // Get 24hr forecast
-    public String get24HrForecast(String cityId, String date) {
+    public String get24HrForecast(CityDTO cityDTO) {
+        String cityId = CityUtility.generateCityId(cityDTO.getName(), cityDTO.getRegion() , cityDTO.getLatitude(), cityDTO.getLongitude());
+        String dateDto = cityDTO.getStartDate();
+        // CityDTO.startDate is optional so check for null value
+        // LocalDate.now converted to UTC+0 timezone since data are stored in UTC+0
+        LocalDate utcDate = ZonedDateTime.now(ZoneOffset.UTC).toLocalDate();
+        String date = dateDto != null ? dateDto : utcDate.toString();
+
         String key = String.format("forecast:%s:%s", cityId, date);
+
         try (Jedis jedis = jedisPool.getResource()) {
             return jedis.get(key); // Can be returned directly to client
         }
     }
 
     // Get full 7-day forecast
-    public String get7DayForecast(String cityId) throws IOException {
+    public String get7DayForecast(CityDTO cityDTO) throws IOException {
+        String cityId = CityUtility.generateCityId(cityDTO.getName(), cityDTO.getRegion() , cityDTO.getLatitude(), cityDTO.getLongitude());
+
         try (Jedis jedis = jedisPool.getResource()) {  
             //Define date format for Redis key (yyyy-MM-dd) and get current date
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); 

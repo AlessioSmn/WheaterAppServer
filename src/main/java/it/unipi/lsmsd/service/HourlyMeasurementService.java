@@ -1,13 +1,17 @@
 package it.unipi.lsmsd.service;
 
+import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
 import it.unipi.lsmsd.model.HourlyMeasurement;
 import it.unipi.lsmsd.repository.HourlyMeasurementRepository;
+import it.unipi.lsmsd.utility.CityUtility;
+import it.unipi.lsmsd.utility.ISODateUtil;
 import it.unipi.lsmsd.utility.Mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 // Save the Weather Data to Mongo DB
@@ -30,20 +34,23 @@ public class HourlyMeasurementService {
         
         // Extract list of hourly data
         List<HourlyMeasurement> measurements = Mapper.mapHourlyMeasurement(hourlyMeasurementDTO);
-        // TODO: Save in Batch to prevent overloading DB
-        // Insert the list
+        // Insert the list in DB
         hourlyMeasurementRepository.insert(measurements);
-        
-        // Suggestion: Use Parallel/ Multitask
     }
-/*
+
     // Get all the measurements with city name
-    public List<HourlyMeasurement> getMeasurementsByCity(String cityName) {
-        // TODO: Why cityName? Need Lat and Long as index?????
-        // TODO: if cityName need to get cityID(eventually need the lat long)
-        return hourlyMeasurementRepository.findByCityId(cityName);
+    public HourlyMeasurementDTO getHourlyMeasurements(CityDTO cityDTO) {
+        String cityId = CityUtility.generateCityId(cityDTO.getName(), cityDTO.getRegion() , cityDTO.getLatitude(), cityDTO.getLongitude());
+        // Convert date from String to ISO Date
+        Date startDate = ISODateUtil.getISODate(cityDTO.getStartDate()+"T00:00");
+        Date endDate = ISODateUtil.getISODate(cityDTO.getEndDate()+"T23:00");
+        
+        List<HourlyMeasurement> measurements = hourlyMeasurementRepository.findByCityIdAndTimeBetweenOrderByTimeTimeAsc(cityId, startDate, endDate);
+        // Map List<HourlyMeasurement> to HourlyMeasurementDTO
+        HourlyMeasurementDTO hourlyMeasurementDTO = Mapper.mapHourlyMeasurementDTO(measurements);
+        return hourlyMeasurementDTO;
     }
-*/
+
 }
 
 
