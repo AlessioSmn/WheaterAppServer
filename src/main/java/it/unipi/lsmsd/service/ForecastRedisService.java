@@ -9,11 +9,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import java.io.IOException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Service
 public class ForecastRedisService {
@@ -21,79 +21,92 @@ public class ForecastRedisService {
     // default Redis port 6379 to manage connections
     @Autowired
     private JedisPool jedisPool;
+    private final ObjectMapper mapper = new ObjectMapper();
 
-    // Storing the forecast data in Redis per city per day as JSON
+    //IMPORTANT NOTE : KEY structure --> forecast:pis-tus-43.7085-10.4036:2025-04-24
+
+    // Storing the forecast data in Redis as daily-split JSON for each city
     // JSON promotes faster Read
-    public void saveForecast(HourlyMeasurementDTO dto) throws JsonProcessingException{
+    public void saveForecast(HourlyMeasurementDTO dto) throws JsonProcessingException {
         try (Jedis jedis = jedisPool.getResource()) {
-    
-            // 1. Extract data from DTO
-            String cityId = dto.getCityId();
+            // 1. Split input DTO into daily DTOs
+            Map<String, HourlyMeasurementDTO> dailyDTOs = new LinkedHashMap<>();
             List<String> timeList = dto.getTime();
-            List<Double> tempList = dto.getTemperature();
-            List<Double> rainList = dto.getRain();
-            List<Double> snowList = dto.getSnowfall();
-            List<Double> windList = dto.getWindspeed();
-    
-            // 2. Initialize a map to group hourly data by day
-            Map<String, Map<String, List<Object>>> dayGroupedData = new HashMap<>();
-    
-            // 3. Loop through each hourly entry and group it under the correct day
             for (int i = 0; i < timeList.size(); i++) {
                 String dateTime = timeList.get(i);
-                String day = dateTime.split("T")[0]; // Extract just the date part (yyyy-MM-dd)
+                String day = dateTime.split("T")[0];
     
-                // If day doesn't exist in map yet, initialize the inner map with empty lists
-                dayGroupedData
-                    .computeIfAbsent(day, k -> {
-                        Map<String, List<Object>> m = new HashMap<>();
-                        m.put("time", new ArrayList<>());
-                        m.put("temperature", new ArrayList<>());
-                        m.put("rain", new ArrayList<>());
-                        m.put("snowfall", new ArrayList<>());
-                        m.put("windspeed", new ArrayList<>());
-                        return m;
-                    });
+                // Initialize DTO for the day if not already present
+                dailyDTOs.computeIfAbsent(day, d -> {
+                    HourlyMeasurementDTO dayDTO = new HourlyMeasurementDTO();
+                    dayDTO.setTime(new ArrayList<>());
+                    dayDTO.setTemperature(new ArrayList<>());
+                    dayDTO.setRain(new ArrayList<>());
+                    dayDTO.setSnowfall(new ArrayList<>());
+                    dayDTO.setWindspeed(new ArrayList<>());
+                    return dayDTO;
+                });
     
-                // 4. Add hourly values to the corresponding lists for the day
-                Map<String, List<Object>> dayData = dayGroupedData.get(day);
-                dayData.get("time").add(dateTime);
-                dayData.get("temperature").add(tempList.get(i));
-                dayData.get("rain").add(rainList.get(i));
-                dayData.get("snowfall").add(snowList.get(i));
-                dayData.get("windspeed").add(windList.get(i));
+                // Populate the daily DTO
+                HourlyMeasurementDTO dailyDTO = dailyDTOs.get(day);
+                dailyDTO.getTime().add(dateTime);
+                dailyDTO.getTemperature().add(dto.getTemperature().get(i));
+                dailyDTO.getRain().add(dto.getRain().get(i));
+                dailyDTO.getSnowfall().add(dto.getSnowfall().get(i));
+                dailyDTO.getWindspeed().add(dto.getWindspeed().get(i));
             }
     
-            // 5. Initialize ObjectMapper to serialize daily data maps to JSON
-            ObjectMapper mapper = new ObjectMapper();
-    
-            // 6. Save each day's data to Redis as a separate key-value pair
-            for (Map.Entry<String, Map<String, List<Object>>> entry : dayGroupedData.entrySet()) {
+            // 2. Store each daily DTO in Redis    
+            for (Map.Entry<String, HourlyMeasurementDTO> entry : dailyDTOs.entrySet()) {
                 String day = entry.getKey();
-                String redisKey = "forecast:" + cityId + ":" + day; // Key format: forecast:cityId:yyyy-MM-dd
-                String jsonValue = mapper.writeValueAsString(entry.getValue()); // Serialize to JSON
+                HourlyMeasurementDTO dayDTO = entry.getValue();
+                String redisKey = "forecast:" + dto.getCityId() + ":" + day;
+                String json = mapper.writeValueAsString(dayDTO);
     
-                jedis.set(redisKey, jsonValue);         // Store in Redis
-                jedis.expire(redisKey, 3600 * 24);       // Set TTL to 24 hours
+                jedis.set(redisKey, json);                 // Save to Redis
+                jedis.expire(redisKey, 86400);             // Set TTL: 24 hours
             }
-        } 
+        }
     }
-
+    
     // Get 24hr forecast
-    public String get24HrForecast(String city, String date) {
-        String key = String.format("weather:%s:%s:24hr", city, date);
+    public String get24HrForecast(String cityId, String date) {
+        String key = String.format("forecast:%s:%s", cityId, date);
         try (Jedis jedis = jedisPool.getResource()) {
-            return jedis.get(key);
+            return jedis.get(key); // Can be returned directly to client
         }
     }
 
     // Get full 7-day forecast
-    public Map<String, String> get7DayForecast(String city, String date) {
-        String key = String.format("weather:%s:%s:7day", city, date);
-        try (Jedis jedis = jedisPool.getResource()) {
-            return jedis.hgetAll(key);
+    public String get7DayForecast(String cityId) throws IOException {
+        try (Jedis jedis = jedisPool.getResource()) {  
+            //Define date format for Redis key (yyyy-MM-dd) and get current date
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); 
+            LocalDate currentDate = LocalDate.now();
+            
+            // List to hold the 7-day forecast data
+            List<HourlyMeasurementDTO> allDaysData = new ArrayList<>();
+    
+            //Loop through the next 7 days (including today)
+            for (int i = 0; i < 7; i++) {
+                String dayKey = currentDate.plusDays(i).format(formatter);  // Format the date for each day (e.g., "2025-03-15")
+                String redisKey = "forecast:" + cityId + ":" + dayKey;  // Construct the Redis key using cityId and the date
+    
+                // Retrieve the forecast JSON for that day from Redis
+                String json = jedis.get(redisKey);
+                
+                // If the data for that day exists in Redis, deserialize it into HourlyMeasurementDTO
+                if (json != null) {
+                    HourlyMeasurementDTO dayDTO = mapper.readValue(json, HourlyMeasurementDTO.class);  // Deserialize the JSON
+                    allDaysData.add(dayDTO);  // Add the day’s data to the list
+                }
+            }
+    
+            // 11. Serialize the list of 7-day forecast data as a JSON array and return it
+            return mapper.writeValueAsString(allDaysData);
         }
     }
+    
 }
 
 /*
