@@ -5,6 +5,7 @@ import it.unipi.lsmsd.exception.CityException;
 import it.unipi.lsmsd.exception.CityNotFoundException;
 import it.unipi.lsmsd.model.City;
 import it.unipi.lsmsd.repository.CityRepository;
+import it.unipi.lsmsd.utility.CityUtility;
 import it.unipi.lsmsd.utility.Mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,9 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.dao.DuplicateKeyException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -23,6 +26,8 @@ public class CityService {
 
     @Autowired
     private CityRepository cityRepository;
+    @Autowired
+    private DataHarvestService dataHarvestService;
 
     // Get City info with City Name
     public CityDTO getCity(String cityName) throws NoSuchElementException {
@@ -49,6 +54,36 @@ public class CityService {
         // NOTE: Attempt to "insert" a document with an existing id throws DuplicateKeyException
         cityRepository.insert(city);
         return city.getId();
+    }
+
+
+    // Gets a List of City Names from a file and gets the city info one API request a time from Open-Meteo
+    // Saves the list of cities to MongoDB 
+    public String saveCitiesFromList() throws IOException{
+        // Read city name from the text file into list of cityName
+        List<String> cityNameList = CityUtility.loadCityNames();
+        List<City> cityList = new ArrayList<>();
+        // To keep track of successful addition of city
+        String savedList = "";
+
+        // Loop through each name, get city info from Open-Meteo and save as DTO
+        for (String cityName : cityNameList) {
+            try {
+                CityDTO cityDTO = dataHarvestService.getCity(cityName, "IT");
+                // Map and add to the list
+                cityList.add(Mapper.mapCity(cityDTO));
+                // Respectful delay to avoid hammering API
+                Thread.sleep(500); // 500ms delay
+                savedList += cityName +"/n";
+            } catch (Exception e) {
+                //TODO: Log
+            }
+        }
+
+        // Save to the MondoDB
+        cityRepository.saveAll(cityList);
+
+        return savedList;
     }
 
     // Saves the city to the DB and returns the cityID

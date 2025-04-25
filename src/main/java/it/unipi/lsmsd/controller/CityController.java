@@ -1,11 +1,12 @@
 package it.unipi.lsmsd.controller;
 
+import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.exception.CityException;
 import it.unipi.lsmsd.exception.CityNotFoundException;
 import it.unipi.lsmsd.service.CityInformationApiService;
 import it.unipi.lsmsd.service.CityService;
-
+import it.unipi.lsmsd.service.DataHarvestService;
 import it.unipi.lsmsd.utility.Mapper;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -46,6 +48,12 @@ public class CityController {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An unexpected error occurred: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/add-cities")
+    public ResponseEntity<String> addCities() throws IOException{
+        String response = cityService.saveCitiesFromList();
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/add-with-thresholds")

@@ -1,10 +1,14 @@
 package it.unipi.lsmsd.DTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import it.unipi.lsmsd.model.EWEThreshold;
 
-// DTO for requesting Weather Info from Open-Meteo API
+@JsonIgnoreProperties(ignoreUnknown = true) // Ignore the properites that are not included in the DTO
 public class CityDTO {
     private String name;
+    @JsonProperty("admin1") // Necessary when mapping the JSON response from geocoding open-meteo 
     private String region;
     private Double latitude;
     private Double longitude;

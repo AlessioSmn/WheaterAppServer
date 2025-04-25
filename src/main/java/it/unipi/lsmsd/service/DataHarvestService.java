@@ -1,6 +1,7 @@
 package it.unipi.lsmsd.service;
 
 import it.unipi.lsmsd.DTO.APIResponseDTO;
+import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.utility.Mapper;
 
 import org.springframework.http.HttpStatusCode;
@@ -15,6 +16,8 @@ import org.springframework.web.client.RestTemplate;
 import io.github.resilience4j.retry.annotation.Retry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 // Hit the Open Meteo API to retrieve Weather Data
 @Service
@@ -24,6 +27,7 @@ public class DataHarvestService {
     private final RestTemplate restTemplate;
     private static final String API_URL_HISTORY = "https://archive-api.open-meteo.com/v1/archive";
     private static final String API_URL_FORECAST = "https://api.open-meteo.com/v1/forecast";
+    private static final String API_URL_GEOCODING = "https://geocoding-api.open-meteo.com/v1/search";
 
     // Constructor with REST config
     public DataHarvestService() {
@@ -67,6 +71,19 @@ public class DataHarvestService {
         // On success get the data and Map to the DTO
         APIResponseDTO responseDTO = Mapper.mapAPIResponse(apiResponse.getBody());
         return responseDTO;
+    }
+    //
+    @Retry(name="OpenMeteoApiRetry")
+    public CityDTO getCity(String name, String countryCode) throws IOException{
+        // create url for API
+        String url = String.format(Locale.US, "%s?name=%s&countryCode=%s", API_URL_GEOCODING, name, countryCode);
+        ResponseEntity<String> apiResponse = restTemplate.getForEntity(url, String.class);
+        // Handle Unsucessful Requests
+        checkAPIresponse(apiResponse);
+        // On success get the data and Map to the DTO
+        List<CityDTO> cityDTO = Mapper.mapCityList(apiResponse.getBody());
+        // Get the first element from the list --> Assumption that usually only 1 element and if multiple the first one matches the name exactly
+        return cityDTO.get(0);
     }
 
     // Handle Unsucessful Requests

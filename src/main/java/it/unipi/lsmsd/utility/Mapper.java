@@ -6,6 +6,7 @@ import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
 import it.unipi.lsmsd.model.City;
 import it.unipi.lsmsd.model.HourlyMeasurement;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -14,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 //TODO: Use MapStruct to Map faster and better
@@ -25,9 +28,18 @@ public final class Mapper {
     // Private constructor to prevent instantiation
     private Mapper() { }
 
-    // Extracts hourly weather data from the JSON string into a list of MeasurementDTO
+    // Extracts hourly weather data from the JSON string into a APIResponseDTO
     public static APIResponseDTO mapAPIResponse(String json) throws JsonProcessingException{
         return objectMapper.readValue(json, APIResponseDTO.class);
+    }
+
+    // Extracts list of cityDTO from the JSON string 
+    public static List<CityDTO> mapCityList(String json) throws IOException{
+        // Extract the "results" array from {  "results": [ { "id": 3170647, "name": "Pisa", ... }],"generationtime_ms": 2.6580095 }
+        JsonNode root = objectMapper.readTree(json); 
+        JsonNode resultsNode = root.get("results");
+        // Map to the List of CityDTO
+        return objectMapper.readerForListOf(CityDTO.class).readValue(resultsNode);
     }
 
     // Maps HourlyMeasurementDTO to List<HourlyMeasurement>
