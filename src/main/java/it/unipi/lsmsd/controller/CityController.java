@@ -26,9 +26,9 @@ public class CityController {
     private CityService cityService;
 
     @PostMapping("/add")
-    public ResponseEntity<String> addCity(@RequestBody CityDTO cityDTO) {
+    public ResponseEntity<String> addCity(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
         try{
-            cityService.saveCity(cityDTO);
+            cityService.saveCity(cityDTO, token);
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)  // 201 for creation
@@ -58,9 +58,9 @@ public class CityController {
     }
 
     @PostMapping("/add-with-thresholds")
-    public ResponseEntity<String> addCityWithThresholds(@RequestBody CityDTO cityDTO) {
+    public ResponseEntity<String> addCityWithThresholds(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
         try{
-            cityService.saveCityWithThresholds(cityDTO);
+            cityService.saveCityWithThresholds(cityDTO, token);
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)  // 201 for creation
@@ -87,10 +87,10 @@ public class CityController {
     //  I don't want to return a city with start and end fields, it makes no sense.
     //  And i believe that its way too complex to manually exclude some field or do a on-the-fly conversion to json
     @PostMapping("/update-thresholds")
-    public ResponseEntity<Object> updateCityThresholds(@RequestBody CityDTO cityDTO) {
+    public ResponseEntity<Object> updateCityThresholds(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
         try{
             // Update the city threshold
-            cityService.updateCityThresholds(cityDTO);
+            cityService.updateCityThresholds(cityDTO, token);
 
             String cityId = Mapper.mapCity(cityDTO).getId();
             CityDTO cityDtoAfter = cityService.getCityWithID(cityId);
@@ -165,12 +165,12 @@ public class CityController {
         }
     }
     @PutMapping("/insert-by-name-and-return")
-    public ResponseEntity<Object> TEMPORARY_FUNCTION_FOR_TESTING_2(@RequestParam String cityName) {
+    public ResponseEntity<Object> TEMPORARY_FUNCTION_FOR_TESTING_2(@RequestHeader("Authorization") String token, @RequestParam String cityName) {
         try{
             // Retrieves the city
             CityDTO cityDto = CityInformationApiService.getCityInformation(cityName);
 
-            cityService.saveCity(cityDto);
+            cityService.saveCity(cityDto, token);
 
             List<CityDTO> check = cityService.getCity(cityName);
 

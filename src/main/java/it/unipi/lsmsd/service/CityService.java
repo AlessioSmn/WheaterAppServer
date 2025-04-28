@@ -4,6 +4,8 @@ import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.exception.CityException;
 import it.unipi.lsmsd.exception.CityNotFoundException;
 import it.unipi.lsmsd.model.City;
+import it.unipi.lsmsd.model.Role;
+import it.unipi.lsmsd.service.UserService;
 import it.unipi.lsmsd.repository.CityRepository;
 import it.unipi.lsmsd.utility.CityUtility;
 import it.unipi.lsmsd.utility.Mapper;
@@ -29,6 +31,9 @@ public class CityService {
     @Autowired
     private DataHarvestService dataHarvestService;
 
+    @Autowired
+    private UserService userService;
+
     // Get City info with City Name
     public List<CityDTO> getCity(String cityName) throws NoSuchElementException {
         List<City> cities = cityRepository.findAllByName(cityName);
@@ -50,7 +55,9 @@ public class CityService {
 
     // Saves the city to the DB and returns the cityID
     // Alert!!! : Throws DuplicateKeyException -> Need to handle it by the class that calls this method
-    public String saveCity(CityDTO cityDTO) throws DuplicateKeyException{
+    public String saveCity(CityDTO cityDTO, String token) throws DuplicateKeyException{
+        // Check if the user's role is ADMIN
+        userService.getAndCheckUserFromToken(token, Role.ADMIN);
         // Map the DTO and get the city
         City city = Mapper.mapCity(cityDTO);
         // Insert to the DB
@@ -92,7 +99,9 @@ public class CityService {
 
     // Saves the city to the DB and returns the cityID
     // Alert!!! : Throws DuplicateKeyException -> Need to handle it by the class that calls this method
-    public String saveCityWithThresholds(CityDTO cityDTO) throws DuplicateKeyException{
+    public String saveCityWithThresholds(CityDTO cityDTO, String token) throws DuplicateKeyException{
+        // Check if the user's role is ADMIN
+        userService.getAndCheckUserFromToken(token, Role.ADMIN);
         // Map the DTO and get the city
         City city = Mapper.mapCityWithThresholds(cityDTO);
         // Insert to the DB
@@ -108,7 +117,9 @@ public class CityService {
      * @throws CityNotFoundException on city not found
      * @throws CityException on city not identifiable
      */
-    public void updateCityThresholds(CityDTO cityDTO) throws CityException {
+    public void updateCityThresholds(CityDTO cityDTO, String token) throws CityException {
+        // Check if the user's role is ADMIN
+        userService.getAndCheckUserFromToken(token, Role.ADMIN);
 
         // Check if the DTO has the necessary fields for city identification
         if(!cityDTO.hasIdFields()){
@@ -145,7 +156,7 @@ public class CityService {
         Optional<City> city = cityRepository.findById(cityId);
 
         if(city.isEmpty()){
-            throw new IllegalArgumentException("City not found");
+            throw new CityNotFoundException("City " + cityId + " not found");
         }
 
         return city.get().getLastEweUpdate();

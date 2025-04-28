@@ -1,6 +1,8 @@
 package it.unipi.lsmsd.service;
 
 import it.unipi.lsmsd.DTO.UserDTO;
+import it.unipi.lsmsd.exception.EmailFormatException;
+import it.unipi.lsmsd.exception.UnauthorizedException;
 import it.unipi.lsmsd.model.Role;
 import it.unipi.lsmsd.model.User;
 import it.unipi.lsmsd.repository.UserRepository;
@@ -26,6 +28,35 @@ public class UserService {
     private UserRepository userRepository;
     @Autowired
     private SessionRedisService sessionRedisService;
+
+    private void checkRole(User user, Role requiredRole) {
+        if (user.getRole().ordinal() < requiredRole.ordinal()) {
+            throw new UnauthorizedException("Required role: " + requiredRole);
+        }
+    }
+
+    // Helper method to retrieve the User object using the provided token
+    public User getUserFromToken(String token) throws RuntimeException {
+        // Extract the reduced user (just username and role) from the token
+        User reducedUser = JWTUtil.extractUser(token);
+
+        // Fetch the complete user from the database using the username
+        Optional<User> userOpt = userRepository.findByUsername(reducedUser.getUsername());
+
+        // If the user is not found in the database, throw an exception
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+
+        // Return the complete User object if found
+        return userOpt.get();
+    }
+
+    public User getAndCheckUserFromToken(String token, Role requiredRole) throws RuntimeException {
+        User user = getUserFromToken(token);
+        checkRole(user, requiredRole);
+        return user;
+    }
 
     // Login 
     public String login(UserDTO userDTO) throws Exception{      
@@ -69,7 +100,7 @@ public class UserService {
         try {
             // Validate user data (example: email validation)
             if (!isValidEmail(userDTO.getEmail())) {
-                throw new IllegalArgumentException("Invalid email format");
+                throw new EmailFormatException(userDTO.getEmail() + " is not a valid email format");
             }
 
             // Hash password

@@ -1,10 +1,13 @@
 package it.unipi.lsmsd.service;
 
 import it.unipi.lsmsd.DTO.ExtremeWeatherEventDTO;
+import it.unipi.lsmsd.exception.CityNotFoundException;
+import it.unipi.lsmsd.exception.ThresholdsNotPresentException;
 import it.unipi.lsmsd.model.*;
 import it.unipi.lsmsd.repository.CityRepository;
 import it.unipi.lsmsd.repository.ExtremeWeatherEventRepository;
 import it.unipi.lsmsd.repository.HourlyMeasurementRepository;
+import it.unipi.lsmsd.service.UserService;
 import it.unipi.lsmsd.utility.QuadrupleEWEInformationHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
@@ -16,6 +19,7 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static it.unipi.lsmsd.utility.CityUtility.hasCityAllThresholdsFields;
 import static it.unipi.lsmsd.utility.EWEUtility.getCurrentEWEs;
 import static it.unipi.lsmsd.utility.EWEUtility.getEmptyListOfEWEs;
 
@@ -28,6 +32,8 @@ public class ExtremeWeatherEventService {
     private HourlyMeasurementRepository hourlyMeasurementRepository;
     @Autowired
     private CityRepository cityRepository;
+    @Autowired
+    private UserService userService;
 
     private static final Integer DEFAULT_LOCAL_EWE_RANGE = 0;
 
@@ -39,13 +45,17 @@ public class ExtremeWeatherEventService {
      * @param startTimeInterval The start time of the interval from which to retrieve measurements.
      * @param endTimeInterval The end time of the interval up to which measurements should be retrieved.
      * @return A list of newly inserted Extreme Weather Events.
-     * @throws IllegalArgumentException If the specified city is not found.
+     * @throws CityNotFoundException If the specified city is not found.
+     * @throws ThresholdsNotPresentException If the specified city doesn't have the threshold specified.
      */
-    public List<String> updateExtremeWeatherEvent(
+    public List<ExtremeWeatherEvent> updateExtremeWeatherEvent(
             String cityId,
             LocalDateTime startTimeInterval,
-            LocalDateTime endTimeInterval
+            LocalDateTime endTimeInterval,
+            String token
     ) throws Exception{
+        // Check if user role is admin
+        userService.getAndCheckUserFromToken(token, Role.ADMIN);
 
         // Gets all measurements for a given city
         Date startTime = Date.from(startTimeInterval.toInstant(ZoneOffset.UTC));
@@ -57,7 +67,11 @@ public class ExtremeWeatherEventService {
         // Gets the target city, in order to get the thresholds
         Optional<City> city = cityRepository.findById(cityId);
         if (city.isEmpty())
-            throw new IllegalArgumentException("City not found");
+            throw new CityNotFoundException("Specified city " + cityId + " was not found");
+
+
+        if(!hasCityAllThresholdsFields(city.get()))
+            throw new ThresholdsNotPresentException("City doesn't have all threshold fields correctly specified");
 
         // Retrieve the city's extreme weather event thresholds
         EWEThreshold eweThresholds = city.get().getEweThresholds();
@@ -86,7 +100,7 @@ public class ExtremeWeatherEventService {
         }
 
         // List of completed EWEs, to be returned
-        List<String> compltedEWEs = new ArrayList<>();
+        List<ExtremeWeatherEvent> compltedEWEs = new ArrayList<>();
 
         // Checks all measurements against all thresholds
         for (HourlyMeasurement measurement : hourlyMeasurements) {
@@ -134,7 +148,7 @@ public class ExtremeWeatherEventService {
                     ExtremeWeatherEvent insertedEwe = eweRepository.save(newEWE);
 
                     // Add its id to the list of completed EWEs
-                    compltedEWEs.add(insertedEwe.getId());
+                    compltedEWEs.add(insertedEwe);
 
                     // Reset the strength to zero and both dates to null
                     ongoingExtremeWeatherEvents.get(i).resetData();
@@ -161,7 +175,7 @@ public class ExtremeWeatherEventService {
                 ExtremeWeatherEvent insertedEwe = eweRepository.save(newEWE);
 
                 // Add its id to the list of completed EWEs
-                compltedEWEs.add(insertedEwe.getId());
+                compltedEWEs.add(insertedEwe);
             }
         }
 
@@ -186,8 +200,12 @@ public class ExtremeWeatherEventService {
     public Map<String, Integer> cleanExtremeWeatherEventDuplicates(
             String cityId,
             LocalDateTime startTimeInterval,
-            LocalDateTime endTimeInterval
+            LocalDateTime endTimeInterval,
+            String token
     ) {
+        // Check if user role is admin
+        userService.getAndCheckUserFromToken(token, Role.ADMIN);
+
         // Counters for removed and inserted EWEs
         int removedCount = 0;
         int insertedCount = 0;
@@ -312,13 +330,14 @@ public class ExtremeWeatherEventService {
         // Set start date
         ewe.setDateStart(eweInfo.getDateStart().toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime());
 
-System.out.println("NEW EWE Date start:" + ewe.getDateStart());
+        System.out.println("NEW EWE Date start:" + ewe.getDateStart());
 
         // Set end date only on terminated ewe
         if(terminated){
             ewe.setDateEnd(eweInfo.getDateEnd().toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime());
-System.out.println("NEW EWE Date end__:" + ewe.getDateEnd());
+            System.out.println("NEW EWE Date end__:" + ewe.getDateEnd());
         }
+
         System.out.println("NEW EWE Date end__: null");
 
         // Set city id

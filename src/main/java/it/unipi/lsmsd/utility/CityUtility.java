@@ -1,8 +1,12 @@
 package it.unipi.lsmsd.utility;
 
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import it.unipi.lsmsd.model.City;
+import it.unipi.lsmsd.model.EWEThreshold;
+
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,5 +44,22 @@ public final class CityUtility {
                          .filter(line -> !line.isEmpty())
                          .collect(Collectors.toList());
         }
+    }
+
+    public static boolean hasCityAllThresholdsFields(City city){
+
+        // Check that the city has the eweThresholds field
+        if (city == null || city.getEweThresholds() == null) {
+            return false;
+        }
+
+        EWEThreshold thresholds = city.getEweThresholds();
+
+        // Check that all fields are specified
+        return  !Double.isNaN(thresholds.getRainfall()) &&
+                !Double.isNaN(thresholds.getSnowfall()) &&
+                !Double.isNaN(thresholds.getMaxTemperature()) &&
+                !Double.isNaN(thresholds.getMinTemperature()) &&
+                !Double.isNaN(thresholds.getWindSpeed());
     }
 }

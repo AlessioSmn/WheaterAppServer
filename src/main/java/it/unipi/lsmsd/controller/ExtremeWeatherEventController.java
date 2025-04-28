@@ -1,5 +1,8 @@
 package it.unipi.lsmsd.controller;
 
+import it.unipi.lsmsd.exception.CityNotFoundException;
+import it.unipi.lsmsd.exception.ThresholdsNotPresentException;
+import it.unipi.lsmsd.model.ExtremeWeatherEvent;
 import it.unipi.lsmsd.service.CityService;
 import it.unipi.lsmsd.service.ExtremeWeatherEventService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +27,8 @@ public class ExtremeWeatherEventController {
 
 
     @PutMapping("/update/automatic")
-    public ResponseEntity<String> updateExtremeWeatherEventAutomatic(
+    public ResponseEntity<Object> updateExtremeWeatherEventAutomatic(
+            @RequestHeader("Authorization") String token,
             @RequestParam String cityId
     ) {
         try {
@@ -32,24 +36,24 @@ public class ExtremeWeatherEventController {
             LocalDateTime lastEweUpdate = cityService.getLastEweUpdateById(cityId);
 
             // Calls service updateExtremeWeatherEvent over time interval (lastEweUpdate; Now)
-            List<String> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, lastEweUpdate, LocalDateTime.now());
+            List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, lastEweUpdate, LocalDateTime.now(), token);
 
             // TODO return information properly formatted
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(Map.of(
-                            "Created EWEs count", createdEWEs.size(),
-                            "Created EWEs IDs", createdEWEs
-                    ).toString());
+                    .body(createdEWEs);
 
         }
-        // TODO return proper HttpStatus and error message
-        catch (IllegalArgumentException IAe) {
+        catch (CityNotFoundException CNFe){
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
-                    .body("Internal Server error: " + IAe.getMessage());
+                    .body("City not found: " + CNFe.getMessage());
         }
-        // TODO return proper HttpStatus and error message
+        catch (ThresholdsNotPresentException TNPe) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Thresholds not present: " + TNPe.getMessage());
+        }
         catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -70,23 +74,31 @@ public class ExtremeWeatherEventController {
 
 
     @PutMapping("/update/recent")
-    public ResponseEntity<String> updateExtremeWeatherEventRecent(
+    public ResponseEntity<Object> updateExtremeWeatherEventRecent(
+            @RequestHeader("Authorization") String token,
             @RequestParam String cityId,
             @RequestParam Integer hours
     ) {
 
         try {
             // Calls service updateExtremeWeatherEvent over time interval (NOW - hours; NOW)
-            List<String> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, LocalDateTime.now().minusHours(hours), LocalDateTime.now());
+            List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, LocalDateTime.now().minusHours(hours), LocalDateTime.now(), token);
 
             // TODO return information properly formatted
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(Map.of(
-                            "Created EWEs count", createdEWEs.size(),
-                            "Created EWEs IDs", createdEWEs
-                    ).toString());
+                    .body(createdEWEs);
 
+        }
+        catch (CityNotFoundException CNFe){
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("City not found: " + CNFe.getMessage());
+        }
+        catch (ThresholdsNotPresentException TNPe) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Thresholds not present: " + TNPe.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity
@@ -96,7 +108,8 @@ public class ExtremeWeatherEventController {
     }
 
     @PutMapping("/update/range")
-    public ResponseEntity<String> updateExtremeWeatherEventRange(
+    public ResponseEntity<Object> updateExtremeWeatherEventRange(
+            @RequestHeader("Authorization") String token,
             @RequestParam String cityId,
             @RequestParam LocalDateTime startTime,
             @RequestParam LocalDateTime endTime
@@ -104,16 +117,23 @@ public class ExtremeWeatherEventController {
 
         try {
             // Call service updateExtremeWeatherEvent over time interval (startTime; endTime)
-            List<String> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, startTime, endTime);
+            List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, startTime, endTime, token);
 
             // TODO return information properly formatted
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(Map.of(
-                            "Created EWEs count", createdEWEs.size(),
-                            "Created EWEs IDs", createdEWEs
-                    ).toString());
+                    .body(createdEWEs);
 
+        }
+        catch (CityNotFoundException CNFe){
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("City not found: " + CNFe.getMessage());
+        }
+        catch (ThresholdsNotPresentException TNPe) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Thresholds not present: " + TNPe.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity
@@ -125,12 +145,13 @@ public class ExtremeWeatherEventController {
 
     @PutMapping("/clean/range")
     public ResponseEntity<String> cleanUpExtremeWeatherEventRange(
+            @RequestHeader("Authorization") String token,
             @RequestParam String cityId,
             @RequestParam LocalDateTime startTime,
             @RequestParam LocalDateTime endTime
     ) {
         // Call the relative service
-        Map<String, Integer> cleanupResult = extremeWeatherEventService.cleanExtremeWeatherEventDuplicates(cityId, startTime, endTime);
+        Map<String, Integer> cleanupResult = extremeWeatherEventService.cleanExtremeWeatherEventDuplicates(cityId, startTime, endTime, token);
 
         String TEMP_STRING = String.format("{\n\t\"removed\": %d,\n\t\"inserted\": %d\n}",
                 cleanupResult.get("EWEs Removed"), cleanupResult.get("EWEs Inserted"));
