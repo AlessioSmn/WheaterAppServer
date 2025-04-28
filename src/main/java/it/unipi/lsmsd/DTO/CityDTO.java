@@ -1,29 +1,41 @@
 package it.unipi.lsmsd.DTO;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 import it.unipi.lsmsd.model.EWEThreshold;
 
 @JsonIgnoreProperties(ignoreUnknown = true) // Ignore the properites that are not included in the DTO
 public class CityDTO {
     private String name;
-    @JsonProperty("admin1") // Necessary when mapping the JSON response from geocoding open-meteo 
     private String region;
     private Double latitude;
     private Double longitude;
-    private String startDate; 
-    private String endDate;
-    private Integer pastDays = 0; // Default Open-Meteo provides 0 past day forecast
-    private Integer forecastDays = 7; // Default Open-Meteo provides 7 day forecast
     private Double elevation;
     private EWEThreshold eweThresholds;
-
+    
+    // Json Write only properties - ignores when serializing to JSON
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String startDate; 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String endDate;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private Integer pastDays = 0; // Default Open-Meteo provides 0 past day forecast
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private Integer forecastDays = 7; // Default Open-Meteo provides 7 day forecast
+    
     // Setters and Getters
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
+    // @JsonGetter affects the serialized JSON (it controls what appears in the output).
+    // @JsonSetter affects deserialization
+    @JsonGetter("region") 
     public String getRegion() { return region; }
+    //Necessary when mapping the JSON response from geocoding open-meteo 
+    @JsonSetter("admin1")
     public void setRegion(String region) { this.region = region; }
 
     public Double getLatitude() { return latitude; }

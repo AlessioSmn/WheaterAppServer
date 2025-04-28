@@ -7,8 +7,10 @@ import it.unipi.lsmsd.repository.CityRepository;
 import it.unipi.lsmsd.utility.JWTUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -20,7 +22,7 @@ public class FavoriteCityService {
     private CityRepository cityRepository; // Dependency injection for the City repository
 
     // Helper method to retrieve the User object using the provided token
-    private User getUserFromToken(String token) throws RuntimeException {
+    private User getUserFromToken(String token) throws NoSuchElementException {
         // Extract the reduced user (just username and role) from the token
         User reducedUser = JWTUtil.extractUser(token);
 
@@ -29,42 +31,37 @@ public class FavoriteCityService {
 
         // If the user is not found in the database, throw an exception
         if (userOpt.isEmpty()) {
-            throw new RuntimeException("User not found");
+            throw new NoSuchElementException("User not found");
         }
 
         // Return the complete User object if found
         return userOpt.get();
     }
 
-    // Helper method to retrieve the City object by its name
-    private City getCityByName(String targetCity) throws RuntimeException {
-        // Search for the city in the database by its name
-        Optional<City> cityOpt = cityRepository.findByName(targetCity);
-
-        // If the city is not found, throw an exception
-        if (cityOpt.isEmpty()) {
-            throw new RuntimeException("Target city not found");
-        }
-
-        // Return the City object if found
-        return cityOpt.get();
-    }
-
     // Method to add a city to the user's favorite cities list
-    public String addToFavorites(String token, String targetCity) throws Exception {
+    // Transcational since we are updating two DB classes User and City
+    @Transactional
+    public String addToFavorites(String token, String targetCityId){
         try {
-            // Retrieve the user and city using the helper methods
+            // Retrieve the user and city
             User user = getUserFromToken(token);
-            City city = getCityByName(targetCity);
-
+            Optional<City> city_Optional = cityRepository.findById(targetCityId);
+            // throws NoSuchElementException is no city is found
+            if (!city_Optional.isPresent()) { throw new NoSuchElementException("City not found with id: " + targetCityId); }
+            
             // Get the user's current list of favorite cities
-            List<City> listCity = user.getListCity();
+            List<String> listCityId = user.getListCityId();
+
 
             // Check if the city is already in the user's favorite cities list
-            if (!listCity.contains(city)) {
-                listCity.add(city);
-                user.setListCity(listCity);
+            if (!listCityId.contains(targetCityId)) {
+                // Add the cityId and save the updated user
+                user.getListCityId().add(targetCityId);
                 userRepository.save(user);
+                // Update the follower count in the city and save the updated city
+                City city = city_Optional.get();
+                city.setFollowers(city.getFollowers() + 1);
+                cityRepository.save(city);
                 return "City added to favorites successfully!";
             } else {
                 return "City is already in your favorites.";
@@ -77,20 +74,28 @@ public class FavoriteCityService {
     }
 
     // Method to remove a city from the user's favorite cities list
-    public String removeFromFavorites(String token, String targetCity) throws Exception {
+    // Transcational since we are updating two DB classes User and City
+    @Transactional
+    public String removeFromFavorites(String token, String targetCityId) {
         try {
             // Retrieve the user and city using the helper methods
             User user = getUserFromToken(token);
-            City city = getCityByName(targetCity);
+            Optional<City> city_Optional = cityRepository.findById(targetCityId);
+            // throws NoSuchElementException is no city is found
+            if (!city_Optional.isPresent()) { throw new NoSuchElementException("City not found with id: " + targetCityId); }
 
-            // Get the user's current list of favorite cities
-            List<City> listCity = user.getListCity();
+             // Get the user's current list of favorite cities
+             List<String> listCityId = user.getListCityId();
 
-            // Check if the city is in the user's favorite cities list
-            if (listCity.contains(city)) {
-                listCity.remove(city);
-                user.setListCity(listCity);
+           // Check if the city is already in the user's favorite cities list
+           if (listCityId.contains(targetCityId)) {
+                // Add the cityId and save the updated user
+                user.getListCityId().remove(targetCityId);
                 userRepository.save(user);
+                // Update the follower count in the city and save the updated city
+                City city = city_Optional.get();
+                city.setFollowers(city.getFollowers() - 1);
+                cityRepository.save(city);
                 return "City removed from favorites successfully!";
             } else {
                 return "City is not in your favorites.";

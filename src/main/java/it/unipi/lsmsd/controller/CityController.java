@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -123,7 +124,7 @@ public class CityController {
     public ResponseEntity<Object> getCityByName(@RequestParam String cityName){
         try{
             // Retrieves the city
-            CityDTO cityDto = cityService.getCity(cityName);
+            List<CityDTO> cityDto = cityService.getCity(cityName);
 
             // Returns all city's information into the body
             return ResponseEntity
@@ -171,7 +172,7 @@ public class CityController {
 
             cityService.saveCity(cityDto);
 
-            CityDTO check = cityService.getCity(cityName);
+            List<CityDTO> check = cityService.getCity(cityName);
 
             // Returns all city's information into the body
             return ResponseEntity

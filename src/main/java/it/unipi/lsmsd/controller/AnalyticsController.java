@@ -1,20 +1,38 @@
 package it.unipi.lsmsd.controller;
 
+import java.util.List;
+
+import org.bson.Document;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import it.unipi.lsmsd.service.AnalyticsService;
 
 @RestController
 @RequestMapping("/analytics")
 public class AnalyticsController {
 
-    // TODO
-    //  Put here all sort of analytics stuff, i say the most, the better
+   @Autowired
+    private AnalyticsService analyticsService;
 
-    // TODO
-    //  Surely the aggregations must be done here, a note on them:
-    //      Java driver are available only on MongoCollection entities, so we have
-    //      to make a service that works on them instead of using the normal repositories
-
-    // TODO
-    //  Then maybe the most basic queries can be directly done calling repository methods (like find most ...)
+    // Average Temperature per City for last 30 Days
+    @GetMapping("/30days-avg-temperature")
+    public List<Document> getAvgTemperatureLast30Days() {
+        return analyticsService.getAvgTemperaturePerCityLast30Days();
+    }
+    
+    // Average Temperature per City for last 30 Days
+    @GetMapping("/hottest-day")
+    public List<Document> getHottestDay() {
+        return analyticsService.getHottestDayPerCity();
+    }
+    
+    // Total Rainfall per City in Last 30 Days
+    @GetMapping("/30days-total-rainfall")
+    public List<Document> getTotalRainfall(){
+        return analyticsService.getTotalRainfallPerCityLast30Days();
+    }
+    
 }

@@ -30,11 +30,14 @@ public class CityService {
     private DataHarvestService dataHarvestService;
 
     // Get City info with City Name
-    public CityDTO getCity(String cityName) throws NoSuchElementException {
-        Optional<City> city = cityRepository.findByName(cityName);
-        // throws NoSuchElementException is no city is found
-        if (!city.isPresent()) { throw new NoSuchElementException("City not found with name: " + cityName ); }
-        return  Mapper.mapCity(city.get()); 
+    public List<CityDTO> getCity(String cityName) throws NoSuchElementException {
+        List<City> cities = cityRepository.findAllByName(cityName);
+        // throws NoSuchElementException if no city is found
+        if (cities.isEmpty()) { throw new NoSuchElementException("City not found with name: " + cityName ); }
+        // Map the list of city to list of cityDTO
+        List<CityDTO> cityDTOs = cities.stream().map(city -> Mapper.mapCity(city))
+                               .collect(Collectors.toList());
+        return cityDTOs;
     }
 
     // Get City info with City Id
@@ -74,7 +77,8 @@ public class CityService {
                 cityList.add(Mapper.mapCity(cityDTO));
                 // Respectful delay to avoid hammering API
                 Thread.sleep(500); // 500ms delay
-                savedList += cityName +"/n";
+                // Strategy to track cities that were fetched from the Open-Meteo GeoCoding API
+                savedList += cityName +"\n";
             } catch (Exception e) {
                 //TODO: Log
             }
