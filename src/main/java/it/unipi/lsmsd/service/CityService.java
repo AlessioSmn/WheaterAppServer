@@ -7,6 +7,7 @@ import it.unipi.lsmsd.model.City;
 import it.unipi.lsmsd.model.Role;
 import it.unipi.lsmsd.service.UserService;
 import it.unipi.lsmsd.repository.CityRepository;
+import it.unipi.lsmsd.utility.CityUtility;
 import it.unipi.lsmsd.utility.Mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,9 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.dao.DuplicateKeyException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -25,16 +28,21 @@ public class CityService {
 
     @Autowired
     private CityRepository cityRepository;
+    @Autowired
+    private DataHarvestService dataHarvestService;
 
     @Autowired
     private UserService userService;
 
     // Get City info with City Name
-    public CityDTO getCity(String cityName) throws NoSuchElementException {
-        Optional<City> city = cityRepository.findByName(cityName);
-        // throws NoSuchElementException is no city is found
-        if (!city.isPresent()) { throw new NoSuchElementException("City not found with name: " + cityName ); }
-        return  Mapper.mapCity(city.get()); 
+    public List<CityDTO> getCity(String cityName) throws NoSuchElementException {
+        List<City> cities = cityRepository.findAllByName(cityName);
+        // throws NoSuchElementException if no city is found
+        if (cities.isEmpty()) { throw new NoSuchElementException("City not found with name: " + cityName ); }
+        // Map the list of city to list of cityDTO
+        List<CityDTO> cityDTOs = cities.stream().map(city -> Mapper.mapCity(city))
+                               .collect(Collectors.toList());
+        return cityDTOs;
     }
 
     // Get City info with City Id
@@ -56,6 +64,37 @@ public class CityService {
         // NOTE: Attempt to "insert" a document with an existing id throws DuplicateKeyException
         cityRepository.insert(city);
         return city.getId();
+    }
+
+
+    // Gets a List of City Names from a file and gets the city info one API request a time from Open-Meteo
+    // Saves the list of cities to MongoDB 
+    public String saveCitiesFromList() throws IOException{
+        // Read city name from the text file into list of cityName
+        List<String> cityNameList = CityUtility.loadCityNames();
+        List<City> cityList = new ArrayList<>();
+        // To keep track of successful addition of city
+        String savedList = "";
+
+        // Loop through each name, get city info from Open-Meteo and save as DTO
+        for (String cityName : cityNameList) {
+            try {
+                CityDTO cityDTO = dataHarvestService.getCity(cityName, "IT");
+                // Map and add to the list
+                cityList.add(Mapper.mapCity(cityDTO));
+                // Respectful delay to avoid hammering API
+                Thread.sleep(500); // 500ms delay
+                // Strategy to track cities that were fetched from the Open-Meteo GeoCoding API
+                savedList += cityName +"\n";
+            } catch (Exception e) {
+                //TODO: Log
+            }
+        }
+
+        // Save to the MondoDB
+        cityRepository.saveAll(cityList);
+
+        return savedList;
     }
 
     // Saves the city to the DB and returns the cityID

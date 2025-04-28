@@ -1,20 +1,28 @@
 package it.unipi.lsmsd.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import it.unipi.lsmsd.exception.UnauthorizedException;
 import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.DTO.CityDTO;
-import it.unipi.lsmsd.service.CityService;
+import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
 import it.unipi.lsmsd.service.DataHarvestService;
+import it.unipi.lsmsd.service.ForecastRedisService;
 import it.unipi.lsmsd.service.HourlyMeasurementService;
+import it.unipi.lsmsd.utility.CityUtility;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 @RestController
 @RequestMapping("/hourly")
@@ -25,109 +33,110 @@ public class HourlyMeasurementController {
     @Autowired
     private HourlyMeasurementService hourlyMeasurementService;
     @Autowired
-    private CityService cityService;
+    private ForecastRedisService forecastRedisService;
 
     /**
-     Example Request Body for add-recent-measurements-using-hours
-     {
-     "name": "Pisa",
-     "regions": "Tuscany",
-     "latitude": 43.7085,
-     "longitude": 10.4036,
-     "start": "2025-01-20",
-     "end": "2025-01-21"
-     }
-
-     Example Request Body for add-recent-measurements-using-hours
+    Example Request Body :
     {
-        "name": "Pisa",
-            "regions": "Tuscany",
-            "latitude": 43.7085,
-            "longitude": 10.4036,
-            "pastHours": "12",
-            "forecastHours": "12"
+    "name": "Pisa",
+    "region": "Tuscany",
+    "latitude": 43.7085,
+    "longitude": 10.4036,
+    "startDate": "2025-01-20",
+    "endDate": "2025-01-21"
     }
-     **/
-    private boolean isValidCityName(String name) {
-        return name != null && name.matches("^[A-Za-zÀ-ÖØ-öø-ÿ\\s]+$");
-    }
-
-    private boolean isValidLatitude(double latitude) {
-        return latitude >= -90.0 && latitude <= 90.0;
-    }
-
-    private boolean isValidLongitude(double longitude) {
-        return longitude >= -180.0 && longitude <= 180.0;
-    }
-
-    private void checkFields(CityDTO cityDTO){
-        if (!isValidCityName(cityDTO.getName()) || !isValidCityName(cityDTO.getRegion())) {
-            throw new IllegalArgumentException("Invalid city or region name");
-        }
-
-        if (!isValidLatitude(cityDTO.getLatitude()) || !isValidLongitude(cityDTO.getLongitude())) {
-            throw new IllegalArgumentException("Invalid latitude or longitude values");
-        }
-    }
-
-
-    private ResponseEntity<String> handleError(Exception ex) {
-        if (ex instanceof IllegalArgumentException) {
-            // bad request exception
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        }
-        else if (ex instanceof UnauthorizedException) {
-            // Unauthorized exception
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
-        }
-        else {
-            // Unexpected error
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected Error: " + ex.getMessage());
-        }
-    }
-
+    **/
+    // Gets the historical data of a city for given time-frame from the Open-Meteo API and saves in the MongoDB
     @PostMapping("/add-historical-measurements")
-    public ResponseEntity<String> addHistoricalMeasurements(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) throws JsonProcessingException {
-        try{
-            checkFields(cityDTO);
-            APIResponseDTO responseDTO = dataHarvestService.getCityHistoricalMeasurement(cityDTO.getLatitude(), cityDTO.getLongitude(), cityDTO.getStart(), cityDTO.getEnd());
-            hourlyMeasurementService.handleMeasurementRequest(responseDTO, cityDTO, token);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body("Added to the MongoDB Database: WeatherApp successfully");
-        }
-        catch(Exception ex) {
-            return handleError(ex);
-        }
+    public ResponseEntity<String> addHistoricalMeasurements(@RequestBody CityDTO cityDTO) throws JsonProcessingException {
+        // Validate the CityDTO values
+        APIResponseDTO responseDTO = dataHarvestService.getCityHistoricalMeasurement(cityDTO.getLatitude(), cityDTO.getLongitude(), cityDTO.getStartDate(), cityDTO.getEndDate());
+
+        HourlyMeasurementDTO hourlyMeasurementDTO = responseDTO.getHourly();
+        String cityId = CityUtility.generateCityId(cityDTO.getName(), cityDTO.getRegion() , cityDTO.getLatitude(), cityDTO.getLongitude());
+        hourlyMeasurementDTO.setCityId(cityId);
+        // Save the data in MongoDB
+        hourlyMeasurementService.saveHourlyMeasurements(hourlyMeasurementDTO);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Added to the MongoDB Database: WeatherApp successfully");
     }
 
-    @PostMapping("/add-recent-measurements-using-hours")
-    public ResponseEntity<String> addRecentMeasurementsUsingHours(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) throws JsonProcessingException {
-        try{
-            checkFields(cityDTO);
-            APIResponseDTO responseDTO = dataHarvestService.getCityRecentMeasurementUsingHours(cityDTO.getLatitude(), cityDTO.getLongitude(), cityDTO.getPastHours(), cityDTO.getForecastHours());
-
-            hourlyMeasurementService.handleMeasurementRequest(responseDTO, cityDTO, token);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body("Added to the MongoDB Database: WeatherApp successfully");
-        }
-        catch(Exception ex) {
-            return handleError(ex);
-        }
+    /**
+    Example Request Body :
+    {
+    "name": "Pisa",
+    "region": "Tuscany",
+    "latitude": 43.7085,
+    "longitude": 10.4036,
+    "startDate": "2025-01-20",
+    "endDate": "2025-01-21"
+    }
+    **/
+    @GetMapping("/get-historical-measurements")
+    public ResponseEntity<HourlyMeasurementDTO> getHistoricalMeasurements(@RequestBody CityDTO cityDTO){
+        HourlyMeasurementDTO responseBody  = hourlyMeasurementService.getHourlyMeasurements(cityDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 
-    @PostMapping("/add-recent-measurements")
-    public ResponseEntity<String> addRecentMeasurements(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) throws JsonProcessingException {
-        try{
-            checkFields(cityDTO);
-            Duration duration = Duration.between(cityDTO.getLastUpdate(), LocalDateTime.now());
-            APIResponseDTO responseDTO = dataHarvestService.getCityRecentMeasurementUsingHours(cityDTO.getLatitude(), cityDTO.getLongitude(), (int) duration.toHours(), 0);
 
-            hourlyMeasurementService.handleMeasurementRequest(responseDTO, cityDTO, token);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body("Added to the MongoDB Database: WeatherApp successfully");
-        }
-        catch(Exception ex) {
-            return handleError(ex);
-        }
+    /** 
+    Example Request Body :
+    {
+    "name": "Pisa",
+    "region": "Tuscany",
+    "latitude": 43.7085,
+    "longitude": 10.4036,
+    "pastDays": "1", // Optional
+    "forecastDays": "8" // Optional
     }
+    **/
+    // Gets the forecast (7 days by default) of a city from the Open-Meteo API and saves in the Redis Server
+    @PostMapping("/add-forecast")
+    public ResponseEntity<String> addForecast(@RequestBody CityDTO cityDTO) throws JsonProcessingException {
+        
+        // Get Forecast from Open-Meteo
+        APIResponseDTO responseDTO = dataHarvestService.getCityForecast(cityDTO.getLatitude(), cityDTO.getLongitude(), cityDTO.getPastDays(), cityDTO.getForecastDays());
+
+        HourlyMeasurementDTO hourlyMeasurementDTO = responseDTO.getHourly();
+        String cityId = CityUtility.generateCityId(cityDTO.getName(), cityDTO.getRegion() , cityDTO.getLatitude(), cityDTO.getLongitude());
+        hourlyMeasurementDTO.setCityId(cityId);
+        // Save the forecast in Redis
+        forecastRedisService.saveForecast(hourlyMeasurementDTO);
+
+        return ResponseEntity.status(HttpStatus.OK).body(String.format("Added %s to the Redis successfully", cityDTO.getName()));
+    }
+
+    /** 
+    Example Request Body :
+    {
+    "name": "Pisa",
+    "region": "Tuscany",
+    "latitude": 43.7085,
+    "longitude": 10.4036,
+    "startDate": "2025-04-24" //Optional
+    }
+    **/
+    // Gets the 24hr forecast for given city with given date
+    @GetMapping("/get-24Hr-forecast")
+    public ResponseEntity<String> get24HrForecast(@RequestBody CityDTO cityDTO) {
+        String jsonForecast = forecastRedisService.get24HrForecast(cityDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
+    }
+
+    /** 
+    Example Request Body :
+    {
+    "name": "Pisa",
+    "region": "Tuscany",
+    "latitude": 43.7085,
+    "longitude": 10.4036
+    }
+    **/
+    // Gets the 7 days forecast for given city starting from the current local date
+    @GetMapping("/get-7Day-forecast")
+    public ResponseEntity<String> get7DayForecast(@RequestBody CityDTO cityDTO) throws IOException {
+        String jsonForecast = forecastRedisService.get7DayForecast(cityDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
+    }
+
 }

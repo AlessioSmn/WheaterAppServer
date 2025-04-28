@@ -18,7 +18,7 @@ public class User {
     private String password;
     @Indexed(unique = true)
     private String email;
-    private List<City> listCity;
+    private List<String> listCityId = new ArrayList<>();
     private Role role; // Enum
     
     // Constructors
@@ -36,7 +36,6 @@ public class User {
         this.password = password;
         this.email = email;
         this.role = role;
-        this.listCity = new ArrayList<>();
     }
 
     //Getters and setters
@@ -58,8 +57,9 @@ public class User {
 
     public Role getRole() { return role; }
 
-    public List<City> getListCity() { return listCity; }
+    public List<String> getListCityId() { return listCityId; }
 
-    public void setListCity(List<City> listCity) { this.listCity = listCity; }
+    public void setListCity(List<String> listCity) { this.listCityId = listCity; }
+    
 }
 
