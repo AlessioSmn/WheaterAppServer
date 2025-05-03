@@ -14,10 +14,13 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import it.unipi.lsmsd.model.ExtremeWeatherEventCategory;
 import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -27,11 +30,16 @@ import java.util.stream.StreamSupport;
 @Service
 public class AnalyticsService{
 
+    @Autowired
     private final MongoClient mongoClient;
     private final MongoDatabase database;
     private final MongoCollection<Document> eweCollection;
     private final MongoCollection<Document> measurementCollection;
     private final MongoCollection<Document> cityCollection;
+
+    private MongoDatabase getDatabase() {
+        return mongoClient.getDatabase("WeatherApp");
+    }
 
     public AnalyticsService() {
         this.mongoClient = MongoClients.create(
@@ -1050,6 +1058,83 @@ public class AnalyticsService{
                         limit(maxNumRegionsToFind)
                 )).spliterator(), false)
                 .collect(Collectors.toList());
+    }
+
+
+	 // Average Temperature per City for Last 30 Days with City Info
+    public List<Document> getAvgTemperaturePerCityLast30Days() {
+
+        // Get the current time in UTC
+        ZonedDateTime thirtyDaysAgoUTC = ZonedDateTime.now(ZoneOffset.UTC).minusDays(30);
+        Date thirtyDaysAgo = Date.from(thirtyDaysAgoUTC.toInstant());
+
+        // Get the collection
+        MongoCollection<Document> collection = getDatabase().getCollection("hourly_measurements");
+
+        // Aggregation pipeline
+        List<Bson> pipeline = List.of(
+                match(gte("time", thirtyDaysAgo)),  // Match documents from the last 30 days
+                group("$cityId", avg("avgTemperature", "$temperature")),  // Group by cityId and calculate average temperature
+                lookup("cities", "_id", "_id", "cityDetails"),  // Lookup city details
+                unwind("$cityDetails"),  // Unwind the cityDetails array
+                project(fields(
+                        include("avgTemperature"),
+                        computed("cityName", "$cityDetails.name"),
+                        computed("cityRegion", "$cityDetails.region")
+                ))
+        );
+
+        // Execute aggregation
+        return collection.aggregate(pipeline).into(new java.util.ArrayList<>());
+    }
+
+    // Hottest Day for each city
+    public List<Document> getHottestDayPerCity() {
+
+        // Get the collection
+        MongoCollection<Document> collection = getDatabase().getCollection("hourly_measurements");
+
+        // Aggregation pipeline
+        List<Bson> pipeline = List.of(
+                group("$cityId", max("maxTemperature", "$temperature")),  // Group by cityId and pick max temperature
+                lookup("cities", "_id", "_id", "cityDetails"),  // Lookup city details
+                unwind("$cityDetails"),  // Unwind the cityDetails array
+                project(fields(
+                        include("maxTemperature"),
+                        computed("cityName", "$cityDetails.name"),
+                        computed("cityRegion", "$cityDetails.region")
+                ))
+        );
+
+        // Execute aggregation
+        return collection.aggregate(pipeline).into(new java.util.ArrayList<>());
+    }
+
+    // Total Rainfall per City in Last 30 Days
+    public List<Document> getTotalRainfallPerCityLast30Days() {
+
+        // Get the current time in UTC
+        ZonedDateTime thirtyDaysAgoUTC = ZonedDateTime.now(ZoneOffset.UTC).minusDays(30);
+        Date thirtyDaysAgo = Date.from(thirtyDaysAgoUTC.toInstant());
+
+        // Get the collection
+        MongoCollection<Document> collection = getDatabase().getCollection("hourly_measurements");
+
+        // Aggregation pipeline
+        List<Bson> pipeline = List.of(
+                match(gte("time", thirtyDaysAgo)),  // Match documents from the last 30 days
+                group("$cityId", sum("totalRainfall", "$rainfall")),  // Group by cityId and sum rainfall
+                lookup("cities", "_id", "_id", "cityDetails"),  // Lookup city details
+                unwind("$cityDetails"),  // Unwind the cityDetails array
+                project(fields(
+                        include("totalRainfall"),
+                        computed("cityName", "$cityDetails.name"),
+                        computed("cityRegion", "$cityDetails.region")
+                ))
+        );
+
+        // Execute aggregation
+        return collection.aggregate(pipeline).into(new java.util.ArrayList<>());
     }
 
 }

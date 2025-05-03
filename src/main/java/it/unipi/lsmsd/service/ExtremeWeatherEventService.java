@@ -7,6 +7,7 @@ import it.unipi.lsmsd.model.*;
 import it.unipi.lsmsd.repository.CityRepository;
 import it.unipi.lsmsd.repository.ExtremeWeatherEventRepository;
 import it.unipi.lsmsd.repository.HourlyMeasurementRepository;
+import it.unipi.lsmsd.service.UserService;
 import it.unipi.lsmsd.utility.QuadrupleEWEInformationHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
@@ -31,6 +32,8 @@ public class ExtremeWeatherEventService {
     private HourlyMeasurementRepository hourlyMeasurementRepository;
     @Autowired
     private CityRepository cityRepository;
+    @Autowired
+    private UserService userService;
 
     private static final Integer DEFAULT_LOCAL_EWE_RANGE = 0;
 
@@ -48,8 +51,11 @@ public class ExtremeWeatherEventService {
     public List<ExtremeWeatherEvent> updateExtremeWeatherEvent(
             String cityId,
             LocalDateTime startTimeInterval,
-            LocalDateTime endTimeInterval
+            LocalDateTime endTimeInterval,
+            String token
     ) throws Exception{
+        // Check if user role is admin
+        userService.getAndCheckUserFromToken(token, Role.ADMIN);
 
         // Gets all measurements for a given city
         Date startTime = Date.from(startTimeInterval.toInstant(ZoneOffset.UTC));
@@ -194,8 +200,12 @@ public class ExtremeWeatherEventService {
     public Map<String, Integer> cleanExtremeWeatherEventDuplicates(
             String cityId,
             LocalDateTime startTimeInterval,
-            LocalDateTime endTimeInterval
+            LocalDateTime endTimeInterval,
+            String token
     ) {
+        // Check if user role is admin
+        userService.getAndCheckUserFromToken(token, Role.ADMIN);
+
         // Counters for removed and inserted EWEs
         int removedCount = 0;
         int insertedCount = 0;
@@ -320,13 +330,14 @@ public class ExtremeWeatherEventService {
         // Set start date
         ewe.setDateStart(eweInfo.getDateStart().toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime());
 
-System.out.println("NEW EWE Date start:" + ewe.getDateStart());
+        System.out.println("NEW EWE Date start:" + ewe.getDateStart());
 
         // Set end date only on terminated ewe
         if(terminated){
             ewe.setDateEnd(eweInfo.getDateEnd().toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime());
-System.out.println("NEW EWE Date end__:" + ewe.getDateEnd());
+            System.out.println("NEW EWE Date end__:" + ewe.getDateEnd());
         }
+
         System.out.println("NEW EWE Date end__: null");
 
         // Set city id

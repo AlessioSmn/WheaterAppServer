@@ -1,25 +1,41 @@
 package it.unipi.lsmsd.DTO;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+
 import it.unipi.lsmsd.model.EWEThreshold;
 
-// DTO for requesting Weather Info from Open-Meteo API
+@JsonIgnoreProperties(ignoreUnknown = true) // Ignore the properites that are not included in the DTO
 public class CityDTO {
     private String name;
     private String region;
     private Double latitude;
     private Double longitude;
-    private String start;
-    private String end;
-    private Integer pastHours;
-    private Integer forecastHours;
     private Double elevation;
     private EWEThreshold eweThresholds;
-
+    
+    // Json Write only properties - ignores when serializing to JSON
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String startDate; 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String endDate;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private Integer pastDays = 0; // Default Open-Meteo provides 0 past day forecast
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private Integer forecastDays = 7; // Default Open-Meteo provides 7 day forecast
+    
     // Setters and Getters
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
+    // @JsonGetter affects the serialized JSON (it controls what appears in the output).
+    // @JsonSetter affects deserialization
+    @JsonGetter("region") 
     public String getRegion() { return region; }
+    //Necessary when mapping the JSON response from geocoding open-meteo 
+    @JsonSetter("admin1")
     public void setRegion(String region) { this.region = region; }
 
     public Double getLatitude() { return latitude; }
@@ -28,19 +44,19 @@ public class CityDTO {
     public Double getLongitude() { return longitude; }
     public void setLongitude(Double longitude) { this.longitude = longitude; }
 
-    public String getStart() { return start; }
-    public void setStart(String startDate) { this.start = startDate; }
+    public String getStartDate() { return startDate; }
+    public void setStartDate(String startDate) { this.startDate = startDate; }
     
-    public void setEnd(String endDate) { this.end = endDate; }
-    public String getEnd() { return end; }
+    public void setEndDate(String endDate) { this.endDate = endDate; }
+    public String getEndDate() { return endDate; }
 
-    public Integer getPastHours() { return pastHours; }
+    public Integer getPastDays() { return pastDays; }
 
-    public void setPastHours(Integer pastHours) { this.pastHours = pastHours; }
+    public void setPastDays(Integer pastHours) { this.pastDays = pastHours; }
 
-    public Integer getForecastHours() { return forecastHours; }
+    public Integer getForecastDays() { return forecastDays; }
 
-    public void setForecastHours(Integer forecastHours) { this.forecastHours = forecastHours; }
+    public void setForecastDays(Integer forecastHours) { this.forecastDays = forecastHours; }
 
     public Double getElevation() { return elevation; }
     public void setElevation(Double elevation) { this.elevation = elevation; }

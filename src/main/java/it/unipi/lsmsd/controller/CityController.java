@@ -1,11 +1,12 @@
 package it.unipi.lsmsd.controller;
 
+import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.exception.CityException;
 import it.unipi.lsmsd.exception.CityNotFoundException;
 import it.unipi.lsmsd.service.CityInformationApiService;
 import it.unipi.lsmsd.service.CityService;
-
+import it.unipi.lsmsd.service.DataHarvestService;
 import it.unipi.lsmsd.utility.Mapper;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -23,9 +26,9 @@ public class CityController {
     private CityService cityService;
 
     @PostMapping("/add")
-    public ResponseEntity<String> addCity(@RequestBody CityDTO cityDTO) {
+    public ResponseEntity<String> addCity(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
         try{
-            cityService.saveCity(cityDTO);
+            cityService.saveCity(cityDTO, token);
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)  // 201 for creation
@@ -48,10 +51,16 @@ public class CityController {
         }
     }
 
+    @PostMapping("/add-cities")
+    public ResponseEntity<String> addCities() throws IOException{
+        String response = cityService.saveCitiesFromList();
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
     @PostMapping("/add-with-thresholds")
-    public ResponseEntity<String> addCityWithThresholds(@RequestBody CityDTO cityDTO) {
+    public ResponseEntity<String> addCityWithThresholds(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
         try{
-            cityService.saveCityWithThresholds(cityDTO);
+            cityService.saveCityWithThresholds(cityDTO, token);
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)  // 201 for creation
@@ -78,10 +87,10 @@ public class CityController {
     //  I don't want to return a city with start and end fields, it makes no sense.
     //  And i believe that its way too complex to manually exclude some field or do a on-the-fly conversion to json
     @PostMapping("/update-thresholds")
-    public ResponseEntity<Object> updateCityThresholds(@RequestBody CityDTO cityDTO) {
+    public ResponseEntity<Object> updateCityThresholds(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
         try{
             // Update the city threshold
-            cityService.updateCityThresholds(cityDTO);
+            cityService.updateCityThresholds(cityDTO, token);
 
             String cityId = Mapper.mapCity(cityDTO).getId();
             CityDTO cityDtoAfter = cityService.getCityWithID(cityId);
@@ -115,7 +124,7 @@ public class CityController {
     public ResponseEntity<Object> getCityByName(@RequestParam String cityName){
         try{
             // Retrieves the city
-            CityDTO cityDto = cityService.getCity(cityName);
+            List<CityDTO> cityDto = cityService.getCity(cityName);
 
             // Returns all city's information into the body
             return ResponseEntity
@@ -156,14 +165,14 @@ public class CityController {
         }
     }
     @PutMapping("/insert-by-name-and-return")
-    public ResponseEntity<Object> TEMPORARY_FUNCTION_FOR_TESTING_2(@RequestParam String cityName) {
+    public ResponseEntity<Object> TEMPORARY_FUNCTION_FOR_TESTING_2(@RequestHeader("Authorization") String token, @RequestParam String cityName) {
         try{
             // Retrieves the city
             CityDTO cityDto = CityInformationApiService.getCityInformation(cityName);
 
-            cityService.saveCity(cityDto);
+            cityService.saveCity(cityDto, token);
 
-            CityDTO check = cityService.getCity(cityName);
+            List<CityDTO> check = cityService.getCity(cityName);
 
             // Returns all city's information into the body
             return ResponseEntity

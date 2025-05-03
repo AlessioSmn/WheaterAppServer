@@ -307,6 +307,24 @@ public class AnalyticsController {
 
 
 
+    // Average Temperature per City for last 30 Days
+    @GetMapping("/30days-avg-temperature")
+    public List<Document> getAvgTemperatureLast30Days() {
+        return analyticsService.getAvgTemperaturePerCityLast30Days();
+    }
+
+    // Average Temperature per City for last 30 Days
+    @GetMapping("/hottest-day")
+    public List<Document> getHottestDay() {
+        return analyticsService.getHottestDayPerCity();
+    }
+
+    // Total Rainfall per City in Last 30 Days
+    @GetMapping("/30days-total-rainfall")
+    public List<Document> getTotalRainfall(){
+        return analyticsService.getTotalRainfallPerCityLast30Days();
+    }
+
     // TODO this is a test controller / service all mashed up.
     //  for now i'll keep this here to get some information if needed
     //  DO NOT BASE ANY FUNCTIONALITY ON THIS, it's here just for testing and debugging

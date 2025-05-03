@@ -1,6 +1,5 @@
 package it.unipi.lsmsd.controller;
 
-import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.service.FavoriteCityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,13 +16,13 @@ public class FavoriteCitiesController {
 
     @PostMapping("/add")
 
-    public ResponseEntity<String> addToFavorites(@RequestHeader("Authorization") String token, @RequestBody String targetCity){
+    public ResponseEntity<String> addToFavorites(@RequestHeader("Authorization") String token, @RequestParam String targetCityId){
         try{
-            favoriteCityService.addToFavorites(token, targetCity);
+            String response = favoriteCityService.addToFavorites(token, targetCityId);
             // success
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body("City added to fav-list successfully");
+                    .body(response);
 
         }catch(Exception ex){
             return ResponseEntity
@@ -33,13 +32,13 @@ public class FavoriteCitiesController {
     }
 
     @PostMapping("/remove")
-    public ResponseEntity<String> removeFromFavorites(@RequestHeader("Authorization") String token, @RequestBody String targeCity){
+    public ResponseEntity<String> removeFromFavorites(@RequestHeader("Authorization") String token, @RequestParam String targetCityId){
         try{
-            favoriteCityService.removeFromFavorites(token, targeCity);
+            String response = favoriteCityService.removeFromFavorites(token, targetCityId);
             // success
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body("City removed from fav-list successfully");
+                    .body(response);
 
         }catch(Exception ex){
             return ResponseEntity

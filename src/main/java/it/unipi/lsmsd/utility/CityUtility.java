@@ -1,9 +1,17 @@
 package it.unipi.lsmsd.utility;
 
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import it.unipi.lsmsd.model.City;
 import it.unipi.lsmsd.model.EWEThreshold;
 
 import java.text.DecimalFormat;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.io.IOException;
+
 
 public final class CityUtility {
     
@@ -22,6 +30,20 @@ public final class CityUtility {
         String nameCode = name.substring(0, 3);
         String regionCode = (region.length() >= 3) ? region.substring(0, 3):region;
         return (nameCode + "-" + regionCode + "-" + latCode + "-" + lonCode).toLowerCase();
+    }
+
+    // Reads City Name from the text file stored in the resources
+    public static List<String> loadCityNames() throws IOException {
+        String filename = "cityList.txt";
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        try (InputStream inputStream = classLoader.getResourceAsStream(filename);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+
+            return reader.lines()
+                         .map(String::trim)
+                         .filter(line -> !line.isEmpty())
+                         .collect(Collectors.toList());
+        }
     }
 
     public static boolean hasCityAllThresholdsFields(City city){

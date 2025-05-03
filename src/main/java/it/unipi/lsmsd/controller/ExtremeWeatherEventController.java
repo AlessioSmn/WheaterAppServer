@@ -28,6 +28,7 @@ public class ExtremeWeatherEventController {
 
     @PutMapping("/update/automatic")
     public ResponseEntity<Object> updateExtremeWeatherEventAutomatic(
+            @RequestHeader("Authorization") String token,
             @RequestParam String cityId
     ) {
         try {
@@ -35,7 +36,7 @@ public class ExtremeWeatherEventController {
             LocalDateTime lastEweUpdate = cityService.getLastEweUpdateById(cityId);
 
             // Calls service updateExtremeWeatherEvent over time interval (lastEweUpdate; Now)
-            List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, lastEweUpdate, LocalDateTime.now());
+            List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, lastEweUpdate, LocalDateTime.now(), token);
 
             // TODO return information properly formatted
             return ResponseEntity.ok()
@@ -74,13 +75,14 @@ public class ExtremeWeatherEventController {
 
     @PutMapping("/update/recent")
     public ResponseEntity<Object> updateExtremeWeatherEventRecent(
+            @RequestHeader("Authorization") String token,
             @RequestParam String cityId,
             @RequestParam Integer hours
     ) {
 
         try {
             // Calls service updateExtremeWeatherEvent over time interval (NOW - hours; NOW)
-            List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, LocalDateTime.now().minusHours(hours), LocalDateTime.now());
+            List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, LocalDateTime.now().minusHours(hours), LocalDateTime.now(), token);
 
             // TODO return information properly formatted
             return ResponseEntity.ok()
@@ -107,6 +109,7 @@ public class ExtremeWeatherEventController {
 
     @PutMapping("/update/range")
     public ResponseEntity<Object> updateExtremeWeatherEventRange(
+            @RequestHeader("Authorization") String token,
             @RequestParam String cityId,
             @RequestParam LocalDateTime startTime,
             @RequestParam LocalDateTime endTime
@@ -114,7 +117,7 @@ public class ExtremeWeatherEventController {
 
         try {
             // Call service updateExtremeWeatherEvent over time interval (startTime; endTime)
-            List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, startTime, endTime);
+            List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, startTime, endTime, token);
 
             // TODO return information properly formatted
             return ResponseEntity.ok()
@@ -142,12 +145,13 @@ public class ExtremeWeatherEventController {
 
     @PutMapping("/clean/range")
     public ResponseEntity<String> cleanUpExtremeWeatherEventRange(
+            @RequestHeader("Authorization") String token,
             @RequestParam String cityId,
             @RequestParam LocalDateTime startTime,
             @RequestParam LocalDateTime endTime
     ) {
         // Call the relative service
-        Map<String, Integer> cleanupResult = extremeWeatherEventService.cleanExtremeWeatherEventDuplicates(cityId, startTime, endTime);
+        Map<String, Integer> cleanupResult = extremeWeatherEventService.cleanExtremeWeatherEventDuplicates(cityId, startTime, endTime, token);
 
         String TEMP_STRING = String.format("{\n\t\"removed\": %d,\n\t\"inserted\": %d\n}",
                 cleanupResult.get("EWEs Removed"), cleanupResult.get("EWEs Inserted"));
