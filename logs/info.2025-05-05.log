@@ -1,0 +1,5 @@
+2025-05-05 15:29:27 [main] INFO  it.unipi.lsmsd.Application - Starting Application using Java 23.0.2 with PID 21460 (D:\UniPi\Year1Sem1\LargeScale&MultiStructuredDB\Project\WheaterAppServer\target\classes started by roj5s in D:\UniPi\Year1Sem1\LargeScale&MultiStructuredDB\Project\WheaterAppServer)
+2025-05-05 15:29:27 [main] INFO  it.unipi.lsmsd.Application - No active profile set, falling back to 1 default profile: "default"
+2025-05-05 15:29:33 [main] INFO  it.unipi.lsmsd.Application - Started Application in 6.738 seconds (process running for 7.336)
+2025-05-05 15:29:33 [main] INFO  it.unipi.lsmsd.Application - Successful Application Run 
+

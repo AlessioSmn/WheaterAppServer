@@ -107,7 +107,7 @@ public class UserService {
             String hashedPassword = PasswordHashUtil.hashPassword(userDTO.getPassword());
 
             // Create User model from UserDTO
-            User user = new User(userDTO.getUsername(), hashedPassword, userDTO.getEmail(), Role.USER);
+            User user = new User(userDTO.getUsername(), hashedPassword, userDTO.getEmail(), Role.REGISTERED_USER);
 
             // Save the user in the database
             userRepository.save(user);
