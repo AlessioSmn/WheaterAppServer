@@ -8,15 +8,23 @@ import it.unipi.lsmsd.model.Role;
 import it.unipi.lsmsd.service.UserService;
 import it.unipi.lsmsd.repository.CityRepository;
 import it.unipi.lsmsd.utility.CityUtility;
+import it.unipi.lsmsd.utility.ISODateUtil;
 import it.unipi.lsmsd.utility.Mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import org.springframework.dao.DuplicateKeyException;
 
+import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -65,7 +73,22 @@ public class CityService {
         cityRepository.insert(city);
         return city.getId();
     }
+    
+    // Updates the city with the lastest date of historical data
+    public void updateStartEndDate( String startDate, String endDate, String cityId) {
+        Optional<City> cityOpt = cityRepository.findById(cityId);
+        if (cityOpt.isPresent()) {
+            City city = cityOpt.get();
+            
+            //"2025-03-15T00:00" -> 2025-03-15T00:00:00.000+00:00
+            city.setStartDate(ISODateUtil.getISODate(startDate)); 
+            city.setEndDate(ISODateUtil.getISODate(endDate)); 
 
+            cityRepository.save(city);
+        } else {
+            throw new RuntimeException("City not found with id: " + cityId);
+        }
+    }
 
     // Gets a List of City Names from a file and gets the city info one API request a time from Open-Meteo
     // Saves the list of cities to MongoDB 
