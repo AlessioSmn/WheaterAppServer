@@ -1,11 +1,9 @@
 package it.unipi.lsmsd.model;
-
 import java.time.LocalDateTime;
-import java.lang.Math;
+import java.util.Date;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
 @Document(collection = "cities")
 public class City {
     @Id
@@ -16,14 +14,27 @@ public class City {
     private Double longitude;
     private Double elevation;
     private Integer followers;
-    private LocalDateTime lastUpdate;
+    private Date startDate;
+    private Date endDate;
+    public void setStartDate(Date startTime) {
+        this.startDate = startTime;
+    }
+    public void setEndDate(Date endTime) {
+        this.endDate = endTime;
+    }
     private EWEThreshold eweThresholds;
+    public Date getStartDate() {
+        return startDate;
+    }
+    public Date getEndDate() {
+        return endDate;
+    }
     private LocalDateTime lastEweUpdate;
 
     // Constructors   
     public City(){}
     public City(String id, String name, String region, Double latitude, Double longitude, Double elevation,
-            Integer followers, LocalDateTime lastUpdate) {
+            Integer followers) {
         this.id = id;
         this.name = name;
         this.region = region;
@@ -31,10 +42,10 @@ public class City {
         this.longitude = longitude;
         this.elevation = elevation;
         this.followers = followers;
-        this.lastUpdate = lastUpdate;
     }
+
     public City(String id, String name, String region, Double latitude, Double longitude, Double elevation,
-                Integer followers, LocalDateTime lastUpdate, EWEThreshold eweThresholds) {
+                Integer followers, EWEThreshold eweThresholds) {
         this.id = id;
         this.name = name;
         this.region = region;
@@ -42,35 +53,7 @@ public class City {
         this.longitude = longitude;
         this.elevation = elevation;
         this.followers = followers;
-        this.lastUpdate = lastUpdate;
         this.eweThresholds = eweThresholds;
-    }
-
-    // Method that calculates the distance between 2 cities
-    public static Double distance(City a, City b) {
-        // Mean Earth radius in km
-        final double R = 6371.0;
-
-        // Latitude and Longitude in radians
-        double latA = Math.toRadians(a.getLatitude());
-        double lonA = Math.toRadians(a.getLongitude());
-        double latB = Math.toRadians(b.getLatitude());
-        double lonB = Math.toRadians(b.getLongitude());
-
-        // Difference between latitudes e longitudes
-        double dLat = latB - latA;
-        double dLon = lonB - lonA;
-
-        // Haversine's formula
-        double a1 = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(latA) * Math.cos(latB) *
-                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a1), Math.sqrt(1 - a1));
-
-        // Distance in km
-        double distance = R * c;
-
-        return (Double) distance;
     }
 
     // Getters
@@ -81,7 +64,6 @@ public class City {
     public double getLongitude() { return longitude; }
     public Double getElevation() { return elevation; }
     public Integer getFollowers() { return followers; }
-    public LocalDateTime getLastUpdate() { return lastUpdate; }
     public EWEThreshold getEweThresholds() { return eweThresholds; }
     public LocalDateTime getLastEweUpdate() { return lastEweUpdate; }
     
@@ -93,7 +75,6 @@ public class City {
     public void setLongitude(double longitude) { this.longitude = longitude; }
     public void setElevation(Double elevation) { this.elevation = elevation; }
     public void setFollowers(Integer followers) { this.followers = followers; }
-    public void setLastUpdate(LocalDateTime lastUpdate) { this.lastUpdate = lastUpdate; }
     public void setEweThresholds(EWEThreshold eweThreshold) { this.eweThresholds = eweThreshold; }
     public void setLastEweUpdate(LocalDateTime lastEweUpdate) { this.lastEweUpdate = lastEweUpdate; }
 

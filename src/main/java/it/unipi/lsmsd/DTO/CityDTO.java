@@ -1,5 +1,6 @@
 package it.unipi.lsmsd.DTO;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,7 +36,7 @@ public class CityDTO {
     @JsonGetter("region") 
     public String getRegion() { return region; }
     //Necessary when mapping the JSON response from geocoding open-meteo 
-    @JsonSetter("admin1")
+    @JsonAlias({"region", "admin1"})
     public void setRegion(String region) { this.region = region; }
 
     public Double getLatitude() { return latitude; }

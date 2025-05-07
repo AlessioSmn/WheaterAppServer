@@ -4,7 +4,6 @@ import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.exception.CityException;
 import it.unipi.lsmsd.exception.CityNotFoundException;
-import it.unipi.lsmsd.service.CityInformationApiService;
 import it.unipi.lsmsd.service.CityService;
 import it.unipi.lsmsd.service.DataHarvestService;
 import it.unipi.lsmsd.utility.Mapper;
@@ -140,49 +139,6 @@ public class CityController {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An unexpected error occurred: " + e.getMessage());
-        }
-    }
-
-
-    // TODO have new cityDTO which maps directly the model to return that one, it the easier way.
-    //  I don't want to return a city with start and end fields, it makes no sense.
-    //  And i believe that its way too complex to manually exclude some field or do a on-the-fly conversion to json
-    @GetMapping("/search-by-name")
-    public ResponseEntity<Object> TEMPORARY_FUNCTION_FOR_TESTING(@RequestParam String cityName) {
-        try{
-            // Retrieves the city
-            CityDTO cityDto = CityInformationApiService.getCityInformation(cityName);
-
-            // Returns all city's information into the body
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(cityDto); // Spring automatically converts CityDTO to JSON
-        }
-        catch (Exception e) {
-            return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("An unexpected error occurred: " + e.getMessage());
-        }
-    }
-    @PutMapping("/insert-by-name-and-return")
-    public ResponseEntity<Object> TEMPORARY_FUNCTION_FOR_TESTING_2(@RequestHeader("Authorization") String token, @RequestParam String cityName) {
-        try{
-            // Retrieves the city
-            CityDTO cityDto = CityInformationApiService.getCityInformation(cityName);
-
-            cityService.saveCity(cityDto, token);
-
-            List<CityDTO> check = cityService.getCity(cityName);
-
-            // Returns all city's information into the body
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(check);
-        }
-        catch (Exception e) {
-            return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("An unexpected error occurred: " + e.getMessage());
         }
     }
 }

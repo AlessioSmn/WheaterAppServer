@@ -1,3 +1,65 @@
+// User Role based Actions
+User 	- register, login and logout
+City    - Search a city by Name
+        - Add , Remove city
+HourlyMeasurement	- Get historical weather, forecast 7 days, forecast today for a city
+                  	- Add historical and forecast 7 days
+ExtremeWeather - get extreme weather for a city and cities
+                - update exteme weather thresholds and events
+Analytics - ....
+
+// Project Cleanup
+    - GlobalExceptionHandler in the controller --> Already implemented, in exception folder
+        --> Clean up try-catch exception handling in controller after complete implementation of GlobalExceptionHandler
+    - UpdateEWEController --> Empty ✅
+    - Merge FavoriteCitiesController into User -> User action of adding and removing favorite city
+    - StringToEWECategoryConverter --> No references ✅
+    - exception --> why custom exceptions? No proper explanation --> possible to incorporate all in GlobalExceptionControllerHandler ?
+    - CityInformationApiService --> Redundant, implemented with Open-Meteo Geo-coding ✅
+    - MongoInitializer to be used for collection creation in MongoDB ✅
+    - Remove CitiesAPITester, mongodb_conncetion_test and redis_connection_test
+    - controller verbs matching the REST criteria
+    - Implement MapStruct instead of manual mapping?
+
+// ExtremeWeather
+    - Extreme Weather Event --> Whats the strategy? --> Explanation of use of model, DTOs, controllers and services
+    - Are we calculating extreme weather for historical data or just 7 days forecast?
+
+    <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-math3</artifactId>
+        <version>3.6.1</version>
+    </dependency>
+    DescriptiveStatistics stats = new DescriptiveStatistics();
+    temperatures.forEach(stats::addValue);
+    double tempMinThreshold = stats.getPercentile(5);
+    double tempMaxThreshold = stats.getPercentile(95);
+
+    db.hourly_measurements.aggregate([
+    {
+        $match: {
+        time: { $type: "date" }  // Ensure 'time' is a valid ISODate
+        }
+    },
+    {
+        $sort: { time: 1 }  // Sort by time in ascending order (earliest first)
+    },
+    {
+        $project: {
+        cityId: 1,
+        temperature: 1,
+        year: { $year: "$time" },
+        month: { $month: "$time" }
+        }
+    },
+    {
+        $group: {
+        _id: { cityId: "$cityId", year: "$year", month: "$month" },
+        temperatures: { $push: "$temperature" }
+        }
+    }])
+
+
 WHAT IS THE APP TRYING TO ACHIEVE?
 
 WHY SEPARATE CITY AND MEASUREMENT INTO SEPARATE DOCUMENT ?

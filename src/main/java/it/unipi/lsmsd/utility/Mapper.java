@@ -9,6 +9,7 @@ import it.unipi.lsmsd.model.HourlyMeasurement;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -121,7 +122,7 @@ public final class Mapper {
         // generate custom city Id
         String cityId = CityUtility.generateCityId(name, region , latitude, longitude);
         // Map the cityDTO to city
-        return new City(cityId, name, region, latitude, longitude, cityDTO.getElevation(),0,LocalDateTime.now());
+        return new City(cityId, name, region, latitude, longitude, cityDTO.getElevation(),0);
     }
 
     // Maps cityDTO with thresholds to city
@@ -135,7 +136,7 @@ public final class Mapper {
         // generate custom city Id
         String cityId = CityUtility.generateCityId(name, region , latitude, longitude);
         // Map the cityDTO to city
-        return new City(cityId, name, region, latitude, longitude, cityDTO.getElevation(),0,LocalDateTime.now(), cityDTO.getEweThresholds());
+        return new City(cityId, name, region, latitude, longitude, cityDTO.getElevation(),0,cityDTO.getEweThresholds());
     }
     
     // Maps city to cityDTO
