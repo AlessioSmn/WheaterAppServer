@@ -35,7 +35,37 @@ public class ExtremeWeatherEventService {
     @Autowired
     private UserService userService;
 
-    private static final Integer DEFAULT_LOCAL_EWE_RANGE = 0;
+    /**
+     * Updates all extreme weather events for the specified city starting from the timestamp
+     * of the latest available measurement up to the current time. This method internally
+     * delegates to {@code updateExtremeWeatherEvent} using the derived time interval.
+     *
+     * @param cityId the unique identifier of the city for which to update the extreme weather events
+     * @param token the authorization token used to validate the user’s role and permissions
+     * @return a list of {@link ExtremeWeatherEvent} objects that have been created during the update process
+     * @throws Exception if an error occurs during the update, including unauthorized access.
+     */
+    public List<ExtremeWeatherEvent> updateExtremeWeatherEventAll(
+            String cityId,
+            String token
+    ) throws Exception {
+
+        // Retrieve the timestamp of the latest measurement for the given city
+        Optional<HourlyMeasurement> firstMeasurement = hourlyMeasurementRepository.findFirstByCityIdOrderByTimeAsc(cityId);
+
+        if(firstMeasurement.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        LocalDateTime firstMeasurementTime = firstMeasurement.get()
+                .getTime()
+                .toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+
+        // Delegate to the main update function using the range [latestMeasurementTime, now]
+        return updateExtremeWeatherEvent(cityId, firstMeasurementTime, LocalDateTime.now(), token);
+    }
 
     /**
      * Scans the measurements stored in the database to identify values that exceed predefined thresholds.
@@ -54,6 +84,7 @@ public class ExtremeWeatherEventService {
             LocalDateTime endTimeInterval,
             String token
     ) throws Exception{
+
         // Check if user role is admin
         userService.getAndCheckUserFromToken(token, Role.ADMIN);
 
@@ -62,36 +93,28 @@ public class ExtremeWeatherEventService {
         Date endTime = Date.from(endTimeInterval.toInstant(ZoneOffset.UTC));
         List<HourlyMeasurement> hourlyMeasurements = hourlyMeasurementRepository.findByCityIdAndTimeBetweenOrderByTimeTimeAsc(cityId, startTime, endTime);
 
-        // TODO log time interval of search and found measurements, at least the number
+        // TODO log time interval of search and found measurements, or at least the number of found measurements
 
         // Gets the target city, in order to get the thresholds
         Optional<City> city = cityRepository.findById(cityId);
         if (city.isEmpty())
             throw new CityNotFoundException("Specified city " + cityId + " was not found");
 
-
+        // Check that the city has all the necessary thresholds
         if(!hasCityAllThresholdsFields(city.get()))
             throw new ThresholdsNotPresentException("City doesn't have all threshold fields correctly specified");
 
         // Retrieve the city's extreme weather event thresholds
         EWEThreshold eweThresholds = city.get().getEweThresholds();
 
-        // Array of cyclically found EWE
+        // Array of EWE found at every iteration of the loop
         List<Pair<ExtremeWeatherEventCategory, Integer>> foundEWEs;
 
         // Working array of found and ongoing EWEs
         List<QuadrupleEWEInformationHolder> ongoingExtremeWeatherEvents = new ArrayList<>(getEmptyListOfEWEs());
 
-        // TODO decide if to switch to the updating of ongoing EWE instead of replacing them
-        //  We'd need a flag in the quadruple (thus changing the class to a Quintuple) to store
-        //  the information on the original and already present record, like eweId = [id|null]
-        //  Then the save method has to check if that field is set to a value or to null:
-        //      - null: insert like is being done now
-        //      - id: update the EWE fields, no new inserts
-        //  Obviously the new field eweId has to be set to null after the ewe has been updated,
-        //  in case a new ewe of same type is found and later needs to be inserted
         // Ongoing EWE already present in the db
-        List<QuadrupleEWEInformationHolder> currentLocalEWEs = getListOfCurrentLocalEWEs(city.get());
+        List<QuadrupleEWEInformationHolder> currentLocalEWEs = getListOfCurrentLocalEWEs(city.get(), startTimeInterval);
 
         // Putting the currentLocalEWEs into the ongoingExtremeWeatherEvents array
         for (QuadrupleEWEInformationHolder dbEWE : currentLocalEWEs) {
@@ -108,7 +131,7 @@ public class ExtremeWeatherEventService {
             // Gets the list of current EWE
             foundEWEs = getCurrentEWEs(measurement, eweThresholds);
 
-            // Loop over all possible EWE categories using index,
+            // Loop over all EWE categories using index,
             // thanks to the fact that the two arrays are always ordinated by category in the same way
             for (int i = 0; i < ExtremeWeatherEventCategory.values().length; i++) {
 
@@ -122,6 +145,7 @@ public class ExtremeWeatherEventService {
                 if (foundStrength > 0 &&  ongoingStrength == 0){
                     ongoingExtremeWeatherEvents.get(i).setStrength(foundStrength);
                     ongoingExtremeWeatherEvents.get(i).setDateStart(measurement.getTime());
+
                     // TODO log the fact that a new EWE is found, so log:
                     //  type
                     //  start date
@@ -132,7 +156,12 @@ public class ExtremeWeatherEventService {
                 if (foundStrength > ongoingStrength && ongoingStrength > 0) {
                     // Updated the strength with the max value
                     ongoingExtremeWeatherEvents.get(i).setStrength(foundStrength);
-                    System.out.println("Updating EWE");
+
+                    // TODO log the fact that a EWE is updated, so log:
+                    //  type
+                    //  start date
+                    //  old strength
+                    //  new strength
                 }
 
                 // If the found strength is 0 but the event was ongoing, it means the event has ended
@@ -179,45 +208,103 @@ public class ExtremeWeatherEventService {
             }
         }
 
-        // TODO decide if to:
-        //  return nothing
-        //  return count of found and inserted EWEs
-        //  return list of IDs of found and inserted EWEs
+        // Returns a list of found and inserted EWEs
         return compltedEWEs;
     }
 
-    // TODO
-    //  1) Get the first and last ewe (in terms of the first startTime and the last endTime)
-    //      1.1) Attention to endDate not set
-    //  2) Call cleanExtremeWeatherEventDuplicates over that interval or more
-    public void cleanExtremeWeatherEventDuplicatesAll(
-            String cityId
+
+
+
+    /**
+     * Retrieves all extreme weather events for a given city across all categories,
+     * regardless of time interval, and removes duplicates by merging overlapping events.
+     *
+     * @param cityId the ID of the city for which to process all extreme weather events
+     * @param token the authentication token of the user (must have admin privileges)
+     * @return a map containing the number of removed and inserted extreme weather events
+     */
+    public Map<String, Integer> cleanExtremeWeatherEventDuplicatesAll(
+            String cityId,
+            String token
     ) {
-        // TODO Get the first and last ewe (in terms of the first startTime and the last endTime), attention to endDate not set
-        // TODO call cleanExtremeWeatherEventDuplicates over that interval or more
+        // Check if user role is admin
+        // userService.getAndCheckUserFromToken(token, Role.ADMIN);
+
+        Map<ExtremeWeatherEventCategory, List<ExtremeWeatherEvent>> eweListsByCategory = new HashMap<>();
+
+        for (ExtremeWeatherEventCategory category : ExtremeWeatherEventCategory.values()) {
+            List<ExtremeWeatherEvent> eweList = eweRepository.findByCityIdAndCategoryOrderByDateStart(cityId, category);
+            eweListsByCategory.put(category, eweList);
+        }
+
+        return cleanExtremeWeatherEventDuplicates(cityId, eweListsByCategory);
     }
 
-    public Map<String, Integer> cleanExtremeWeatherEventDuplicates(
+
+    /**
+     * Retrieves all extreme weather events for a given city and time interval,
+     * organizes them by category, and removes duplicates by merging overlapping events.
+     *
+     * @param cityId the ID of the city for which to process extreme weather events
+     * @param startTimeInterval the start of the time interval to consider
+     * @param endTimeInterval the end of the time interval to consider
+     * @param token the authentication token of the user (must be an admin)
+     * @return a map containing the number of removed and inserted extreme weather events
+     */
+    public Map<String, Integer> cleanExtremeWeatherEventDuplicatesRange(
             String cityId,
             LocalDateTime startTimeInterval,
             LocalDateTime endTimeInterval,
             String token
     ) {
         // Check if user role is admin
-        userService.getAndCheckUserFromToken(token, Role.ADMIN);
+        // userService.getAndCheckUserFromToken(token, Role.ADMIN);
 
+        Map<ExtremeWeatherEventCategory, List<ExtremeWeatherEvent>> eweListsByCategory = new HashMap<>();
+
+        for (ExtremeWeatherEventCategory category : ExtremeWeatherEventCategory.values()) {
+            List<ExtremeWeatherEvent> eweList = eweRepository.findByCityIdAndCategoryAndDateStartBetweenOrderByDateStart(
+                    cityId, category, startTimeInterval, endTimeInterval
+            );
+            eweListsByCategory.put(category, eweList);
+        }
+
+        return cleanExtremeWeatherEventDuplicates(cityId, eweListsByCategory);
+    }
+
+
+    /**
+     * Identifies and merges overlapping extreme weather events (EWEs) for a given city across all categories.
+     * <p>
+     * For each category of extreme weather event, the provided list of events is analyzed to detect overlaps.
+     * Overlapping events are merged into a single event by:
+     * <ul>
+     *   <li>Using the earliest start date and the latest end date (unless any end date is null, in which case it remains null)</li>
+     *   <li>Assigning the maximum strength value among the overlapping events</li>
+     * </ul>
+     * All original overlapping events are removed from the repository, and the resulting merged events are saved.
+     *
+     * @param cityId the identifier of the city to which the events belong
+     * @param eweListsByCategory a map associating each {@link ExtremeWeatherEventCategory} with its corresponding list of events to process
+     * @return a map containing the number of EWEs removed and inserted, with keys {@code removed} and {@code inserted}
+     */
+    private Map<String, Integer> cleanExtremeWeatherEventDuplicates(
+            String cityId,
+            Map<ExtremeWeatherEventCategory, List<ExtremeWeatherEvent>> eweListsByCategory
+    ) {
         // Counters for removed and inserted EWEs
         int removedCount = 0;
         int insertedCount = 0;
 
-        // loop over all EWE categories
-        for (ExtremeWeatherEventCategory eweCategory : ExtremeWeatherEventCategory.values()) {
+        // Loop over each EWE category and its corresponding list
+        for (Map.Entry<ExtremeWeatherEventCategory, List<ExtremeWeatherEvent>> entry : eweListsByCategory.entrySet()) {
 
             // Get all EWE for that category over given time interval, ordered by startTime
-            List<ExtremeWeatherEvent> eweList = eweRepository.findByCityIdAndCategoryAndDateStartBetweenOrderByDateStart(
-                    cityId, eweCategory, startTimeInterval, endTimeInterval);
+            ExtremeWeatherEventCategory eweCategory = entry.getKey();
+            List<ExtremeWeatherEvent> eweList = entry.getValue();
 
-            if (eweList.size() <= 1) continue;
+            if (eweList == null || eweList.size() <= 1)
+                continue;
 
             List<ExtremeWeatherEvent> eweToRemove = new ArrayList<>();
             List<ExtremeWeatherEvent> eweToInsert = new ArrayList<>();
@@ -305,18 +392,18 @@ public class ExtremeWeatherEventService {
 
         // Return the counts of removed and inserted EWEs in a Map
         Map<String, Integer> result = new HashMap<>();
-        result.put("EWEs Removed", removedCount);
-        result.put("EWEs Inserted", insertedCount);
+        result.put("removed", removedCount);
+        result.put("inserted", insertedCount);
         return result;
     }
 
 
     /**
-     * Utility method to be used by updateExtremeWeatherEvent
+     * Creates a new extreme weather event (EWE) based on the provided city and EWE information.
      * @param city City model
      * @param eweInfo Information on the EWE to be inserted
-     * @param terminated True if the EWE has terminated, thus it has an End Date
-     * @return ExtremeWeatherEvent instance
+     * @param terminated {@code true} if the EWE has terminated, thus it has an End Date. {@code false} otherwise.
+     * @return the newly created {@link ExtremeWeatherEvent}
      */
     private ExtremeWeatherEvent createNewEWE(
             City city,
@@ -330,15 +417,10 @@ public class ExtremeWeatherEventService {
         // Set start date
         ewe.setDateStart(eweInfo.getDateStart().toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime());
 
-        System.out.println("NEW EWE Date start:" + ewe.getDateStart());
-
         // Set end date only on terminated ewe
         if(terminated){
             ewe.setDateEnd(eweInfo.getDateEnd().toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime());
-            System.out.println("NEW EWE Date end__:" + ewe.getDateEnd());
         }
-
-        System.out.println("NEW EWE Date end__: null");
 
         // Set city id
         ewe.setCityId(city.getId());
@@ -347,20 +429,22 @@ public class ExtremeWeatherEventService {
     }
 
     /**
-     * Searches for ongoing local Extreme Weather Events (EWEs) in a given city.
-     * The locality is assured by searching only for the local radius,
-     * The ongoing part is assured by search for record with a null dateEnd
-     * @param city City model, the target city
-     * @return List<QuadrupleEWEInformationHolder> list of current local EWEs
+     * Retrieves and deletes all ongoing extreme weather events (EWEs) for a specified city
+     * that started on or before the provided date. The remaining information is mapped
+     * into a list of {@link QuadrupleEWEInformationHolder} objects for further processing.
+     *
+     * @param city the city for which to retrieve and delete ongoing EWEs
+     * @param dateStart the upper bound date for selecting ongoing events based on their start date
+     * @return a list of {@link QuadrupleEWEInformationHolder} representing the ongoing EWEs
      */
-    public List<QuadrupleEWEInformationHolder> getListOfCurrentLocalEWEs(City city){
+    private List<QuadrupleEWEInformationHolder> getListOfCurrentLocalEWEs(City city, LocalDateTime dateStart){
 
         List<QuadrupleEWEInformationHolder> currentLocalEWEs = new ArrayList<>();
 
-        // Searches the ongoing EWEs in the db
-        List<ExtremeWeatherEvent> ongoingLocalEWEs = eweRepository.findByCityIdAndDateEndIsNull(city.getId());
+        // Searches the ongoing EWEs in the db started after the given startDate
+        List<ExtremeWeatherEvent> ongoingLocalEWEs = eweRepository.findByCityIdAndDateEndIsNullAndDateStartLessThanEqual(city.getId(), dateStart);
 
-        // TODO decide if to switch to the updating of ongoing EWE instead of replacing them
+        // Deletes the EWEs from the repository
         eweRepository.deleteAll(ongoingLocalEWEs);
 
         // Map each EWE of ongoingLocalEWEs into a QuadrupleEWEInformationHolder
@@ -376,11 +460,11 @@ public class ExtremeWeatherEventService {
 
     /**
      * Checks if two ExtremeWeatherEvent already ordered by startDate are overlapping in time, by checking EweB endDate against EweA dates.
-     * dateEnd set to null is intended as ongoing ExtremeWeatherEvent and treated as such
+     * dateEnd set to null is intended as ongoing ExtremeWeatherEvent and treated as such.
      *
      * @param EweA First ExtremeWeatherEvent
      * @param EweB Second ExtremeWeatherEvent
-     * @return Returns true if the two EWEs are overlapping, false otherwise
+     * @return Returns {@code true} if the two EWEs are overlapping, {@code false} otherwise
      */
     private Boolean areOrderedEwesOverlapping(ExtremeWeatherEvent EweA, ExtremeWeatherEvent EweB) {
 

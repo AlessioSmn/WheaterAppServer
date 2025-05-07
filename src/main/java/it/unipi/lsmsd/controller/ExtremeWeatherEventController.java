@@ -25,8 +25,17 @@ public class ExtremeWeatherEventController {
     @Autowired
     private CityService cityService;
 
-
-    @PutMapping("/update/automatic")
+    /**
+     * Endpoint that triggers the automatic update of Extreme Weather Events for a specified city.
+     * It retrieves the last update timestamp, processes measurements within the time range,
+     * and updates the city's last Extreme Weather Event update timestamp upon successful processing.
+     *
+     * @param token The authorization token required for the operation.
+     * @param cityId The ID of the city for which the Extreme Weather Events are to be updated.
+     * @return A ResponseEntity containing the list of newly created Extreme Weather Events,
+     *         or an error message in case of failure.
+     */
+    @PutMapping("/automatic")
     public ResponseEntity<Object> updateExtremeWeatherEventAutomatic(
             @RequestHeader("Authorization") String token,
             @RequestParam String cityId
@@ -35,10 +44,21 @@ public class ExtremeWeatherEventController {
             // Get city's last Ewe update
             LocalDateTime lastEweUpdate = cityService.getLastEweUpdateById(cityId);
 
-            // Calls service updateExtremeWeatherEvent over time interval (lastEweUpdate; Now)
-            List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, lastEweUpdate, LocalDateTime.now(), token);
+            List<ExtremeWeatherEvent> createdEWEs;
 
-            // TODO return information properly formatted
+            // If the city has never been updated it calls for the entire time range available
+            if(lastEweUpdate == null) {
+                createdEWEs = extremeWeatherEventService.updateExtremeWeatherEventAll(cityId, token);
+            }
+
+            // Calls service updateExtremeWeatherEvent over time interval (lastEweUpdate; Now)
+            else {
+                createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, lastEweUpdate, LocalDateTime.now(), token);
+            }
+
+            // Update the lastEweUpdate only after successful processing
+            cityService.setLastEweUpdateById(cityId, LocalDateTime.now());
+
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(createdEWEs);
@@ -59,21 +79,23 @@ public class ExtremeWeatherEventController {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Internal Server error: " + e.getMessage());
         }
-        finally {
-            // Update lastEweUpdate to now
-            try {
-                // Note: even if it throws IllegalArgumentException it only does so on city not found,
-                // but if here it should have already found the city calling getLastEweUpdateById()
-                cityService.setLastEweUpdateById(cityId, LocalDateTime.now());
-            }
-            catch (Exception e) {
-                // TODO log error
-            }
-        }
     }
 
 
-    @PutMapping("/update/recent")
+    /**
+     * Endpoint that triggers the update of Extreme Weather Events for a specified city
+     * within the most recent time interval defined by the provided number of hours.
+     * It processes measurements from the last 'hours' hours up to the current time.
+     *
+     * @param token The authorization token required for the operation.
+     * @param cityId The ID of the city for which the Extreme Weather Events are to be updated.
+     * @param hours The number of hours from the current time to define the time interval for processing measurements.
+     * @return A ResponseEntity containing the list of newly created Extreme Weather Events,
+     *         or an error message in case of failure.
+     * @throws CityNotFoundException If the city with the specified ID is not found.
+     * @throws ThresholdsNotPresentException If no thresholds are present for the specified city.
+     */
+    @PutMapping("/recent")
     public ResponseEntity<Object> updateExtremeWeatherEventRecent(
             @RequestHeader("Authorization") String token,
             @RequestParam String cityId,
@@ -84,7 +106,6 @@ public class ExtremeWeatherEventController {
             // Calls service updateExtremeWeatherEvent over time interval (NOW - hours; NOW)
             List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, LocalDateTime.now().minusHours(hours), LocalDateTime.now(), token);
 
-            // TODO return information properly formatted
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(createdEWEs);
@@ -107,7 +128,19 @@ public class ExtremeWeatherEventController {
         }
     }
 
-    @PutMapping("/update/range")
+    /**
+     * Endpoint that triggers the update of Extreme Weather Events for a specified city
+     * within a custom time range defined by the provided start and end times.
+     * It processes measurements from the start time to the end time.
+     *
+     * @param token The authorization token required for the operation.
+     * @param cityId The ID of the city for which the Extreme Weather Events are to be updated.
+     * @param startTime The start time of the interval for processing measurements.
+     * @param endTime The end time of the interval for processing measurements.
+     * @return A ResponseEntity containing the list of newly created Extreme Weather Events,
+     *         or an error message in case of failure.
+     */
+    @PutMapping("/range")
     public ResponseEntity<Object> updateExtremeWeatherEventRange(
             @RequestHeader("Authorization") String token,
             @RequestParam String cityId,
@@ -119,7 +152,6 @@ public class ExtremeWeatherEventController {
             // Call service updateExtremeWeatherEvent over time interval (startTime; endTime)
             List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, startTime, endTime, token);
 
-            // TODO return information properly formatted
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(createdEWEs);
@@ -143,38 +175,62 @@ public class ExtremeWeatherEventController {
     }
 
 
-    @PutMapping("/clean/range")
-    public ResponseEntity<String> cleanUpExtremeWeatherEventRange(
+    /**
+     * Deletes overlapping or duplicate extreme weather events (EWEs) for a specific city
+     * within a given time interval. This operation is restricted to users with administrative privileges.
+     * <p>
+     * The method authenticates the user via the provided authorization token, fetches
+     * all EWEs for each category occurring in the specified time range, and merges any
+     * overlapping entries based on their timestamps and intensity. The result includes
+     * a count of removed and inserted EWEs.
+     *
+     * @param token      the authorization token of the user performing the request; must belong to an admin
+     * @param cityId     the identifier of the city whose EWEs are to be cleaned
+     * @param startTime  the start of the time interval for which EWEs should be processed
+     * @param endTime    the end of the time interval for which EWEs should be processed
+     * @return           a JSON-formatted {@link ResponseEntity} containing a map with keys
+     *                   {@code removed} and {@code inserted} indicating how many events were removed and added
+     */
+    @DeleteMapping("/duplicates-range")
+    public ResponseEntity<Object> cleanUpExtremeWeatherEventRange(
             @RequestHeader("Authorization") String token,
             @RequestParam String cityId,
             @RequestParam LocalDateTime startTime,
             @RequestParam LocalDateTime endTime
     ) {
         // Call the relative service
-        Map<String, Integer> cleanupResult = extremeWeatherEventService.cleanExtremeWeatherEventDuplicates(cityId, startTime, endTime, token);
-
-        String TEMP_STRING = String.format("{\n\t\"removed\": %d,\n\t\"inserted\": %d\n}",
-                cleanupResult.get("EWEs Removed"), cleanupResult.get("EWEs Inserted"));
+        Map<String, Integer> cleanupResult = extremeWeatherEventService.cleanExtremeWeatherEventDuplicatesRange(cityId, startTime, endTime, token);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(TEMP_STRING);
+                .body(cleanupResult);
     }
 
-
-    @PutMapping("/clean/all")
-    public ResponseEntity<String> cleanUpExtremeWeatherEventRange(
+    /**
+     * Deletes all overlapping or duplicate extreme weather events (EWEs) for a specific city,
+     * regardless of their timestamp. This operation is restricted to users with administrative privileges.
+     * <p>
+     * The method authenticates the user via the provided authorization token, retrieves all
+     * EWEs for each category associated with the given city, and merges any overlapping entries
+     * based on their start and end times as well as their intensity. The outcome is a summary
+     * of how many events were removed and how many merged entries were inserted.
+     *
+     * @param token   the authorization token of the user performing the request; must belong to an admin
+     * @param cityId  the identifier of the city whose EWEs are to be cleaned
+     * @return        a JSON-formatted {@link ResponseEntity} containing a map with keys
+     *                {@code removed} and {@code inserted} indicating the number of events deleted and created
+     */
+    @DeleteMapping("/duplicates-all")
+    public ResponseEntity<Object> cleanUpExtremeWeatherEventRange(
+            @RequestHeader("Authorization") String token,
             @RequestParam String cityId
     ) {
         // Call the relative service
-        extremeWeatherEventService.cleanExtremeWeatherEventDuplicatesAll(cityId);
+        Map<String, Integer> cleanupResult = extremeWeatherEventService.cleanExtremeWeatherEventDuplicatesAll(cityId, token);
 
-        // TODO return information properly formatted
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body("ok");
+                .body(cleanupResult);
 
     }
-
-
 }

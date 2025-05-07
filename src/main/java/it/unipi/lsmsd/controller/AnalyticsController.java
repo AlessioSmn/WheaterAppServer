@@ -75,18 +75,250 @@ public class AnalyticsController {
                 .body(serviceResponse);
     }
 
+
+    /*
+     * STATISTICS FOR SINGLE CITIES
+     */
+
+    @GetMapping("/average-rainfall-of-city")
+    public ResponseEntity<Object> averageRainfallInCityDuringPeriod(
+            @RequestParam String cityId,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.averageRainfallInCityDuringPeriod(cityId, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/average-snowfall-of-city")
+    public ResponseEntity<Object> averageSnowfallInCityDuringPeriod(
+            @RequestParam String cityId,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.averageSnowfallInCityDuringPeriod(cityId, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/average-temperature-of-city")
+    public ResponseEntity<Object> averageTemperatureInCityDuringPeriod(
+            @RequestParam String cityId,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.averageTemperatureInCityDuringPeriod(cityId, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/max-temperature-of-city")
+    public ResponseEntity<Object> maxTemperatureInCityDuringPeriod(
+            @RequestParam String cityId,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.maxTemperatureInCityDuringPeriod(cityId, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/min-temperature-of-city")
+    public ResponseEntity<Object> minTemperatureInCityDuringPeriod(
+            @RequestParam String cityId,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.minTemperatureInCityDuringPeriod(cityId, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
+    /*
+    * STATISTIC ACROSS CITIES
+    */
+
+    @GetMapping("/top-rainiest-cities")
+    public ResponseEntity<Object> topXRainiestCitiesDuringPeriod(
+            @RequestParam int maxNumCitiesToFind,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.topXRainiestCitiesDuringPeriod(maxNumCitiesToFind, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/top-snowiest-cities")
+    public ResponseEntity<Object> topXSnowiestCitiesDuringPeriod(
+            @RequestParam int maxNumCitiesToFind,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.topXSnowiestCitiesDuringPeriod(maxNumCitiesToFind, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/top-cities-with-highest-average-temperature")
+    public ResponseEntity<Object> topXCitiesWithHighestAverageTemperature(
+            @RequestParam int maxNumCitiesToFind,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.topXCitiesWithHighestAverageTemperature(maxNumCitiesToFind, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/top-cities-with-lowest-average-temperature")
+    public ResponseEntity<Object> topXCitiesWithLowestAverageTemperature(
+            @RequestParam int maxNumCitiesToFind,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.topXCitiesWithLowestAverageTemperature(maxNumCitiesToFind, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/top-cities-with-highest-recorded-temperature")
+    public ResponseEntity<Object> topXCitiesWithHighestRecordedTemperature(
+            @RequestParam int maxNumCitiesToFind,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.topXCitiesWithHighestRecordedTemperature(maxNumCitiesToFind, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/top-cities-with-lowest-recorded-temperature")
+    public ResponseEntity<Object> topXCitiesWithLowestRecordedTemperature(
+            @RequestParam int maxNumCitiesToFind,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.topXCitiesWithLowestRecordedTemperature(maxNumCitiesToFind, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
+    /*
+     * STATISTICS FOR SINGLE REGIONS
+     */
+
+    @GetMapping("/average-temperature-in-cities-of-region")
+    public ResponseEntity<Object> averageTemperatureInCitiesOfRegionDuringPeriod(
+            @RequestParam String region,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.averageTemperatureInCitiesOfRegionDuringPeriod(region, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/average-temperature-of-region")
+    public ResponseEntity<Object> averageTemperatureOfRegion(
+            @RequestParam String region,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.averageTemperatureOfRegion(region, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/average-rainfall-in-cities-of-region")
+    public ResponseEntity<Object> averageRainfallInCitiesOfRegionDuringPeriod(
+            @RequestParam String region,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.averageRainfallInCitiesOfRegionDuringPeriod(region, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/average-rainfall-of-region")
+    public ResponseEntity<Object> averageRainfallOfRegion(
+            @RequestParam String region,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.averageRainfallOfRegion(region, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/average-snowfall-in-cities-of-region")
+    public ResponseEntity<Object> averageSnowfallInCitiesOfRegionDuringPeriod(
+            @RequestParam String region,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.averageSnowfallInCitiesOfRegionDuringPeriod(region, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/average-snowfall-of-region")
+    public ResponseEntity<Object> averageSnowfallOfRegion(
+            @RequestParam String region,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.averageSnowfallOfRegion(region, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
+    /*
+     * STATISTICS ACROSS REGIONS
+     */
+
+    @GetMapping("/top-rainiest-regions")
+    public ResponseEntity<Object> topXRainiestRegionsDuringPeriod(
+            @RequestParam int maxNumRegionsToFind,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.topXRainiestRegionsDuringPeriod(maxNumRegionsToFind, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/top-snowiest-regions")
+    public ResponseEntity<Object> topXSnowiestRegionsDuringPeriod(
+            @RequestParam int maxNumRegionsToFind,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.topXSnowiestRegionsDuringPeriod(maxNumRegionsToFind, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/top-hottest-regions")
+    public ResponseEntity<Object> topXHottestRegionsDuringPeriod(
+            @RequestParam int maxNumRegionsToFind,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.topXHottestRegionsDuringPeriod(maxNumRegionsToFind, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/top-coldest-regions")
+    public ResponseEntity<Object> topXColdestRegionsDuringPeriod(
+            @RequestParam int maxNumRegionsToFind,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.topXColdestRegionsDuringPeriod(maxNumRegionsToFind, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
+
     // Average Temperature per City for last 30 Days
     @GetMapping("/30days-avg-temperature")
     public List<Document> getAvgTemperatureLast30Days() {
         return analyticsService.getAvgTemperaturePerCityLast30Days();
     }
-    
+
     // Average Temperature per City for last 30 Days
     @GetMapping("/hottest-day")
     public List<Document> getHottestDay() {
         return analyticsService.getHottestDayPerCity();
     }
-    
+
     // Total Rainfall per City in Last 30 Days
     @GetMapping("/30days-total-rainfall")
     public List<Document> getTotalRainfall(){
