@@ -24,16 +24,13 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.unipi.lsmsd.DTO.APIResponseDTO;
+import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
-import it.unipi.lsmsd.model.City;
-import it.unipi.lsmsd.repository.CityRepository;
 import it.unipi.lsmsd.utility.MongoInitializer;
 
 @Service
 public class DataInitializeService {
 
-    @Autowired
-    private CityRepository cityRepository;
     @Autowired
     private CityService cityService;
     @Autowired
@@ -48,16 +45,18 @@ public class DataInitializeService {
     }
   
     public void initializeCities() throws IOException{
-        try (InputStream is = getClass().getResourceAsStream("classpath:/data_init/cities.json")) {
-            List<City> cities = objectMapper.readValue(is, new TypeReference<List<City>>() {});
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        Resource resource = resolver.getResource("classpath:data_init/cities.json");
+        try (InputStream is = resource.getInputStream()){
+            List<CityDTO> cities = objectMapper.readValue(is, new TypeReference<List<CityDTO>>() {});
             // Save to the MondoDB
-            cityRepository.saveAll(cities);
-        }        
+            cityService.saveCities(cities);
+        }
     }
 
     // public void initializeHourlyHistoricalMeasurement() throws IOException{
-    //     String cityId = "flo-tus-43.7792-11.2463";
-    //     InputStream is = getClass().getResourceAsStream("/data_init/measurements/mil-lom-45.4643-9.1895.json");
+    //     String cityId = "pis-tus-43.7085-10.4036";
+    //     InputStream is = getClass().getResourceAsStream("/data_init/measurements/pis-tus-43.7085-10.4036.json");
     //     if (is == null) {
     //         throw new FileNotFoundException("Resource file not found");
     //     }
@@ -70,11 +69,14 @@ public class DataInitializeService {
     //     hourlyMeasurementService.saveHourlyMeasurements(hourlyMeasurementDTO);
 
     //     // NOTE: Assumption that the last element of the time list is the latest date
-    //     List<String> timeList = hourlyMeasurementDTO.getTime();
-    //     String lastDate = timeList.get(timeList.size() - 1);
-    //     cityService.updateLastUpdate(lastDate, cityId);
+    //     // Save the first and last element of the time as timeframe of the historical data
+    //     List<String> timeList = hourlyMeasurementDTO.getTime(); 
+    //     String endDate = timeList.get(timeList.size() - 1);
+    //     String startDate = timeList.get(0);
+    //     // Update the city Last Update date
+    //     cityService.updateStartEndDate(startDate, endDate, cityId);
 
-    //     logger.info("Added HourlyMeasurement for "+"cityId" + " and updated city.lastUpdate = "+ lastDate);
+    //     logger.info("Added HourlyMeasurement for "+ startDate + " and updated city.lastUpdate = "+ endDate);
 
     //     return;
     // }
@@ -91,6 +93,7 @@ public class DataInitializeService {
 
         // Submit a separate task for each file to process in parallel
         for (Resource resource : resources) {
+            // processFile(resource);
             futures.add(executor.submit(() -> processFile(resource)));
         }
 
@@ -131,7 +134,7 @@ public class DataInitializeService {
             String startDate = timeList.get(0);
             // Update the city Last Update date
             cityService.updateStartEndDate(startDate, endDate, cityId);
-            logger.info("Added HourlyMeasurement for "+cityId+" and updated city.lastUpdate = "+ endDate);
+            logger.info("Added HourlyMeasurement for "+cityId+" and updated city.endDate = "+ endDate);
 
         } catch (IOException e) {
             // Log the error but don't stop the process

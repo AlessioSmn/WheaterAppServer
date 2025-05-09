@@ -4,12 +4,12 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
-
 import it.unipi.lsmsd.model.EWEThreshold;
 
 @JsonIgnoreProperties(ignoreUnknown = true) // Ignore the properites that are not included in the DTO
 public class CityDTO {
+    // TODO: use id instead, used _id to match with Mongo for easier but recommended id to match City Model
+    private String _id;
     private String name;
     private String region;
     private Double latitude;
@@ -28,6 +28,10 @@ public class CityDTO {
     private Integer forecastDays = 7; // Default Open-Meteo provides 7 day forecast
     
     // Setters and Getters
+
+    public String get_id() {return _id;}
+    public void set_id(String id) {this._id = id;}
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 

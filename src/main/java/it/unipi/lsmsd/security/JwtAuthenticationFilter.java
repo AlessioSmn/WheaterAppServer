@@ -3,7 +3,7 @@ package it.unipi.lsmsd.security;
 import io.jsonwebtoken.Claims;
 import it.unipi.lsmsd.model.Role;
 import it.unipi.lsmsd.model.User;
-import it.unipi.lsmsd.service.SessionRedisService;
+import it.unipi.lsmsd.service.RedisSessionService;
 import it.unipi.lsmsd.utility.JWTUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
-    private SessionRedisService sessionRedisService;
+    private RedisSessionService sessionRedisService;
 
     // This method is the core of the filter. It runs once for each request to validate JWT.
     @Override
