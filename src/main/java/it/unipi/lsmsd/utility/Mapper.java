@@ -120,7 +120,8 @@ public final class Mapper {
         Double latitude = cityDTO.getLatitude(); 
         Double longitude = cityDTO.getLongitude();
         // generate custom city Id
-        String cityId = CityUtility.generateCityId(name, region , latitude, longitude);
+        String cityId = cityDTO.get_id() != null ? cityDTO.get_id() : CityUtility.generateCityId(name, region, latitude, longitude);
+        //TODO map StartDate, EndDate and EWE threshold as well
         // Map the cityDTO to city
         return new City(cityId, name, region, latitude, longitude, cityDTO.getElevation(),0);
     }
@@ -143,11 +144,18 @@ public final class Mapper {
     public static CityDTO mapCityDTO(City city){
         CityDTO cityDTO = new CityDTO();
         // Map each required fields
+        String cityId = cityDTO.get_id() != null ? cityDTO.get_id() : 
+            CityUtility.generateCityId(city.getName(), city.getRegion(), city.getLatitude(), city.getLongitude());
+        cityDTO.set_id(cityId);
         cityDTO.setName(city.getName());
         cityDTO.setRegion(city.getRegion());
         cityDTO.setLatitude(city.getLatitude());
         cityDTO.setLongitude(city.getLongitude());
         cityDTO.setElevation(city.getElevation());
+        // TODO: Saving the date in format 2025-05-01:23:00 instead of "Thu May 01 23:00:00 UTC 2025"
+        cityDTO.setStartDate(city.getStartDate()!=null?city.getStartDate().toString():null);
+        // TODO: Saving the date in format 2025-05-01:23:00 instead of "Thu May 01 23:00:00 UTC 2025"
+        cityDTO.setEndDate(city.getEndDate()!=null?city.getEndDate().toString():null);
         cityDTO.setEweThresholds(city.getEweThresholds());
         return cityDTO;
     }

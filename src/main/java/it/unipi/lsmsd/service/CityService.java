@@ -91,6 +91,7 @@ public class CityService {
     }
 
     public String saveCities(List<CityDTO> cityDTOs){
+        // TODO use stream()
         List<City> cities = new ArrayList<>();
         for(CityDTO cityDTO: cityDTOs){ cities.add(Mapper.mapCity(cityDTO));}
         cityRepository.saveAll(cities);
