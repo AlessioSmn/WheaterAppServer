@@ -48,7 +48,7 @@ public class CityService {
         // throws NoSuchElementException if no city is found
         if (cities.isEmpty()) { throw new NoSuchElementException("City not found with name: " + cityName ); }
         // Map the list of city to list of cityDTO
-        List<CityDTO> cityDTOs = cities.stream().map(city -> Mapper.mapCity(city))
+        List<CityDTO> cityDTOs = cities.stream().map(city -> Mapper.mapCityDTO(city))
                                .collect(Collectors.toList());
         return cityDTOs;
     }
@@ -58,7 +58,7 @@ public class CityService {
         Optional<City> city = cityRepository.findById(cityID);
         // throws NoSuchElementException is no city is found
         if (!city.isPresent()) { throw new NoSuchElementException("City not found with id: " + cityID); }
-        return  Mapper.mapCity(city.get());
+        return  Mapper.mapCityDTO(city.get());
     }
 
     // Saves the city to the DB and returns the cityID
@@ -90,6 +90,13 @@ public class CityService {
         }
     }
 
+    public String saveCities(List<CityDTO> cityDTOs){
+        List<City> cities = new ArrayList<>();
+        for(CityDTO cityDTO: cityDTOs){ cities.add(Mapper.mapCity(cityDTO));}
+        cityRepository.saveAll(cities);
+        return "Saved";
+    }
+
     // Gets a List of City Names from a file and gets the city info one API request a time from Open-Meteo
     // Saves the list of cities to MongoDB 
     public String saveCitiesFromList() throws IOException{
@@ -102,6 +109,7 @@ public class CityService {
         // Loop through each name, get city info from Open-Meteo and save as DTO
         for (String cityName : cityNameList) {
             try {
+                // TODO: Hardcoded countryCode to Italian as only Italian cities added
                 CityDTO cityDTO = dataHarvestService.getCity(cityName, "IT");
                 // Map and add to the list
                 cityList.add(Mapper.mapCity(cityDTO));
@@ -171,7 +179,7 @@ public class CityService {
 
         // Convert the list to List<CityDTO>
         return cities.stream()
-                .map(Mapper::mapCity)
+                .map(Mapper::mapCityDTO)
                 .collect(Collectors.toList());
     }
 

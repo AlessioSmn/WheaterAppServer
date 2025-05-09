@@ -31,17 +31,30 @@ public class HourlyMeasurementService {
 
     // Saves the list of hourlyMeasurement of the given city to the DB in Time-Series Collection "hourly_measurements" 
     public void saveHourlyMeasurements( HourlyMeasurementDTO hourlyMeasurementDTO) {
-        
-        // Extract list of hourly data
         List<HourlyMeasurement> measurements = Mapper.mapHourlyMeasurement(hourlyMeasurementDTO);
-        // Insert the list in DB
-        hourlyMeasurementRepository.insert(measurements);
+        int batchSize = 10000;
+
+        if(measurements.size()<= batchSize){         
+            hourlyMeasurementRepository.insert(measurements);
+            return;
+        }
+        
+        for (int i = 0; i < measurements.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, measurements.size());
+            List<HourlyMeasurement> batch = measurements.subList(i, end);
+            hourlyMeasurementRepository.insert(batch);
+        }
     }
 
     // Get all the measurements with city name
     public HourlyMeasurementDTO getHourlyMeasurements(CityDTO cityDTO) {
         String cityId = CityUtility.generateCityId(cityDTO.getName(), cityDTO.getRegion() , cityDTO.getLatitude(), cityDTO.getLongitude());
-        // Convert date from String to ISO Date
+        // // Convert date from String to ISO Date
+        // LocalDate localDate = LocalDate.parse(cityDTO.getStartDate());
+        // LocalDateTime localDateTime = localDate.atStartOfDay();
+        // ZonedDateTime localZonedDateTime = localDateTime.atZone(localZone);
+        // Instant utcInstant = localZonedDateTime.toInstant();
+
         Date startDate = ISODateUtil.getISODate(cityDTO.getStartDate()+"T00:00");
         Date endDate = ISODateUtil.getISODate(cityDTO.getEndDate()+"T23:00");
         
@@ -49,6 +62,10 @@ public class HourlyMeasurementService {
         // Map List<HourlyMeasurement> to HourlyMeasurementDTO
         HourlyMeasurementDTO hourlyMeasurementDTO = Mapper.mapHourlyMeasurementDTO(measurements);
         return hourlyMeasurementDTO;
+    }
+
+    public void deleteHourlyMeasurements(String cityId, Date startDate, Date endDate){
+        hourlyMeasurementRepository.deleteByCityIdAndTimeBetween(cityId, startDate, endDate);
     }
 
 }

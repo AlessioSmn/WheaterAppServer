@@ -27,7 +27,7 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private SessionRedisService sessionRedisService;
+    private RedisSessionService sessionRedisService;
 
     private void checkRole(User user, Role requiredRole) {
         if (user.getRole().ordinal() < requiredRole.ordinal()) {

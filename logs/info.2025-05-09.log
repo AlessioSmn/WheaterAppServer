@@ -1,0 +1,15 @@
+2025-05-09 11:22:01 [main] INFO  it.unipi.lsmsd.Application - Starting Application using Java 23.0.2 with PID 20148 (D:\UniPi\Year1Sem1\LargeScale&MultiStructuredDB\Project\WheaterAppServer\target\classes started by roj5s in D:\UniPi\Year1Sem1\LargeScale&MultiStructuredDB\Project\WheaterAppServer)
+2025-05-09 11:22:01 [main] INFO  it.unipi.lsmsd.Application - No active profile set, falling back to 1 default profile: "default"
+2025-05-09 11:22:06 [main] INFO  it.unipi.lsmsd.Application - Started Application in 6.377 seconds (process running for 7.155)
+2025-05-09 11:22:06 [main] INFO  it.unipi.lsmsd.Application - Successful Application Run 
+
+2025-05-09 11:24:24 [main] INFO  it.unipi.lsmsd.Application - Starting Application using Java 23.0.2 with PID 10528 (D:\UniPi\Year1Sem1\LargeScale&MultiStructuredDB\Project\WheaterAppServer\target\classes started by roj5s in D:\UniPi\Year1Sem1\LargeScale&MultiStructuredDB\Project\WheaterAppServer)
+2025-05-09 11:24:24 [main] INFO  it.unipi.lsmsd.Application - No active profile set, falling back to 1 default profile: "default"
+2025-05-09 11:24:30 [main] INFO  it.unipi.lsmsd.Application - Started Application in 6.521 seconds (process running for 7.231)
+2025-05-09 11:24:30 [main] INFO  it.unipi.lsmsd.Application - Successful Application Run 
+
+2025-05-09 11:37:47 [main] INFO  it.unipi.lsmsd.Application - Starting Application using Java 23.0.2 with PID 14944 (D:\UniPi\Year1Sem1\LargeScale&MultiStructuredDB\Project\WheaterAppServer\target\classes started by roj5s in D:\UniPi\Year1Sem1\LargeScale&MultiStructuredDB\Project\WheaterAppServer)
+2025-05-09 11:37:47 [main] INFO  it.unipi.lsmsd.Application - No active profile set, falling back to 1 default profile: "default"
+2025-05-09 11:37:53 [main] INFO  it.unipi.lsmsd.Application - Started Application in 7.328 seconds (process running for 8.073)
+2025-05-09 11:37:53 [main] INFO  it.unipi.lsmsd.Application - Successful Application Run 
+

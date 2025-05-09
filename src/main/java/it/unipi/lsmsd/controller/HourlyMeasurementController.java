@@ -18,7 +18,7 @@ import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
 import it.unipi.lsmsd.service.DataHarvestService;
-import it.unipi.lsmsd.service.ForecastRedisService;
+import it.unipi.lsmsd.service.RedisForecastService;
 import it.unipi.lsmsd.service.HourlyMeasurementService;
 import it.unipi.lsmsd.utility.CityUtility;
 
@@ -33,7 +33,7 @@ public class HourlyMeasurementController {
     @Autowired
     private HourlyMeasurementService hourlyMeasurementService;
     @Autowired
-    private ForecastRedisService forecastRedisService;
+    private RedisForecastService forecastRedisService;
 
     /**
     Example Request Body :

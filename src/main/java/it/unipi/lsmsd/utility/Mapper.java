@@ -140,7 +140,7 @@ public final class Mapper {
     }
     
     // Maps city to cityDTO
-    public static CityDTO mapCity(City city){
+    public static CityDTO mapCityDTO(City city){
         CityDTO cityDTO = new CityDTO();
         // Map each required fields
         cityDTO.setName(city.getName());

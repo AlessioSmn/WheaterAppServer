@@ -15,5 +15,8 @@ public interface HourlyMeasurementRepository extends MongoRepository<HourlyMeasu
     List<HourlyMeasurement> findByCityIdAndTimeBetweenOrderByTimeTimeAsc(String cityId, Date startTime, Date endTime);
 
     Optional<HourlyMeasurement> findFirstByCityIdOrderByTimeAsc(String cityId);
+    
+    void deleteByCityIdAndTimeBetween(String cityId, Date startTime, Date endTime);
+
 }
 
