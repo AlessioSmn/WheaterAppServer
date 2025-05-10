@@ -6,10 +6,15 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -55,10 +60,32 @@ public class DataRefreshService {
         // Use PathMatchingResourcePatternResolver to load the resource from the correct path
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         Resource resource = resolver.getResource("classpath:data_init/citiesId.json");
+
+        // Get available processors to determine thread pool size
+        int threadCount = Math.min(4, Runtime.getRuntime().availableProcessors());
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        List<Future<?>> futures = new ArrayList<>();
+
         try (InputStream is = resource.getInputStream()){
             List<String> cityIdList = objectMapper.readValue(is, new TypeReference<List<String>>() {});
+            
+            // Submit tasks for parallel processing
             for(String cityId : cityIdList){
-                refreshCityHistoricalData(cityId);
+                // refreshCityHistoricalData(cityId);
+                Callable<Void> task = () -> {
+                    refreshCityHistoricalData(cityId);
+                    return null;
+                };
+                futures.add(executor.submit(task));
+            }
+
+            // Wait for all tasks to complete
+            for (Future<?> future : futures) {
+                try {
+                    future.get(); // Blocking call, waits for task to finish
+                } catch (Exception e) {
+                    e.printStackTrace(); // Handle any task exception
+                }
             }
         }
         catch (IOException e) {
@@ -66,8 +93,9 @@ public class DataRefreshService {
         }
         catch (Exception e){
             System.out.println("");
+        } finally {
+            executor.shutdown(); // Ensure that the executor shuts down after all tasks are complete
         }
-        
         
 
         // // Get the list of cities from the DB
