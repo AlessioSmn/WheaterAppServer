@@ -4,6 +4,7 @@ import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.exception.CityException;
 import it.unipi.lsmsd.exception.CityNotFoundException;
 import it.unipi.lsmsd.model.City;
+import it.unipi.lsmsd.model.EWEThreshold;
 import it.unipi.lsmsd.model.Role;
 import it.unipi.lsmsd.service.UserService;
 import it.unipi.lsmsd.repository.CityRepository;
@@ -140,6 +141,34 @@ public class CityService {
         // NOTE: Attempt to "insert" a document with an existing id throws DuplicateKeyException
         cityRepository.insert(city);
         return city.getId();
+    }
+
+    /**
+     * Updates the city thresholds
+     * @param cityId City id
+     * @param eweThreshold the thresholds
+     * @throws CityNotFoundException on city not found
+     * @throws CityException on city not identifiable
+     */
+    public void updateCityThresholds(String cityId, EWEThreshold eweThreshold) throws CityException {
+        try {
+            Optional<City> cityOpt = cityRepository.findById(cityId);
+
+            if (cityOpt.isEmpty()) {
+                throw new CityNotFoundException("City with ID " + cityId + " not found.");
+            }
+
+            City city = cityOpt.get();
+            city.setEweThresholds(eweThreshold);
+            cityRepository.save(city);
+
+        } catch (IllegalArgumentException e) {
+            throw new CityException("City ID is invalid: " + cityId, e);
+        } catch (CityNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CityException("Unexpected error while updating city thresholds", e);
+        }
     }
 
 

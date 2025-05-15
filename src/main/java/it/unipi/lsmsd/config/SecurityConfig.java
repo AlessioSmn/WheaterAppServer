@@ -34,6 +34,7 @@ public class SecurityConfig {
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/*/**",
+                    "/*/*/**",
                     "/swagger-ui.html").permitAll()  // Public endpoints
                 .requestMatchers(HttpMethod.POST, "/hourly/**").hasRole("ADMIN") // Role name "ADMIN" is mapped to ROLE_ADMIN internally
                 .anyRequest().authenticated() // Secure all other requests

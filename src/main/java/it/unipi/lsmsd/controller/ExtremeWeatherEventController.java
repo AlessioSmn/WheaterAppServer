@@ -48,12 +48,12 @@ public class ExtremeWeatherEventController {
 
             // If the city has never been updated it calls for the entire time range available
             if(lastEweUpdate == null) {
-                createdEWEs = extremeWeatherEventService.updateExtremeWeatherEventAll(cityId, token);
+                createdEWEs = extremeWeatherEventService.updateExtremeWeatherEventAll(cityId);
             }
 
             // Calls service updateExtremeWeatherEvent over time interval (lastEweUpdate; Now)
             else {
-                createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, lastEweUpdate, LocalDateTime.now(), token);
+                createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, lastEweUpdate, LocalDateTime.now());
             }
 
             // Update the lastEweUpdate only after successful processing
@@ -104,7 +104,7 @@ public class ExtremeWeatherEventController {
 
         try {
             // Calls service updateExtremeWeatherEvent over time interval (NOW - hours; NOW)
-            List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, LocalDateTime.now().minusHours(hours), LocalDateTime.now(), token);
+            List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, LocalDateTime.now().minusHours(hours), LocalDateTime.now());
 
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
@@ -150,7 +150,7 @@ public class ExtremeWeatherEventController {
 
         try {
             // Call service updateExtremeWeatherEvent over time interval (startTime; endTime)
-            List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, startTime, endTime, token);
+            List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, startTime, endTime);
 
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
@@ -199,7 +199,7 @@ public class ExtremeWeatherEventController {
             @RequestParam LocalDateTime endTime
     ) {
         // Call the relative service
-        Map<String, Integer> cleanupResult = extremeWeatherEventService.cleanExtremeWeatherEventDuplicatesRange(cityId, startTime, endTime, token);
+        Map<String, Integer> cleanupResult = extremeWeatherEventService.cleanExtremeWeatherEventDuplicatesRange(cityId, startTime, endTime);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -226,7 +226,7 @@ public class ExtremeWeatherEventController {
             @RequestParam String cityId
     ) {
         // Call the relative service
-        Map<String, Integer> cleanupResult = extremeWeatherEventService.cleanExtremeWeatherEventDuplicatesAll(cityId, token);
+        Map<String, Integer> cleanupResult = extremeWeatherEventService.cleanExtremeWeatherEventDuplicatesAll(cityId);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)

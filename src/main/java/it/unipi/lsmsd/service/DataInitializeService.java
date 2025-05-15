@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.Optional;
 
+import it.unipi.lsmsd.model.EWEThreshold;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,9 @@ import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
 import it.unipi.lsmsd.utility.MongoInitializer;
+import it.unipi.lsmsd.utility.StatisticsUtility;
+
+import static it.unipi.lsmsd.utility.StatisticsUtility.getEweThresholdsFromMeasurements;
 
 @Service
 public class DataInitializeService {
@@ -35,6 +39,8 @@ public class DataInitializeService {
     private CityService cityService;
     @Autowired
     private HourlyMeasurementService hourlyMeasurementService;
+
+    private static final double PERCENTILE = 1;
 
     private static final Logger logger = LoggerFactory.getLogger(MongoInitializer.class);
     private final ObjectMapper objectMapper;
@@ -127,6 +133,12 @@ public class DataInitializeService {
             dto.setCityId(cityId);
             // Save the parsed measurement to MongoDB
             hourlyMeasurementService.saveHourlyMeasurements(dto);
+
+            // Computes the EWE Thresholds
+            EWEThreshold cityEweThresholds = getEweThresholdsFromMeasurements(dto, PERCENTILE);
+            logger.info("EWE Thresholds calculated for "+cityId+": "+cityEweThresholds.toString());
+
+            cityService.updateCityThresholds(cityId, cityEweThresholds);
             
             // Save the first and last element of the time as timeframe of the historical data
             List<String> timeList = dto.getTime(); 
