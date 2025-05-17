@@ -7,6 +7,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class StatisticsUtility {
+    private static final double RAINSTORM_ABS_LIMIT = 0.1;
+    private static final double SNOWSTORM_ABS_LIMIT = 0.1;
+    private static final double HURRICANE_ABS_LIMIT = 0.1;
+    private static final double HEATWAVE_ABS_LIMIT = 0.1;
+    private static final double COLDWAVE_ABS_LIMIT = 0.1;
 
     /**
      * Computes an EWEThreshold object from the given HourlyMeasurementDTO using symmetric percentiles.
@@ -93,13 +98,30 @@ public class StatisticsUtility {
      * @throws IllegalArgumentException if any required value is missing or null.
      */
     private static EWEThreshold fromPercentiles(Map<String, Map<String, Double>> percentiles) {
-        double rainfall = getValue(percentiles, "rain", "high");
-        double snowfall = getValue(percentiles, "snowfall", "high");
-        double windSpeed = getValue(percentiles, "windspeed", "high");
-        double maxTemperature = getValue(percentiles, "temperature", "high");
-        double minTemperature = getValue(percentiles, "temperature", "low");
+        double rainfall = enforceAbsMin(getValue(percentiles, "rain", "high"), RAINSTORM_ABS_LIMIT);
+        double snowfall = enforceAbsMin(getValue(percentiles, "snowfall", "high"), SNOWSTORM_ABS_LIMIT);
+        double windSpeed = enforceAbsMin(getValue(percentiles, "windspeed", "high"), HURRICANE_ABS_LIMIT);
+        double maxTemperature = enforceAbsMin(getValue(percentiles, "temperature", "high"), HEATWAVE_ABS_LIMIT);
+        double minTemperature = enforceAbsMin(getValue(percentiles, "temperature", "low"), COLDWAVE_ABS_LIMIT);
 
         return new EWEThreshold(rainfall, snowfall, maxTemperature, minTemperature, windSpeed);
+    }
+
+    /**
+     * Ensures that the absolute value of the input is not less than a specified minimum.
+     * If it is, the method adjusts the value to meet the minimum absolute threshold,
+     * while preserving the original sign.
+     *
+     * <p>For example, if the input is -0.03 and the minimum absolute is 0.1,
+     * the result will be -0.1.</p>
+     *
+     * @param value the original value to evaluate.
+     * @param minAbs the minimum allowed absolute value.
+     * @return the original value if its absolute magnitude is sufficient; otherwise, a value with
+     *         the same sign but adjusted to meet the absolute minimum.
+     */
+    private static double enforceAbsMin(double value, double minAbs) {
+        return Math.copySign(Math.max(Math.abs(value), minAbs), value);
     }
 
     private static double getValue(Map<String, Map<String, Double>> map, String parameter, String bound) {
