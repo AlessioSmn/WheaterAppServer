@@ -242,7 +242,7 @@ public class DataRefreshService {
         // Iterate through each city and update its extreme weather events
         for (City city : cities) {
             try {
-                extremeWeatherEventService.updateExtremeWeatherEventAll(city.getId());
+                extremeWeatherEventService.updateExtremeWeatherEventAutomatic(city.getId());
                 logger.info("ExtremeWeatherEvent updated for {} ({})", city.getId(), city.getName());
             }
             catch (ThresholdsNotPresentException e){

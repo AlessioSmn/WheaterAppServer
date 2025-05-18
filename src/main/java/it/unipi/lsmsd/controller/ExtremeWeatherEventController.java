@@ -41,70 +41,7 @@ public class ExtremeWeatherEventController {
             @RequestParam String cityId
     ) {
         try {
-            // Get city's last Ewe update
-            LocalDateTime lastEweUpdate = cityService.getLastEweUpdateById(cityId);
-
-            List<ExtremeWeatherEvent> createdEWEs;
-
-            // If the city has never been updated it calls for the entire time range available
-            if(lastEweUpdate == null) {
-                createdEWEs = extremeWeatherEventService.updateExtremeWeatherEventAll(cityId);
-            }
-
-            // Calls service updateExtremeWeatherEvent over time interval (lastEweUpdate; Now)
-            else {
-                createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, lastEweUpdate, LocalDateTime.now());
-            }
-
-            // Update the lastEweUpdate only after successful processing
-            cityService.setLastEweUpdateById(cityId, LocalDateTime.now());
-
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(createdEWEs);
-
-        }
-        catch (CityNotFoundException CNFe){
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body("City not found: " + CNFe.getMessage());
-        }
-        catch (ThresholdsNotPresentException TNPe) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body("Thresholds not present: " + TNPe.getMessage());
-        }
-        catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Internal Server error: " + e.getMessage());
-        }
-    }
-
-
-    /**
-     * Endpoint that triggers the update of Extreme Weather Events for a specified city
-     * within the most recent time interval defined by the provided number of hours.
-     * It processes measurements from the last 'hours' hours up to the current time.
-     *
-     * @param token The authorization token required for the operation.
-     * @param cityId The ID of the city for which the Extreme Weather Events are to be updated.
-     * @param hours The number of hours from the current time to define the time interval for processing measurements.
-     * @return A ResponseEntity containing the list of newly created Extreme Weather Events,
-     *         or an error message in case of failure.
-     * @throws CityNotFoundException If the city with the specified ID is not found.
-     * @throws ThresholdsNotPresentException If no thresholds are present for the specified city.
-     */
-    @PutMapping("/recent")
-    public ResponseEntity<Object> updateExtremeWeatherEventRecent(
-            @RequestHeader("Authorization") String token,
-            @RequestParam String cityId,
-            @RequestParam Integer hours
-    ) {
-
-        try {
-            // Calls service updateExtremeWeatherEvent over time interval (NOW - hours; NOW)
-            List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, LocalDateTime.now().minusHours(hours), LocalDateTime.now());
+            List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEventAutomatic(cityId);
 
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)

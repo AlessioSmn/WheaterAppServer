@@ -230,6 +230,10 @@ public class CityService {
             throw new IllegalArgumentException("City not found");
         }
 
-        city.get().setLastEweUpdate(newLastEweUpdate);
+        City existingCity = city.get();
+        existingCity.setLastEweUpdate(newLastEweUpdate);
+
+        // Save the updated city back to the database
+        cityRepository.save(existingCity);
     }
 }

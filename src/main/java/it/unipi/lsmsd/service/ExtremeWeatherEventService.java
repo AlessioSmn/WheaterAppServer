@@ -34,7 +34,33 @@ public class ExtremeWeatherEventService {
     private CityRepository cityRepository;
     @Autowired
     private UserService userService;
+    @Autowired
+    private CityService cityService;
 
+    public List<ExtremeWeatherEvent> updateExtremeWeatherEventAutomatic(
+            String cityId
+    ) throws CityNotFoundException, ThresholdsNotPresentException {
+
+        // Get city's last Ewe update
+        LocalDateTime lastEweUpdate = cityService.getLastEweUpdateById(cityId);
+
+        List<ExtremeWeatherEvent> createdEWEs;
+
+        // If the city has never been updated it calls for the entire time range available
+        if(lastEweUpdate == null) {
+            createdEWEs = updateExtremeWeatherEventAll(cityId);
+        }
+
+        // Calls service updateExtremeWeatherEvent over time interval (lastEweUpdate; Now)
+        else {
+            createdEWEs = updateExtremeWeatherEvent(cityId, lastEweUpdate, LocalDateTime.now());
+        }
+
+        // Update the lastEweUpdate only after successful processing
+        cityService.setLastEweUpdateById(cityId, LocalDateTime.now());
+
+        return createdEWEs;
+    }
     /**
      * Updates all extreme weather events for the specified city starting from the timestamp
      * of the latest available measurement up to the current time. This method internally
