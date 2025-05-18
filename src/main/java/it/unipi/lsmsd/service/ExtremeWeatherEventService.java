@@ -42,11 +42,12 @@ public class ExtremeWeatherEventService {
      *
      * @param cityId the unique identifier of the city for which to update the extreme weather events
      * @return a list of {@link ExtremeWeatherEvent} objects that have been created during the update process
-     * @throws Exception if an error occurs during the update, including unauthorized access.
+     * @throws CityNotFoundException If the specified city is not found.
+     * @throws ThresholdsNotPresentException If the specified city doesn't have the threshold specified.
      */
     public List<ExtremeWeatherEvent> updateExtremeWeatherEventAll(
             String cityId
-    ) throws Exception {
+    ) throws CityNotFoundException, ThresholdsNotPresentException {
 
         // Retrieve the timestamp of the latest measurement for the given city
         Optional<HourlyMeasurement> firstMeasurement = hourlyMeasurementRepository.findFirstByCityIdOrderByTimeAsc(cityId);
@@ -80,7 +81,7 @@ public class ExtremeWeatherEventService {
             String cityId,
             LocalDateTime startTimeInterval,
             LocalDateTime endTimeInterval
-    ) throws Exception{
+    ) throws CityNotFoundException, ThresholdsNotPresentException {
 
         // Gets all measurements for a given city
         Date startTime = Date.from(startTimeInterval.toInstant(ZoneOffset.UTC));
