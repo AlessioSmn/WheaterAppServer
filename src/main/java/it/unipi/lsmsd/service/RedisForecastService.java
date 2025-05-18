@@ -1,10 +1,15 @@
 package it.unipi.lsmsd.service;
 
+import it.unipi.lsmsd.model.City;
+import it.unipi.lsmsd.repository.CityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
@@ -30,11 +35,44 @@ public class RedisForecastService {
     private JedisPool jedisPool;
     private final ObjectMapper mapper = new ObjectMapper();
 
+    @Autowired
+    private CityRepository cityRepository;
+
+    private static final double EARTH_RADIUS_KM = 6371.0;
+
+    // function to calcuate distance between 2 cities using lat e long
+    public static double haversine(double lat1, double lon1, double lat2, double lon2) {
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return EARTH_RADIUS_KM * c;
+    }
+
     /*
      * IMPORTANT NOTE : 
      *  KEY structure --> forecast:{pis-tus-43.7085-10.4036}:2025-04-24 
      *  where cityId is the Hash Tags for related keys in Redis Cluster or client-side sharding
      */
+
+    private String retrieve24HrForecast(String name, String region, double lat, double lon, String date){
+        String cityId = CityUtility.generateCityId(name, region , lat, lon);
+        String dateDto = date;
+        // CityDTO.startDate is optional so check for null value
+        // LocalDate.now converted to UTC+0 timezone since data are stored in UTC+0
+        LocalDate utcDate = ZonedDateTime.now(ZoneOffset.UTC).toLocalDate();
+        String targetDate = dateDto != null ? dateDto : utcDate.toString();
+
+        String redisKey = String.format("forecast:{%s}:%s", cityId, targetDate);
+
+        try (Jedis jedis = jedisPool.getResource()) {
+            return jedis.get(redisKey); // Can be returned directly to client
+        }
+    }
     
     // Storing the forecast data in Redis as daily-split JSON for each city
     // JSON promotes faster Read
@@ -82,18 +120,7 @@ public class RedisForecastService {
     
     // Get 24hr forecast
     public String get24HrForecast(CityDTO cityDTO) {
-        String cityId = CityUtility.generateCityId(cityDTO.getName(), cityDTO.getRegion() , cityDTO.getLatitude(), cityDTO.getLongitude());
-        String dateDto = cityDTO.getStartDate();
-        // CityDTO.startDate is optional so check for null value
-        // LocalDate.now converted to UTC+0 timezone since data are stored in UTC+0
-        LocalDate utcDate = ZonedDateTime.now(ZoneOffset.UTC).toLocalDate();
-        String date = dateDto != null ? dateDto : utcDate.toString();
-
-        String redisKey = String.format("forecast:{%s}:%s", cityId, date);
-
-        try (Jedis jedis = jedisPool.getResource()) {
-            return jedis.get(redisKey); // Can be returned directly to client
-        }
+        return retrieve24HrForecast(cityDTO.getName(), cityDTO.getRegion(), cityDTO.getLatitude(), cityDTO.getLongitude(), cityDTO.getStartDate());
     }
 
     // Get full 7-day forecast
@@ -129,20 +156,111 @@ public class RedisForecastService {
     }    
 
     public String deleteAllForecast() {
-    try (Jedis jedis = jedisPool.getResource()) {
-        String cursor = "0";
-        String pattern = "forecast:*";
-        do {
-            ScanResult<String> scanResult = jedis.scan(cursor, new ScanParams().match(pattern).count(100));
-            List<String> keys = scanResult.getResult();
-            if (!keys.isEmpty()) {
-                jedis.del(keys.toArray(new String[0]));
-            }
-            cursor = scanResult.getCursor();
-        } while (!cursor.equals("0"));
-        return "Deleted All Forecast Data";
+        try (Jedis jedis = jedisPool.getResource()) {
+            String cursor = "0";
+            String pattern = "forecast:*";
+            do {
+                ScanResult<String> scanResult = jedis.scan(cursor, new ScanParams().match(pattern).count(100));
+                List<String> keys = scanResult.getResult();
+                if (!keys.isEmpty()) {
+                    jedis.del(keys.toArray(new String[0]));
+                }
+                cursor = scanResult.getCursor();
+            } while (!cursor.equals("0"));
+            return "Deleted All Forecast Data";
+        }
     }
-}
+
+    // a very basic tool for estimate forecast for any arbitrary city
+    // a weighted avg is used, where the weights are the distance between the target city and
+    // the others
+    // the other cities are the cities stored in mongo in the same region of the target
+    public String get24HrForecastArbCity(CityDTO cityDTO) {
+        String region = cityDTO.getRegion();
+        double lat = cityDTO.getLatitude();
+        double lon = cityDTO.getLongitude();
+
+        List<City> targetCities = cityRepository.findByRegion(region);
+        String date = cityDTO.getStartDate(); // format "YYYY-MM-DD"
+        if (date == null || date.isBlank()) {
+            date = LocalDate.now().toString();
+        }
+
+        double[] rainSum = new double[24];
+        double[] snowSum = new double[24];
+        double[] tempSum = new double[24];
+        double[] windSum = new double[24];
+        double[] debug = new double[240];
+        double weightSum = 0.0;
+
+        ObjectMapper mapper = new ObjectMapper();
+        ArrayNode distancesArray = mapper.createArrayNode();
+
+        int j = 0;
+        for (City city : targetCities) {
+            double distance = haversine(lat, lon, city.getLatitude(), city.getLongitude());
+            double weight = distance == 0 ? 1000 : 1000 / distance;
+            weightSum += weight;
+
+            ObjectNode cityDistance = mapper.createObjectNode();
+            cityDistance.put("city", city.getName());
+            cityDistance.put("latitude", city.getLatitude());
+            cityDistance.put("longitude", city.getLongitude());
+            cityDistance.put("distance_km", distance);
+            cityDistance.put("weight", weight);
+            distancesArray.add(cityDistance);
+
+            String json = retrieve24HrForecast(city.getName(), city.getRegion(), city.getLatitude(), city.getLongitude(), date);
+            if (json == null || json.isEmpty()) continue;
+
+            try {
+                JsonNode root = mapper.readTree(json);
+
+                for (int i = 0; i < 24; i++) {
+                    rainSum[i] += root.get("rain").get(i).asDouble() * weight;
+                    snowSum[i] += root.get("snowfall").get(i).asDouble() * weight;
+                    tempSum[i] += root.get("temperature_2m").get(i).asDouble() * weight;
+                    windSum[i] += root.get("wind_speed_10m").get(i).asDouble() * weight;
+                    debug[j*24 + i] = root.get("temperature_2m").get(i).asDouble();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            j++;
+        }
+
+        ArrayNode timeArray = mapper.createArrayNode();
+        ArrayNode rainArray = mapper.createArrayNode();
+        ArrayNode snowArray = mapper.createArrayNode();
+        ArrayNode tempArray = mapper.createArrayNode();
+        ArrayNode windArray = mapper.createArrayNode();
+        ArrayNode debugArray = mapper.createArrayNode();
+
+        for (int i = 0; i < 24; i++) {
+            rainArray.add(rainSum[i] / weightSum);
+            snowArray.add(snowSum[i] / weightSum);
+            tempArray.add(tempSum[i] / weightSum);
+            windArray.add(windSum[i] / weightSum);
+
+            timeArray.add(date + "T" + String.format("%02d:00", i));
+        }
+
+        for(int i = 0; i < 240; i++){
+            debugArray.add(debug[i]);
+        }
+
+        ObjectNode result = mapper.createObjectNode();
+        result.set("time", timeArray);
+        result.set("rain", rainArray);
+        result.set("snowfall", snowArray);
+        result.set("temperature_2m", tempArray);
+        result.set("wind_speed_10m", windArray);
+        result.set("weightSum", mapper.getNodeFactory().numberNode(weightSum));
+
+        return result.toPrettyString();
+    }
+
+
 
 }
 

@@ -138,5 +138,19 @@ public class HourlyMeasurementController {
         String jsonForecast = forecastRedisService.get7DayForecast(cityDTO);
         return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
     }
+    /**
+     Example Request Body :
+     {
+     "region": "Tuscany",
+     "latitude": 43.7085,
+     "longitude": 10.4036
+     }
+     **/
+
+    @GetMapping("24Hr-arbitrary-city")
+    public ResponseEntity<String> get24HrForecastArbCity(@RequestBody CityDTO cityDTO) throws IOException {
+        String jsonForecast = forecastRedisService.get24HrForecastArbCity(cityDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
+    }
 
 }

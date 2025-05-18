@@ -67,7 +67,6 @@ public class HourlyMeasurementService {
     public void deleteHourlyMeasurements(String cityId, Date startDate, Date endDate){
         hourlyMeasurementRepository.deleteByCityIdAndTimeBetween(cityId, startDate, endDate);
     }
-
 }
 
 
