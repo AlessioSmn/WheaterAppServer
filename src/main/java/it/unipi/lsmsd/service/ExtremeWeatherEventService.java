@@ -34,21 +34,46 @@ public class ExtremeWeatherEventService {
     private CityRepository cityRepository;
     @Autowired
     private UserService userService;
+    @Autowired
+    private CityService cityService;
 
+    public List<ExtremeWeatherEvent> updateExtremeWeatherEventAutomatic(
+            String cityId
+    ) throws CityNotFoundException, ThresholdsNotPresentException {
+
+        // Get city's last Ewe update
+        LocalDateTime lastEweUpdate = cityService.getLastEweUpdateById(cityId);
+
+        List<ExtremeWeatherEvent> createdEWEs;
+
+        // If the city has never been updated it calls for the entire time range available
+        if(lastEweUpdate == null) {
+            createdEWEs = updateExtremeWeatherEventAll(cityId);
+        }
+
+        // Calls service updateExtremeWeatherEvent over time interval (lastEweUpdate; Now)
+        else {
+            createdEWEs = updateExtremeWeatherEvent(cityId, lastEweUpdate, LocalDateTime.now());
+        }
+
+        // Update the lastEweUpdate only after successful processing
+        cityService.setLastEweUpdateById(cityId, LocalDateTime.now());
+
+        return createdEWEs;
+    }
     /**
      * Updates all extreme weather events for the specified city starting from the timestamp
      * of the latest available measurement up to the current time. This method internally
      * delegates to {@code updateExtremeWeatherEvent} using the derived time interval.
      *
      * @param cityId the unique identifier of the city for which to update the extreme weather events
-     * @param token the authorization token used to validate the user’s role and permissions
      * @return a list of {@link ExtremeWeatherEvent} objects that have been created during the update process
-     * @throws Exception if an error occurs during the update, including unauthorized access.
+     * @throws CityNotFoundException If the specified city is not found.
+     * @throws ThresholdsNotPresentException If the specified city doesn't have the threshold specified.
      */
     public List<ExtremeWeatherEvent> updateExtremeWeatherEventAll(
-            String cityId,
-            String token
-    ) throws Exception {
+            String cityId
+    ) throws CityNotFoundException, ThresholdsNotPresentException {
 
         // Retrieve the timestamp of the latest measurement for the given city
         Optional<HourlyMeasurement> firstMeasurement = hourlyMeasurementRepository.findFirstByCityIdOrderByTimeAsc(cityId);
@@ -64,7 +89,7 @@ public class ExtremeWeatherEventService {
                 .toLocalDateTime();
 
         // Delegate to the main update function using the range [latestMeasurementTime, now]
-        return updateExtremeWeatherEvent(cityId, firstMeasurementTime, LocalDateTime.now(), token);
+        return updateExtremeWeatherEvent(cityId, firstMeasurementTime, LocalDateTime.now());
     }
 
     /**
@@ -81,12 +106,8 @@ public class ExtremeWeatherEventService {
     public List<ExtremeWeatherEvent> updateExtremeWeatherEvent(
             String cityId,
             LocalDateTime startTimeInterval,
-            LocalDateTime endTimeInterval,
-            String token
-    ) throws Exception{
-
-        // Check if user role is admin
-        userService.getAndCheckUserFromToken(token, Role.ADMIN);
+            LocalDateTime endTimeInterval
+    ) throws CityNotFoundException, ThresholdsNotPresentException {
 
         // Gets all measurements for a given city
         Date startTime = Date.from(startTimeInterval.toInstant(ZoneOffset.UTC));
@@ -220,15 +241,11 @@ public class ExtremeWeatherEventService {
      * regardless of time interval, and removes duplicates by merging overlapping events.
      *
      * @param cityId the ID of the city for which to process all extreme weather events
-     * @param token the authentication token of the user (must have admin privileges)
      * @return a map containing the number of removed and inserted extreme weather events
      */
     public Map<String, Integer> cleanExtremeWeatherEventDuplicatesAll(
-            String cityId,
-            String token
+            String cityId
     ) {
-        // Check if user role is admin
-        // userService.getAndCheckUserFromToken(token, Role.ADMIN);
 
         Map<ExtremeWeatherEventCategory, List<ExtremeWeatherEvent>> eweListsByCategory = new HashMap<>();
 
@@ -248,17 +265,13 @@ public class ExtremeWeatherEventService {
      * @param cityId the ID of the city for which to process extreme weather events
      * @param startTimeInterval the start of the time interval to consider
      * @param endTimeInterval the end of the time interval to consider
-     * @param token the authentication token of the user (must be an admin)
      * @return a map containing the number of removed and inserted extreme weather events
      */
     public Map<String, Integer> cleanExtremeWeatherEventDuplicatesRange(
             String cityId,
             LocalDateTime startTimeInterval,
-            LocalDateTime endTimeInterval,
-            String token
+            LocalDateTime endTimeInterval
     ) {
-        // Check if user role is admin
-        // userService.getAndCheckUserFromToken(token, Role.ADMIN);
 
         Map<ExtremeWeatherEventCategory, List<ExtremeWeatherEvent>> eweListsByCategory = new HashMap<>();
 

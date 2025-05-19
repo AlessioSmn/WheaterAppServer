@@ -25,25 +25,31 @@ public class DataManagerController {
     DataRefreshService dataRefreshService;
 
     /* Methods for Initialize Data*/
-    @PostMapping("initialize-cities")
+    @PostMapping("step1-initialize-cities")
     public ResponseEntity<String> initializeCityData() throws IOException{
         dataInitializeService.initializeCities();
         return ResponseEntity.status(HttpStatus.OK).body("Citites Data Initialized successfully. Check Log to Verify");
     }
 
-    @PostMapping("initialize-hourly-measurements")
+    @PostMapping("step2-initialize-hourly-measurements")
     public ResponseEntity<String> initializeMeasurementData() throws IOException{
         dataInitializeService.initializeMeasurements();
         return ResponseEntity.status(HttpStatus.OK).body("Measurements Data Initialized successfully. Check Log to Verify");
     }
 
-    @PostMapping("refresh-historical")
+    @PostMapping("step3-refresh-historical")
     public ResponseEntity<String> refreshHistoricalMeasurement() throws JsonProcessingException, IOException{
         dataRefreshService.refreshHistoricalMeasurement();
         return ResponseEntity.status(HttpStatus.OK).body("Historical Measurements Data Refreshed successfully. Check Log to Verify");
     }
 
-    @PostMapping("refresh-forecast")
+    @PostMapping("step4-initialize-extremeWeatherEvents")
+    public ResponseEntity<String> initializeExtremeWeatherEvents(){
+        dataRefreshService.initializeExtremeWeatherEvents();
+        return ResponseEntity.status(HttpStatus.OK).body("EWE initialized successfully. Check Log to Verify");
+    }
+
+    @PostMapping("step5-refresh-forecast")
     public ResponseEntity<String> refreshforecast() throws JsonProcessingException{
         dataRefreshService.refreshForecast();
         return ResponseEntity.status(HttpStatus.OK).body("Forecast Data Refreshed successfully. Check Log to Verify");

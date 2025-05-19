@@ -16,6 +16,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import it.unipi.lsmsd.exception.CityNotFoundException;
+import it.unipi.lsmsd.exception.ThresholdsNotPresentException;
+import it.unipi.lsmsd.model.City;
+import it.unipi.lsmsd.repository.CityRepository;
+import it.unipi.lsmsd.utility.MongoInitializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -41,8 +48,14 @@ public class DataRefreshService {
     private CityService cityService;
     @Autowired
     private RedisForecastService forecastRedisService;
+    @Autowired
+    private ExtremeWeatherEventService extremeWeatherEventService;
+    @Autowired
+    private CityRepository cityRepository;
 
     private final ObjectMapper objectMapper;
+
+    private static final Logger logger = LoggerFactory.getLogger(MongoInitializer.class);
 
     public DataRefreshService(){
         this.objectMapper = new ObjectMapper();
@@ -50,13 +63,13 @@ public class DataRefreshService {
     }
 
     /*
-     * Add 
+     * Add
      *  Get the lis
      *  For each city get the city.endDate and compare with current date
      * Get Historical Data with the date range
-     * Delete the 
+     * Delete the
      */
-    public void refreshHistoricalMeasurement() throws JsonProcessingException, IOException{  
+    public void refreshHistoricalMeasurement() throws JsonProcessingException, IOException{
         // Use PathMatchingResourcePatternResolver to load the resource from the correct path
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         Resource resource = resolver.getResource("classpath:data_init/citiesId.json");
@@ -68,7 +81,7 @@ public class DataRefreshService {
 
         try (InputStream is = resource.getInputStream()){
             List<String> cityIdList = objectMapper.readValue(is, new TypeReference<List<String>>() {});
-            
+
             // Submit tasks for parallel processing
             for(String cityId : cityIdList){
                 // refreshCityHistoricalData(cityId);
@@ -96,7 +109,7 @@ public class DataRefreshService {
         } finally {
             executor.shutdown(); // Ensure that the executor shuts down after all tasks are complete
         }
-        
+
 
         // // Get the list of cities from the DB
 
@@ -107,12 +120,12 @@ public class DataRefreshService {
     }
 
     private void refreshCityHistoricalData(String cityId) throws JsonProcessingException{
-        
+
         try {
             CityDTO cityDTO = cityService.getCityWithID(cityId);
             // Check for the Start and End Date
-            if(cityDTO == null || cityDTO.getStartDate()==null || cityDTO.getEndDate()== null){ return;} 
-        
+            if(cityDTO == null || cityDTO.getStartDate()==null || cityDTO.getEndDate()== null){ return;}
+
             DateTimeFormatter zonedFormatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
             DateTimeFormatter isoFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             ZoneId zoneId = ZoneId.of("UTC");
@@ -143,7 +156,7 @@ public class DataRefreshService {
             hourlyMeasurementDTO.setCityId(cityId);
             //Save to MongoDB
             hourlyMeasurementService.saveHourlyMeasurements(apiResponseDTO.getHourly());
-            
+
             // STEP 2: Delete the Stale Historical Data
             // Calcuate the new start date for removal of the stale data
             // Parse the endDate into LocalDate
@@ -193,7 +206,7 @@ public class DataRefreshService {
         Resource resource = resolver.getResource("classpath:data_init/citiesId.json");
         try (InputStream is = resource.getInputStream()){
             List<String> cityIdList = objectMapper.readValue(is, new TypeReference<List<String>>() {});
-            
+
 
             for(String cityId : cityIdList){
                 refreshCityForecast(cityId);
@@ -215,5 +228,29 @@ public class DataRefreshService {
         HourlyMeasurementDTO hourlyMeasurementDTO = apiResponseDTO.getHourly();
         hourlyMeasurementDTO.setCityId(cityId);
         forecastRedisService.saveForecast(hourlyMeasurementDTO);
+    }
+
+
+    /**
+     * Initializes extreme weather events for all cities by invoking the update logic
+     * for each city's identifier using the ExtremeWeatherEventService.
+     */
+    public void initializeExtremeWeatherEvents() {
+        // Retrieve the list of all cities from the repository
+        List<City> cities = cityRepository.findAll();
+
+        // Iterate through each city and update its extreme weather events
+        for (City city : cities) {
+            try {
+                extremeWeatherEventService.updateExtremeWeatherEventAutomatic(city.getId());
+                logger.info("ExtremeWeatherEvent updated for {} ({})", city.getId(), city.getName());
+            }
+            catch (ThresholdsNotPresentException e){
+                logger.error("ExtremeWeatherEvent updating error for {}: ThresholdsNotPresentException ({})", city.getId(), city.getName());
+            }
+            catch (CityNotFoundException e){
+                logger.error("ExtremeWeatherEvent updating error for {}: CityNotFoundException ({})", city.getId(), city.getName());
+            }
+        }
     }
 }
