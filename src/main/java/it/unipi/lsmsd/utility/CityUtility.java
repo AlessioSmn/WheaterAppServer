@@ -19,7 +19,7 @@ public final class CityUtility {
     private CityUtility(){}
 
     // Custom cityId generation logic
-    // Pisa,Tuscany, (43.690685, 10.452489) --> pis-tus-43.6907-10.4525 
+    // Pisa,Tuscany, (43.690685, 10.452489) --> tus-pis-43.6907-10.4525
     // 23 characters long
     // Static function for reusuabilty
     public static String generateCityId(String name, String region, Double latitude, Double longitude) {
@@ -29,7 +29,7 @@ public final class CityUtility {
         String lonCode = df.format(longitude);
         String nameCode = name.substring(0, 3);
         String regionCode = (region.length() >= 3) ? region.substring(0, 3):region;
-        return (nameCode + "-" + regionCode + "-" + latCode + "-" + lonCode).toLowerCase();
+        return (regionCode + "-" + nameCode + "-" + latCode + "-" + lonCode).toLowerCase();
     }
 
     // Reads City Name from the text file stored in the resources

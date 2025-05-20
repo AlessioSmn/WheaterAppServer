@@ -1,0 +1,256 @@
+2025-05-20 11:06:43 [main] INFO  it.unipi.lsmsd.Application - Starting Application using Java 17.0.14 with PID 7659 (/home/lorenzo/IdeaProjects/WheaterAppServer/target/classes started by lorenzo in /home/lorenzo/IdeaProjects/WheaterAppServer)
+2025-05-20 11:06:43 [main] INFO  it.unipi.lsmsd.Application - No active profile set, falling back to 1 default profile: "default"
+2025-05-20 11:06:48 [main] INFO  it.unipi.lsmsd.Application - Started Application in 5.245 seconds (process running for 5.75)
+2025-05-20 11:06:48 [main] INFO  i.u.lsmsd.utility.MongoInitializer - MongoDB: Collection 'cities' has been created
+2025-05-20 11:06:48 [main] INFO  i.u.lsmsd.utility.MongoInitializer - MongoDB: Collection 'hourly_measurements' has been created
+2025-05-20 11:06:48 [main] INFO  it.unipi.lsmsd.Application - Successful Application Run 
+
+2025-05-20 11:09:09 [pool-2-thread-4] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for pis-tus-43.7085-10.4036: EWEThreshold{rainfall=2.3, snowfall=0.1, maxTemperature=31.200000000000003, minTemperature=-0.1, windSpeed=25.700000000000003}
+2025-05-20 11:09:09 [pool-2-thread-3] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for nap-cam-40.8522-14.2681: EWEThreshold{rainfall=2.4, snowfall=0.1, maxTemperature=31.4, minTemperature=2.8, windSpeed=31.4}
+2025-05-20 11:09:09 [pool-2-thread-2] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for mil-lom-45.4643-9.1895: EWEThreshold{rainfall=2.6, snowfall=0.1, maxTemperature=31.6, minTemperature=-3.2, windSpeed=21.3}
+2025-05-20 11:09:09 [pool-2-thread-1] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for flo-tus-43.7792-11.2463: EWEThreshold{rainfall=2.2, snowfall=0.1, maxTemperature=33.0, minTemperature=-1.8, windSpeed=24.2}
+2025-05-20 11:09:09 [pool-2-thread-1] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for flo-tus-43.7792-11.2463 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 11:09:09 [pool-2-thread-4] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for pis-tus-43.7085-10.4036 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 11:09:09 [pool-2-thread-3] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for nap-cam-40.8522-14.2681 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 11:09:09 [pool-2-thread-2] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for mil-lom-45.4643-9.1895 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 11:09:17 [pool-2-thread-3] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for tur-pie-45.0705-7.6868: EWEThreshold{rainfall=2.1, snowfall=0.14, maxTemperature=31.0, minTemperature=-4.3, windSpeed=13.100000000000001}
+2025-05-20 11:09:17 [pool-2-thread-3] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for tur-pie-45.0705-7.6868 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 11:09:17 [pool-2-thread-4] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for rom-lat-41.8919-12.5113: EWEThreshold{rainfall=2.1, snowfall=0.1, maxTemperature=33.2, minTemperature=0.6, windSpeed=25.200000000000003}
+2025-05-20 11:09:17 [pool-2-thread-4] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for rom-lat-41.8919-12.5113 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 11:33:42 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for mil-lom-45.4643-9.1895 (Milan)
+2025-05-20 11:34:07 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tur-pie-45.0705-7.6868 (Turin)
+2025-05-20 11:34:07 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for gen-lig-44.4048-8.9444 (Genoa)
+2025-05-20 11:34:07 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for bre-lom-45.5356-10.2147 (Brescia)
+2025-05-20 11:34:07 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for ber-lom-45.696-9.6672 (Bergamo)
+2025-05-20 11:34:07 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for ver-ven-45.4299-10.9844 (Verona)
+2025-05-20 11:34:07 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for ven-ven-45.4371-12.3326 (Venice)
+2025-05-20 11:34:08 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for pad-ven-45.408-11.8859 (Padua)
+2025-05-20 11:34:08 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tri-fri-45.6495-13.7768 (Trieste)
+2025-05-20 11:34:08 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for par-emi-44.7993-10.3262 (Parma)
+2025-05-20 11:34:08 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for mod-emi-44.6478-10.9254 (Modena)
+2025-05-20 11:34:08 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for bol-emi-44.4938-11.3387 (Bologna)
+2025-05-20 11:34:08 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for reg-emi-44.6983-10.6312 (Reggio Emilia)
+2025-05-20 11:34:08 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tre-tre-46.0679-11.1211 (Trento)
+2025-05-20 11:34:08 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for bol-tre-46.4907-11.3398 (Bolzano)
+2025-05-20 11:34:08 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for aos-aos-45.7376-7.3172 (Aosta)
+2025-05-20 11:34:08 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for udi-fri-46.0693-13.2371 (Udine)
+2025-05-20 11:34:08 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for pia-emi-45.0524-9.6934 (Piacenza)
+2025-05-20 11:34:08 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cre-lom-45.1332-10.0213 (Cremona)
+2025-05-20 11:34:08 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for la -lig-44.103-9.8238 (La Spezia)
+2025-05-20 11:34:18 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for flo-tus-43.7792-11.2463 (Florence)
+2025-05-20 11:34:29 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for pis-tus-43.7085-10.4036 (Pisa)
+2025-05-20 11:34:29 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sie-tus-43.3182-11.3306 (Siena)
+2025-05-20 11:34:29 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for are-tus-43.4628-11.8807 (Arezzo)
+2025-05-20 11:34:29 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for pra-tus-43.8805-11.097 (Prato)
+2025-05-20 11:34:29 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for liv-tus-43.5443-10.3262 (Livorno)
+2025-05-20 11:34:40 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for rom-lat-41.8919-12.5113 (Rome)
+2025-05-20 11:34:40 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lat-lat-41.4661-12.9043 (Latina)
+2025-05-20 11:34:40 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for fro-lat-41.6398-13.3411 (Frosinone)
+2025-05-20 11:34:40 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for ter-umb-42.5633-12.6433 (Terni)
+2025-05-20 11:34:40 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for per-umb-43.1122-12.3888 (Perugia)
+2025-05-20 11:34:40 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for anc-the-43.5942-13.5034 (Ancona)
+2025-05-20 11:34:40 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for asc-the-42.8535-13.5739 (Ascoli Piceno)
+2025-05-20 11:34:40 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for pes-the-43.9092-12.9164 (Pesaro)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for nap-cam-40.8522-14.2681 (Naples)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sal-cam-40.6754-14.7933 (Salerno)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cas-cam-41.0726-14.3323 (Caserta)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for bar-apu-41.1207-16.8698 (Bari)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lec-apu-40.3548-18.1724 (Lecce)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for bri-apu-40.6322-17.9361 (Brindisi)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tar-apu-40.4644-17.2471 (Taranto)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for fog-apu-41.4584-15.5519 (Foggia)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for pot-bas-40.6418-15.8079 (Potenza)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for mat-bas-40.666-16.6046 (Matera)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cat-cal-38.8825-16.6009 (Catanzaro)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for reg-cal-38.1105-15.6613 (Reggio Calabria)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cos-cal-39.2989-16.2531 (Cosenza)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cam-mol-41.5595-14.6674 (Campobasso)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for pal-sic-38.132-13.3356 (Palermo)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cat-sic-37.4922-15.0704 (Catania)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for mes-sic-38.1939-15.5526 (Messina)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for syr-sic-37.0754-15.2866 (Syracuse)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tra-sic-38.0176-12.5362 (Trapani)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for agr-sic-37.3107-13.5766 (Agrigento)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cag-sar-39.2305-9.1192 (Cagliari)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sas-sar-40.7259-8.5555 (Sassari)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for olb-sar-40.9234-9.498 (Olbia)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for nuo-sar-40.3199-9.3257 (Nuoro)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for l’a-abr-42.3505-13.3995 (L’Aquila)
+2025-05-20 11:34:51 [http-nio-8080-exec-5] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for rim-emi-44.0575-12.5653 (Rimini)
+2025-05-20 11:46:07 [main] INFO  it.unipi.lsmsd.Application - Starting Application using Java 17.0.14 with PID 9893 (/home/lorenzo/IdeaProjects/WheaterAppServer/target/classes started by lorenzo in /home/lorenzo/IdeaProjects/WheaterAppServer)
+2025-05-20 11:46:07 [main] INFO  it.unipi.lsmsd.Application - No active profile set, falling back to 1 default profile: "default"
+2025-05-20 11:46:12 [main] INFO  it.unipi.lsmsd.Application - Started Application in 5.043 seconds (process running for 5.491)
+2025-05-20 11:46:12 [main] INFO  i.u.lsmsd.utility.MongoInitializer - MongoDB: Collection 'cities' has been created
+2025-05-20 11:46:12 [main] INFO  i.u.lsmsd.utility.MongoInitializer - MongoDB: Collection 'hourly_measurements' has been created
+2025-05-20 11:46:12 [main] INFO  it.unipi.lsmsd.Application - Successful Application Run 
+
+2025-05-20 11:47:58 [pool-2-thread-4] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for pis-tus-43.7085-10.4036: EWEThreshold{rainfall=2.3, snowfall=0.1, maxTemperature=31.200000000000003, minTemperature=-0.1, windSpeed=25.700000000000003}
+2025-05-20 11:47:58 [pool-2-thread-4] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for pis-tus-43.7085-10.4036 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 11:47:59 [pool-2-thread-2] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for mil-lom-45.4643-9.1895: EWEThreshold{rainfall=2.6, snowfall=0.1, maxTemperature=31.6, minTemperature=-3.2, windSpeed=21.3}
+2025-05-20 11:47:59 [pool-2-thread-3] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for nap-cam-40.8522-14.2681: EWEThreshold{rainfall=2.4, snowfall=0.1, maxTemperature=31.4, minTemperature=2.8, windSpeed=31.4}
+2025-05-20 11:47:59 [pool-2-thread-1] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for flo-tus-43.7792-11.2463: EWEThreshold{rainfall=2.2, snowfall=0.1, maxTemperature=33.0, minTemperature=-1.8, windSpeed=24.2}
+2025-05-20 11:47:59 [pool-2-thread-2] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for mil-lom-45.4643-9.1895 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 11:47:59 [pool-2-thread-3] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for nap-cam-40.8522-14.2681 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 11:47:59 [pool-2-thread-1] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for flo-tus-43.7792-11.2463 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 11:48:06 [pool-2-thread-2] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for tur-pie-45.0705-7.6868: EWEThreshold{rainfall=2.1, snowfall=0.14, maxTemperature=31.0, minTemperature=-4.3, windSpeed=13.100000000000001}
+2025-05-20 11:48:06 [pool-2-thread-2] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for tur-pie-45.0705-7.6868 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 11:48:07 [pool-2-thread-4] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for rom-lat-41.8919-12.5113: EWEThreshold{rainfall=2.1, snowfall=0.1, maxTemperature=33.2, minTemperature=0.6, windSpeed=25.200000000000003}
+2025-05-20 11:48:07 [pool-2-thread-4] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for rom-lat-41.8919-12.5113 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 12:01:13 [main] INFO  it.unipi.lsmsd.Application - Starting Application using Java 17.0.14 with PID 11422 (/home/lorenzo/IdeaProjects/WheaterAppServer/target/classes started by lorenzo in /home/lorenzo/IdeaProjects/WheaterAppServer)
+2025-05-20 12:01:13 [main] INFO  it.unipi.lsmsd.Application - No active profile set, falling back to 1 default profile: "default"
+2025-05-20 12:01:17 [main] INFO  it.unipi.lsmsd.Application - Started Application in 5.428 seconds (process running for 5.987)
+2025-05-20 12:01:17 [main] INFO  i.u.lsmsd.utility.MongoInitializer - MongoDB: Collection 'cities' has been created
+2025-05-20 12:01:17 [main] INFO  i.u.lsmsd.utility.MongoInitializer - MongoDB: Collection 'hourly_measurements' has been created
+2025-05-20 12:01:17 [main] INFO  it.unipi.lsmsd.Application - Successful Application Run 
+
+2025-05-20 12:02:41 [pool-2-thread-4] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for pis-tus-43.7085-10.4036: EWEThreshold{rainfall=2.3, snowfall=0.1, maxTemperature=31.200000000000003, minTemperature=-0.1, windSpeed=25.700000000000003}
+2025-05-20 12:02:41 [pool-2-thread-3] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for nap-cam-40.8522-14.2681: EWEThreshold{rainfall=2.4, snowfall=0.1, maxTemperature=31.4, minTemperature=2.8, windSpeed=31.4}
+2025-05-20 12:02:41 [pool-2-thread-2] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for mil-lom-45.4643-9.1895: EWEThreshold{rainfall=2.6, snowfall=0.1, maxTemperature=31.6, minTemperature=-3.2, windSpeed=21.3}
+2025-05-20 12:02:41 [pool-2-thread-1] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for flo-tus-43.7792-11.2463: EWEThreshold{rainfall=2.2, snowfall=0.1, maxTemperature=33.0, minTemperature=-1.8, windSpeed=24.2}
+2025-05-20 12:02:51 [pool-2-thread-3] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for tur-pie-45.0705-7.6868: EWEThreshold{rainfall=2.1, snowfall=0.14, maxTemperature=31.0, minTemperature=-4.3, windSpeed=13.100000000000001}
+2025-05-20 12:02:51 [pool-2-thread-2] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for rom-lat-41.8919-12.5113: EWEThreshold{rainfall=2.1, snowfall=0.1, maxTemperature=33.2, minTemperature=0.6, windSpeed=25.200000000000003}
+2025-05-20 12:03:28 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lom-mil-45.4643-9.1895 (Milan)
+2025-05-20 12:03:28 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for pie-tur-45.0705-7.6868 (Turin)
+2025-05-20 12:03:28 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lig-gen-44.4048-8.9444 (Genoa)
+2025-05-20 12:03:28 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lom-bre-45.5356-10.2147 (Brescia)
+2025-05-20 12:03:28 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lom-ber-45.6960-9.6672 (Bergamo)
+2025-05-20 12:03:28 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for ven-ver-45.4299-10.9844 (Verona)
+2025-05-20 12:03:28 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for ven-ven-45.4371-12.3326 (Venice)
+2025-05-20 12:03:28 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for ven-pad-45.4080-11.8859 (Padua)
+2025-05-20 12:03:28 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for fri-tri-45.6495-13.7768 (Trieste)
+2025-05-20 12:03:28 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for emi-par-44.7993-10.3262 (Parma)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for emi-mod-44.6478-10.9254 (Modena)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for emi-bol-44.4938-11.3387 (Bologna)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for emi-reg-44.6983-10.6312 (Reggio Emilia)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tre-tre-46.0679-11.1211 (Trento)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tre-bol-46.4907-11.3398 (Bolzano)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for aos-aos-45.7376-7.3172 (Aosta)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for fri-udi-46.0693-13.2371 (Udine)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for emi-pia-45.0524-9.6934 (Piacenza)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lom-cre-45.1332-10.0213 (Cremona)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lig-la -44.1030-9.8238 (La Spezia)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tus-flo-43.7792-11.2463 (Florence)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tus-pis-43.7085-10.4036 (Pisa)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tus-sie-43.3182-11.3306 (Siena)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tus-are-43.4628-11.8807 (Arezzo)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tus-pra-43.8805-11.0970 (Prato)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tus-liv-43.5443-10.3262 (Livorno)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lat-rom-41.8919-12.5113 (Rome)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lat-lat-41.4661-12.9043 (Latina)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lat-fro-41.6398-13.3411 (Frosinone)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for umb-ter-42.5633-12.6433 (Terni)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for umb-per-43.1122-12.3888 (Perugia)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for the-anc-43.5942-13.5034 (Ancona)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for the-asc-42.8535-13.5739 (Ascoli Piceno)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for the-pes-43.9092-12.9164 (Pesaro)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cam-nap-40.8522-14.2681 (Naples)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cam-sal-40.6754-14.7933 (Salerno)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cam-cas-41.0726-14.3323 (Caserta)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for apu-bar-41.1207-16.8698 (Bari)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for apu-lec-40.3548-18.1724 (Lecce)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for apu-bri-40.6322-17.9361 (Brindisi)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for apu-tar-40.4644-17.2471 (Taranto)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for apu-fog-41.4584-15.5519 (Foggia)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for bas-pot-40.6418-15.8079 (Potenza)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for bas-mat-40.6660-16.6046 (Matera)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cal-cat-38.8825-16.6009 (Catanzaro)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cal-reg-38.1105-15.6613 (Reggio Calabria)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cal-cos-39.2989-16.2531 (Cosenza)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for mol-cam-41.5595-14.6674 (Campobasso)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sic-pal-38.1320-13.3356 (Palermo)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sic-cat-37.4922-15.0704 (Catania)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sic-mes-38.1939-15.5526 (Messina)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sic-syr-37.0754-15.2866 (Syracuse)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sic-tra-38.0176-12.5362 (Trapani)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sic-agr-37.3107-13.5766 (Agrigento)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sar-cag-39.2305-9.1192 (Cagliari)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sar-sas-40.7259-8.5555 (Sassari)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sar-olb-40.9234-9.4980 (Olbia)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sar-nuo-40.3199-9.3257 (Nuoro)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for abr-l’a-42.3505-13.3995 (L’Aquila)
+2025-05-20 12:03:29 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for emi-rim-44.0575-12.5653 (Rimini)
+2025-05-20 12:07:46 [pool-4-thread-1] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for flo-tus-43.7792-11.2463: EWEThreshold{rainfall=2.2, snowfall=0.1, maxTemperature=33.0, minTemperature=-1.8, windSpeed=24.2}
+2025-05-20 12:07:46 [pool-4-thread-2] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for mil-lom-45.4643-9.1895: EWEThreshold{rainfall=2.6, snowfall=0.1, maxTemperature=31.6, minTemperature=-3.2, windSpeed=21.3}
+2025-05-20 12:07:46 [pool-4-thread-4] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for pis-tus-43.7085-10.4036: EWEThreshold{rainfall=2.3, snowfall=0.1, maxTemperature=31.200000000000003, minTemperature=-0.1, windSpeed=25.700000000000003}
+2025-05-20 12:07:46 [pool-4-thread-3] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for nap-cam-40.8522-14.2681: EWEThreshold{rainfall=2.4, snowfall=0.1, maxTemperature=31.4, minTemperature=2.8, windSpeed=31.4}
+2025-05-20 12:07:52 [pool-4-thread-2] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for tur-pie-45.0705-7.6868: EWEThreshold{rainfall=2.1, snowfall=0.14, maxTemperature=31.0, minTemperature=-4.3, windSpeed=13.100000000000001}
+2025-05-20 12:07:52 [pool-4-thread-1] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for rom-lat-41.8919-12.5113: EWEThreshold{rainfall=2.1, snowfall=0.1, maxTemperature=33.2, minTemperature=0.6, windSpeed=25.200000000000003}
+2025-05-20 12:21:30 [main] INFO  it.unipi.lsmsd.Application - Starting Application using Java 17.0.14 with PID 13413 (/home/lorenzo/IdeaProjects/WheaterAppServer/target/classes started by lorenzo in /home/lorenzo/IdeaProjects/WheaterAppServer)
+2025-05-20 12:21:30 [main] INFO  it.unipi.lsmsd.Application - No active profile set, falling back to 1 default profile: "default"
+2025-05-20 12:21:34 [main] INFO  it.unipi.lsmsd.Application - Started Application in 5.023 seconds (process running for 5.596)
+2025-05-20 12:21:34 [main] INFO  i.u.lsmsd.utility.MongoInitializer - MongoDB: Collection 'cities' has been created
+2025-05-20 12:21:34 [main] INFO  i.u.lsmsd.utility.MongoInitializer - MongoDB: Collection 'hourly_measurements' has been created
+2025-05-20 12:21:34 [main] INFO  it.unipi.lsmsd.Application - Successful Application Run 
+
+2025-05-20 12:22:13 [pool-2-thread-4] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for pie-tur-45.0705-7.6868: EWEThreshold{rainfall=2.1, snowfall=0.14, maxTemperature=31.0, minTemperature=-4.3, windSpeed=13.100000000000001}
+2025-05-20 12:22:14 [pool-2-thread-4] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for pie-tur-45.0705-7.6868 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 12:22:14 [pool-2-thread-3] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for lom-mil-45.4643-9.1895: EWEThreshold{rainfall=2.6, snowfall=0.1, maxTemperature=31.6, minTemperature=-3.2, windSpeed=21.3}
+2025-05-20 12:22:14 [pool-2-thread-2] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for lat-rom-41.8919-12.5113: EWEThreshold{rainfall=2.1, snowfall=0.1, maxTemperature=33.2, minTemperature=0.6, windSpeed=25.200000000000003}
+2025-05-20 12:22:14 [pool-2-thread-1] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for cam-nap-40.8522-14.2681: EWEThreshold{rainfall=2.4, snowfall=0.1, maxTemperature=31.4, minTemperature=2.8, windSpeed=31.4}
+2025-05-20 12:22:14 [pool-2-thread-2] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for lat-rom-41.8919-12.5113 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 12:22:14 [pool-2-thread-1] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for cam-nap-40.8522-14.2681 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 12:22:14 [pool-2-thread-3] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for lom-mil-45.4643-9.1895 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 12:22:25 [pool-2-thread-2] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for tus-pis-43.7085-10.4036: EWEThreshold{rainfall=2.3, snowfall=0.1, maxTemperature=31.200000000000003, minTemperature=-0.1, windSpeed=25.700000000000003}
+2025-05-20 12:22:25 [pool-2-thread-2] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for tus-pis-43.7085-10.4036 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 12:22:25 [pool-2-thread-4] INFO  i.u.lsmsd.utility.MongoInitializer - EWE Thresholds calculated for tus-flo-43.7792-11.2463: EWEThreshold{rainfall=2.2, snowfall=0.1, maxTemperature=33.0, minTemperature=-1.8, windSpeed=24.2}
+2025-05-20 12:22:25 [pool-2-thread-4] INFO  i.u.lsmsd.utility.MongoInitializer - Added HourlyMeasurement for tus-flo-43.7792-11.2463 and updated city.endDate = 2025-05-01T23:00
+2025-05-20 12:23:25 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lom-mil-45.4643-9.1895 (Milan)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for pie-tur-45.0705-7.6868 (Turin)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lig-gen-44.4048-8.9444 (Genoa)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lom-bre-45.5356-10.2147 (Brescia)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lom-ber-45.6960-9.6672 (Bergamo)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for ven-ver-45.4299-10.9844 (Verona)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for ven-ven-45.4371-12.3326 (Venice)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for ven-pad-45.4080-11.8859 (Padua)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for fri-tri-45.6495-13.7768 (Trieste)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for emi-par-44.7993-10.3262 (Parma)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for emi-mod-44.6478-10.9254 (Modena)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for emi-bol-44.4938-11.3387 (Bologna)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for emi-reg-44.6983-10.6312 (Reggio Emilia)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tre-tre-46.0679-11.1211 (Trento)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tre-bol-46.4907-11.3398 (Bolzano)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for aos-aos-45.7376-7.3172 (Aosta)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for fri-udi-46.0693-13.2371 (Udine)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for emi-pia-45.0524-9.6934 (Piacenza)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lom-cre-45.1332-10.0213 (Cremona)
+2025-05-20 12:23:47 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lig-la -44.1030-9.8238 (La Spezia)
+2025-05-20 12:24:04 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tus-flo-43.7792-11.2463 (Florence)
+2025-05-20 12:24:23 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tus-pis-43.7085-10.4036 (Pisa)
+2025-05-20 12:24:23 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tus-sie-43.3182-11.3306 (Siena)
+2025-05-20 12:24:23 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tus-are-43.4628-11.8807 (Arezzo)
+2025-05-20 12:24:23 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tus-pra-43.8805-11.0970 (Prato)
+2025-05-20 12:24:23 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for tus-liv-43.5443-10.3262 (Livorno)
+2025-05-20 12:24:41 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lat-rom-41.8919-12.5113 (Rome)
+2025-05-20 12:24:41 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lat-lat-41.4661-12.9043 (Latina)
+2025-05-20 12:24:41 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for lat-fro-41.6398-13.3411 (Frosinone)
+2025-05-20 12:24:41 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for umb-ter-42.5633-12.6433 (Terni)
+2025-05-20 12:24:41 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for umb-per-43.1122-12.3888 (Perugia)
+2025-05-20 12:24:41 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for the-anc-43.5942-13.5034 (Ancona)
+2025-05-20 12:24:41 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for the-asc-42.8535-13.5739 (Ascoli Piceno)
+2025-05-20 12:24:41 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for the-pes-43.9092-12.9164 (Pesaro)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cam-nap-40.8522-14.2681 (Naples)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cam-sal-40.6754-14.7933 (Salerno)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cam-cas-41.0726-14.3323 (Caserta)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for apu-bar-41.1207-16.8698 (Bari)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for apu-lec-40.3548-18.1724 (Lecce)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for apu-bri-40.6322-17.9361 (Brindisi)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for apu-tar-40.4644-17.2471 (Taranto)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for apu-fog-41.4584-15.5519 (Foggia)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for bas-pot-40.6418-15.8079 (Potenza)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for bas-mat-40.6660-16.6046 (Matera)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cal-cat-38.8825-16.6009 (Catanzaro)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cal-reg-38.1105-15.6613 (Reggio Calabria)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for cal-cos-39.2989-16.2531 (Cosenza)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for mol-cam-41.5595-14.6674 (Campobasso)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sic-pal-38.1320-13.3356 (Palermo)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sic-cat-37.4922-15.0704 (Catania)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sic-mes-38.1939-15.5526 (Messina)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sic-syr-37.0754-15.2866 (Syracuse)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sic-tra-38.0176-12.5362 (Trapani)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sic-agr-37.3107-13.5766 (Agrigento)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sar-cag-39.2305-9.1192 (Cagliari)
+2025-05-20 12:24:50 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sar-sas-40.7259-8.5555 (Sassari)
+2025-05-20 12:24:51 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sar-olb-40.9234-9.4980 (Olbia)
+2025-05-20 12:24:51 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for sar-nuo-40.3199-9.3257 (Nuoro)
+2025-05-20 12:24:51 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for abr-l’a-42.3505-13.3995 (L’Aquila)
+2025-05-20 12:24:51 [http-nio-8080-exec-4] INFO  i.u.lsmsd.utility.MongoInitializer - ExtremeWeatherEvent updated for emi-rim-44.0575-12.5653 (Rimini)
