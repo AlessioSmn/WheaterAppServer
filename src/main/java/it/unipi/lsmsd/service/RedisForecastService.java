@@ -190,13 +190,11 @@ public class RedisForecastService {
         double[] snowSum = new double[24];
         double[] tempSum = new double[24];
         double[] windSum = new double[24];
-        double[] debug = new double[240];
         double weightSum = 0.0;
 
         ObjectMapper mapper = new ObjectMapper();
         ArrayNode distancesArray = mapper.createArrayNode();
 
-        int j = 0;
         for (City city : targetCities) {
             double distance = haversine(lat, lon, city.getLatitude(), city.getLongitude());
             double weight = distance == 0 ? 1000 : 1000 / distance;
@@ -221,12 +219,10 @@ public class RedisForecastService {
                     snowSum[i] += root.get("snowfall").get(i).asDouble() * weight;
                     tempSum[i] += root.get("temperature_2m").get(i).asDouble() * weight;
                     windSum[i] += root.get("wind_speed_10m").get(i).asDouble() * weight;
-                    debug[j*24 + i] = root.get("temperature_2m").get(i).asDouble();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            j++;
         }
 
         ArrayNode timeArray = mapper.createArrayNode();
@@ -234,7 +230,6 @@ public class RedisForecastService {
         ArrayNode snowArray = mapper.createArrayNode();
         ArrayNode tempArray = mapper.createArrayNode();
         ArrayNode windArray = mapper.createArrayNode();
-        ArrayNode debugArray = mapper.createArrayNode();
 
         for (int i = 0; i < 24; i++) {
             rainArray.add(rainSum[i] / weightSum);
@@ -245,17 +240,12 @@ public class RedisForecastService {
             timeArray.add(date + "T" + String.format("%02d:00", i));
         }
 
-        for(int i = 0; i < 240; i++){
-            debugArray.add(debug[i]);
-        }
-
         ObjectNode result = mapper.createObjectNode();
         result.set("time", timeArray);
         result.set("rain", rainArray);
         result.set("snowfall", snowArray);
         result.set("temperature_2m", tempArray);
         result.set("wind_speed_10m", windArray);
-        result.set("weightSum", mapper.getNodeFactory().numberNode(weightSum));
 
         return result.toPrettyString();
     }
