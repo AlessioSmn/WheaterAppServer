@@ -24,9 +24,9 @@ public class AnalyticsController {
     private AnalyticsService analyticsService;
 
 
-    // <editor-fold desc="Measurements analytics with single city as target [ measurement/ ]">
+    // <editor-fold desc="Measurements analytics with single city as target [ measurement/city/ ]">
 
-    @GetMapping("/measurement/count-for-city")
+    @GetMapping("/measurement/city/total-measurements-count-per-city-TESTAPI")
     public ResponseEntity<Object> getMeasurementCounts(
             @RequestParam LocalDateTime start,
             @RequestParam LocalDateTime end
@@ -35,7 +35,7 @@ public class AnalyticsController {
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
-    @GetMapping("/measurement/average-of-city")
+    @GetMapping("/measurement/city/average")
     public ResponseEntity<Object> averageMeasurementInCityDuringPeriod(
             @RequestParam String cityId,
             @RequestParam MeasurementField measurementField,
@@ -46,7 +46,7 @@ public class AnalyticsController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("/measurement/average-per-month-of-city")
+    @GetMapping("/measurement/city/average-per-month")
     public ResponseEntity<Object> averageMeasurementGroupByMonthInCityDuringPeriod(
             @RequestParam String cityId,
             @RequestParam MeasurementField measurementField,
@@ -57,7 +57,7 @@ public class AnalyticsController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("/measurement/highest-of-city")
+    @GetMapping("/measurement/city/highest")
     public ResponseEntity<Object> highestMeasurementsInCityDuringPeriod(
             @RequestParam String cityId,
             @RequestParam MeasurementField measurementField,
@@ -69,7 +69,7 @@ public class AnalyticsController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("/measurement/lowest-of-city")
+    @GetMapping("/measurement/city/lowest")
     public ResponseEntity<Object> lowestMeasurementsInCityDuringPeriod(
             @RequestParam String cityId,
             @RequestParam MeasurementField measurementField,
@@ -85,60 +85,51 @@ public class AnalyticsController {
 
     // <editor-fold desc="Measurements analytics across multiple cities [ measurement/ ]">
 
-    @GetMapping("/measurement/average-highest-per-city")
+    @GetMapping("/measurement/region/average-highest")
     public ResponseEntity<Object> highestAverageMeasurementAcrossCities(
+            @RequestParam String region,
             @RequestParam MeasurementField measurementField,
             @RequestParam LocalDateTime startDate,
-            @RequestParam LocalDateTime endDate,
-            @RequestParam int maxNumCitiesToFind
+            @RequestParam LocalDateTime endDate
     ){
-        List<Document> response = analyticsService.highestAverageMeasurementAcrossCities(measurementField, startDate, endDate, maxNumCitiesToFind);
+        List<Document> response = analyticsService.highestAverageMeasurementInRegion(measurementField, startDate, endDate, region);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-    @GetMapping("/measurement/average-lowest-per-city")
+    @GetMapping("/measurement/region/average-lowest")
     public ResponseEntity<Object> lowestAverageMeasurementAcrossCities(
+            @RequestParam String region,
             @RequestParam MeasurementField measurementField,
             @RequestParam LocalDateTime startDate,
-            @RequestParam LocalDateTime endDate,
-            @RequestParam int maxNumCitiesToFind
+            @RequestParam LocalDateTime endDate
     ){
-        List<Document> response = analyticsService.lowestAverageMeasurementAcrossCities(measurementField, startDate, endDate, maxNumCitiesToFind);
+        List<Document> response = analyticsService.lowestAverageMeasurementInRegion(measurementField, startDate, endDate, region);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-    @GetMapping("/measurement/absolute-highest-per-city")
+    @GetMapping("/measurement/region/absolute-highest")
     public ResponseEntity<Object> highestMeasurementPerCity(
+            @RequestParam String region,
             @RequestParam MeasurementField measurementField,
             @RequestParam LocalDateTime startDate,
-            @RequestParam LocalDateTime endDate,
-            @RequestParam int maxNumCitiesToFind
+            @RequestParam LocalDateTime endDate
     ){
-        List<Document> response = analyticsService.highestMeasurementPerCity(measurementField, startDate, endDate, maxNumCitiesToFind);
+        List<Document> response = analyticsService.highestMeasurementInRegion(measurementField, startDate, endDate, region);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-    @GetMapping("/measurement/absolute-lowest-per-city")
+    @GetMapping("/measurement/region/absolute-lowest")
     public ResponseEntity<Object> lowestMeasurementPerCity(
+            @RequestParam String region,
             @RequestParam MeasurementField measurementField,
             @RequestParam LocalDateTime startDate,
-            @RequestParam LocalDateTime endDate,
-            @RequestParam int maxNumCitiesToFind
+            @RequestParam LocalDateTime endDate
     ){
-        List<Document> response = analyticsService.lowestMeasurementPerCity(measurementField, startDate, endDate, maxNumCitiesToFind);
+        List<Document> response = analyticsService.lowestMeasurementInRegion(measurementField, startDate, endDate, region);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     // </editor-fold>
 
     // <editor-fold desc="Measurements analytics of recent period [ measurement/recent/ ]">
 
-    @GetMapping("/measurement/recent/average-per-city")
-    public ResponseEntity<Object> averageMeasurementOfLastDaysAllCities(
-            @RequestParam MeasurementField measurementField,
-            @RequestParam int pastDays
-    ) {
-        List<Document> serviceResponse = analyticsService.getAverageMeasurementOfLastDaysAllCities(measurementField, pastDays);
-        return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
-    }
-
-    @GetMapping("/measurement/recent/average-per-day-of-city")
+    @GetMapping("/measurement/recent/city/average-per-day")
     public ResponseEntity<Object> averageMeasurementPerDayOfCity(
             @RequestParam MeasurementField measurementField,
             @RequestParam String cityId,
@@ -148,16 +139,7 @@ public class AnalyticsController {
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
-    @GetMapping("/measurement/recent/total-per-city")
-    public ResponseEntity<Object> totalMeasurementsOfLastDaysAllCities(
-            @RequestParam MeasurementField measurementField,
-            @RequestParam int pastDays
-    ) {
-        List<Document> serviceResponse = analyticsService.getTotalMeasurementLastDaysAllCities(measurementField, pastDays);
-        return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
-    }
-
-    @GetMapping("/measurement/recent/total-per-day-of-city")
+    @GetMapping("/measurement/recent/city/total-per-day")
     public ResponseEntity<Object> totalMeasurementPerDayOfCity(
             @RequestParam MeasurementField measurementField,
             @RequestParam String cityId,
@@ -167,13 +149,33 @@ public class AnalyticsController {
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
+    @GetMapping("/measurement/recent/region/average")
+    public ResponseEntity<Object> averageMeasurementOfLastDaysOfRegion(
+            @RequestParam MeasurementField measurementField,
+            @RequestParam String region,
+            @RequestParam int pastDays
+    ) {
+        List<Document> serviceResponse = analyticsService.getAverageMeasurementOfLastDaysOfRegion(measurementField, region, pastDays);
+        return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
+    }
+
+    @GetMapping("/measurement/recent/region/total")
+    public ResponseEntity<Object> totalMeasurementsOfLastDaysOfRegion(
+            @RequestParam MeasurementField measurementField,
+            @RequestParam String region,
+            @RequestParam int pastDays
+    ) {
+        List<Document> serviceResponse = analyticsService.getTotalMeasurementLastDaysOfRegion(measurementField, region, pastDays);
+        return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
+    }
+
     // </editor-fold>
 
 
 
     // <editor-fold desc="Extreme Weather Event analytics across multiple cities [ ewe/ ]">
 
-    @GetMapping("/ewe/affected-cities")
+    @GetMapping("/ewe/count-cities")
     public ResponseEntity<Object> citiesMostAffectedByEweInTimeRange(
             @RequestParam ExtremeWeatherEventCategory extremeWeatherEventCategory,
             @RequestParam int numCities,

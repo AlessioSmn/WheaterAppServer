@@ -44,7 +44,7 @@ public class AnalyticsService{
         this.cityCollection = database.getCollection("cities");
     }
 
-    // <editor-fold desc="Measurements analytics with single city as target [ measurement/ ]">
+    // <editor-fold desc="Measurements analytics with single city as target [ measurement/city/ ]">
 
     /**
      * Retrieves the number of measurements recorded for each city within a specified time interval.
@@ -259,7 +259,7 @@ public class AnalyticsService{
 
     // </editor-fold>
 
-    // <editor-fold desc="Measurements analytics across multiple cities [ measurement/ ]">
+    // <editor-fold desc="Measurements analytics with region as target [ measurement/region/ ]">
 
     /**
      * Computes the top cities with the highest average value of a specific measurement field
@@ -268,28 +268,30 @@ public class AnalyticsService{
      * @param measurementField   the measurement field to average (e.g., temperature, rainfall)
      * @param startDate          the start of the time interval (inclusive)
      * @param endDate            the end of the time interval (inclusive)
-     * @param maxNumCitiesToFind the maximum number of top cities to return
+     * @param region             the target region
      * @return a list of documents representing the top cities with their average measurement and metadata
      */
-    public List<Document> highestAverageMeasurementAcrossCities(
+    public List<Document> highestAverageMeasurementInRegion(
             MeasurementField measurementField,
             LocalDateTime startDate,
             LocalDateTime endDate,
-            int maxNumCitiesToFind
+            String region
     ) {
         String fieldName = getFieldName(measurementField);
         String expression = "$" + fieldName;
         String projectedName = "Average " + fieldName;
 
+        String regionPrefix = region.substring(0, 3).toLowerCase();
+
         return StreamSupport.stream(measurementCollection.aggregate(
                 Arrays.asList(
                         match(and(
+                                regex("cityId", "^" + regionPrefix + "-"),
                                 gte("time", startDate),
                                 lte("time", endDate)
                         )),
                         group("$cityId", avg(projectedName, expression)),
-                        sort(descending(projectedName)),
-                        limit(maxNumCitiesToFind)
+                        sort(descending(projectedName))
                         )).spliterator(), false)
                 .collect(Collectors.toList());
     }
@@ -301,28 +303,30 @@ public class AnalyticsService{
      * @param measurementField   the measurement field to average (e.g., temperature, rainfall)
      * @param startDate          the start of the time interval (inclusive)
      * @param endDate            the end of the time interval (inclusive)
-     * @param maxNumCitiesToFind the maximum number of top cities to return
+     * @param region             the target region
      * @return a list of documents representing the top cities with their average measurement and metadata
      */
-    public List<Document> lowestAverageMeasurementAcrossCities(
+    public List<Document> lowestAverageMeasurementInRegion(
             MeasurementField measurementField,
             LocalDateTime startDate,
             LocalDateTime endDate,
-            int maxNumCitiesToFind
+            String region
     ) {
         String fieldName = getFieldName(measurementField);
         String expression = "$" + fieldName;
         String projectedName = "Average " + fieldName;
 
+        String regionPrefix = region.substring(0, 3).toLowerCase();
+
         return StreamSupport.stream(measurementCollection.aggregate(
                 Arrays.asList(
                         match(and(
+                                regex("cityId", "^" + regionPrefix + "-"),
                                 gte("time", startDate),
                                 lte("time", endDate)
                         )),
                         group("$cityId", avg(projectedName, expression)),
-                        sort(ascending(projectedName)),
-                        limit(maxNumCitiesToFind)
+                        sort(ascending(projectedName))
                 )).spliterator(), false)
                 .collect(Collectors.toList());
     }
@@ -335,22 +339,25 @@ public class AnalyticsService{
      * @param measurementField   the measurement field to evaluate (e.g., temperature, rainfall)
      * @param startDate          the start of the time interval (inclusive)
      * @param endDate            the end of the time interval (inclusive)
-     * @param maxNumCitiesToFind the maximum number of top cities to return
+     * @param region             the target region
      * @return a list of documents containing the city ID, measurement value, and timestamp information
      */
-    public List<Document> highestMeasurementPerCity(
+    public List<Document> highestMeasurementInRegion(
             MeasurementField measurementField,
             LocalDateTime startDate,
             LocalDateTime endDate,
-            int maxNumCitiesToFind
+            String region
     ) {
         String fieldName = getFieldName(measurementField);
         String expression = "$" + fieldName;
         String projectedName = "Maximum " + fieldName;
 
+        String regionPrefix = region.substring(0, 3).toLowerCase();
+
         return StreamSupport.stream(measurementCollection.aggregate(
                 Arrays.asList(
                         match(and(
+                                regex("cityId", "^" + regionPrefix + "-"),
                                 gte("time", startDate),
                                 lte("time", endDate)
                         )),
@@ -360,7 +367,6 @@ public class AnalyticsService{
                                 first("time", "$time"),
                                 first(projectedName, expression)
                         ),
-                        limit(maxNumCitiesToFind),
                         addFields(
                                 new Field<>("day", new Document("$dateToString", new Document()
                                         .append("format", "%Y-%m-%d")
@@ -384,22 +390,25 @@ public class AnalyticsService{
      * @param measurementField   the measurement field to evaluate (e.g., temperature, rainfall)
      * @param startDate          the start of the time interval (inclusive)
      * @param endDate            the end of the time interval (inclusive)
-     * @param maxNumCitiesToFind the maximum number of top cities to return
+     * @param region             the target region
      * @return a list of documents containing the city ID, measurement value, and timestamp information
      */
-    public List<Document> lowestMeasurementPerCity(
+    public List<Document> lowestMeasurementInRegion(
             MeasurementField measurementField,
             LocalDateTime startDate,
             LocalDateTime endDate,
-            int maxNumCitiesToFind
+            String region
     ) {
         String fieldName = getFieldName(measurementField);
         String expression = "$" + fieldName;
         String projectedName = "Minimum " + fieldName;
 
+        String regionPrefix = region.substring(0, 3).toLowerCase();
+
         return StreamSupport.stream(measurementCollection.aggregate(
                         Arrays.asList(
                                 match(and(
+                                        regex("cityId", "^" + regionPrefix + "-"),
                                         gte("time", startDate),
                                         lte("time", endDate)
                                 )),
@@ -409,7 +418,6 @@ public class AnalyticsService{
                                         first("time", "$time"),
                                         first(projectedName, expression)
                                 ),
-                                limit(maxNumCitiesToFind),
                                 addFields(
                                         new Field<>("day", new Document("$dateToString", new Document()
                                                 .append("format", "%Y-%m-%d")
@@ -522,16 +530,20 @@ public class AnalyticsService{
      * The results are sorted in descending order based on the computed average.
      *
      * @param measurementField the field (e.g., temperature, rainfall) whose average is to be computed
+     * @param region target region
      * @param pastDays the number of full past days to include in the aggregation (e.g., 1 = yesterday only)
      * @return a list of {@link Document} objects, each containing a cityId and the average value
      */
-    public List<Document> getAverageMeasurementOfLastDaysAllCities(
+    public List<Document> getAverageMeasurementOfLastDaysOfRegion(
             MeasurementField measurementField,
+            String region,
             int pastDays
     ){
         String fieldName = getFieldName(measurementField);
         String expression = "$" + fieldName;
         String projectedName = "Average " + fieldName;
+
+        String regionPrefix = region.substring(0, 3).toLowerCase();
 
         // Compute the start of the day (00:00) for the (today - pastDays) date
         LocalDateTime dateLimit = LocalDate.now()
@@ -540,7 +552,10 @@ public class AnalyticsService{
 
         return StreamSupport.stream(measurementCollection.aggregate(
                         Arrays.asList(
-                                match(gte("time", dateLimit)),
+                                match(and(
+                                        regex("cityId", "^" + regionPrefix + "-"),
+                                        gte("time", dateLimit)
+                                )),
                                 group("$cityId", avg(projectedName, expression)),
                                 sort(descending(projectedName)),
                                 project(fields(include(projectedName)))
@@ -554,16 +569,20 @@ public class AnalyticsService{
      * The results are sorted in descending order based on the computed total.
      *
      * @param measurementField the field (e.g., temperature, rainfall) whose total is to be computed
+     * @param region target region
      * @param pastDays the number of full past days to include in the aggregation (e.g., 1 = yesterday only)
      * @return a list of {@link Document} objects, each containing a cityId and the total value
      */
-    public List<Document> getTotalMeasurementLastDaysAllCities(
+    public List<Document> getTotalMeasurementLastDaysOfRegion(
             MeasurementField measurementField,
+            String region,
             int pastDays
     ){
         String fieldName = getFieldName(measurementField);
         String expression = "$" + fieldName;
         String projectedName = "Total " + fieldName;
+
+        String regionPrefix = region.substring(0, 3).toLowerCase();
 
         // Compute the start of the day (00:00) for the (today - pastDays) date
         LocalDateTime dateLimit = LocalDate.now()
@@ -572,7 +591,10 @@ public class AnalyticsService{
 
         return StreamSupport.stream(measurementCollection.aggregate(
                         Arrays.asList(
-                                match(gte("time", dateLimit)),
+                                match(and(
+                                        regex("cityId", "^" + regionPrefix + "-"),
+                                        gte("time", dateLimit)
+                                )),
                                 group("$cityId", sum(projectedName, expression)),
                                 sort(descending(projectedName)),
                                 project(fields(include(projectedName)))
