@@ -1,8 +1,11 @@
 package it.unipi.lsmsd.service;
 
+import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.model.City;
 import it.unipi.lsmsd.repository.CityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,6 +25,7 @@ import redis.clients.jedis.resps.ScanResult;
 import java.io.IOException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -38,7 +42,35 @@ public class RedisForecastService {
     @Autowired
     private CityRepository cityRepository;
 
+    @Autowired
+    private DataHarvestService dataHarvestService;
+
     private static final double EARTH_RADIUS_KM = 6371.0;
+
+    private static final int FORECAST_DAYS = 7;
+
+    public void refreshForecastAutomaticFromOpenMeteo(String cityId) throws JsonProcessingException{
+
+        Optional<City> optionalCity = cityRepository.findById(cityId);
+        if(optionalCity.isEmpty()){
+            return;
+        }
+        City city = optionalCity.get();
+
+        // Get Forecast from Open-Meteo
+        APIResponseDTO responseDTO = dataHarvestService.getCityForecast(
+                city.getLatitude(),
+                city.getLongitude(),
+                0,
+                FORECAST_DAYS
+        );
+
+        HourlyMeasurementDTO hourlyMeasurementDTO = responseDTO.getHourly();
+
+        hourlyMeasurementDTO.setCityId(cityId);
+        // Save the forecast in Redis
+        saveForecast(hourlyMeasurementDTO);
+    }
 
     // function to calcuate distance between 2 cities using lat e long
     public static double haversine(double lat1, double lon1, double lat2, double lon2) {

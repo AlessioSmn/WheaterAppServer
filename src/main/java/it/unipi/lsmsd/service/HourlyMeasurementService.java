@@ -1,25 +1,66 @@
 package it.unipi.lsmsd.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
+import it.unipi.lsmsd.model.City;
 import it.unipi.lsmsd.model.HourlyMeasurement;
+import it.unipi.lsmsd.repository.CityRepository;
 import it.unipi.lsmsd.repository.HourlyMeasurementRepository;
 import it.unipi.lsmsd.utility.CityUtility;
 import it.unipi.lsmsd.utility.ISODateUtil;
 import it.unipi.lsmsd.utility.Mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 // Save the Weather Data to Mongo DB
 @Service
 public class HourlyMeasurementService {
+    @Autowired
+    private DataHarvestService dataHarvestService;
 
     @Autowired
     private HourlyMeasurementRepository hourlyMeasurementRepository;
+
+    @Autowired
+    private CityRepository cityRepository;
+
+    public void refreshHourlyMeasurementsAutomaticFromOpenMeteo(String cityId) throws JsonProcessingException {
+        Optional<City> optionalCity = cityRepository.findById(cityId);
+        if(optionalCity.isEmpty()){
+            return;
+        }
+        City city = optionalCity.get();
+
+        LocalDateTime lastMeasurementUpdate = city.getLastMeasurementUpdate();
+        LocalDateTime now = LocalDateTime.now();
+
+        // Validate the CityDTO values
+        APIResponseDTO responseDTO = dataHarvestService.getCityHistoricalMeasurement(
+                city.getLatitude(),
+                city.getLongitude(),
+                lastMeasurementUpdate.toLocalDate().toString(),
+                now.toLocalDate().toString()
+        );
+
+        HourlyMeasurementDTO hourlyMeasurementDTO = responseDTO.getHourly();
+
+        hourlyMeasurementDTO.setCityId(cityId);
+        // Save the data in MongoDB
+        saveHourlyMeasurements(hourlyMeasurementDTO);
+
+        // Update the last updated date
+        city.setLastMeasurementUpdate(now.minusDays(1));
+    }
 
     // TODO : Throw specific error type for every exception
     // Error Type	            HTTP Status Code	        Action

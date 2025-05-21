@@ -186,6 +186,9 @@ public class DataRefreshService {
                 .format(isoFormatter);
             cityService.updateStartEndDate(formattedDate + "T00:00", hourly_endDate + "T23:00", cityId);
 
+            // Update lastMeasurementUpdate
+            cityService.setLastMeasurementUpdateById(cityId, LocalDate.now().minusDays(1).atTime(23, 0));
+
         } catch (NoSuchElementException e) {
             // From CityDTO cityDTO = cityService.getCityWithID(cityId);
             // TODO: log

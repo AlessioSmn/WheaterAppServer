@@ -236,4 +236,18 @@ public class CityService {
         // Save the updated city back to the database
         cityRepository.save(existingCity);
     }
+
+    public void setLastMeasurementUpdateById(String cityId, LocalDateTime newLastMeasurementUpdate) throws IllegalArgumentException{
+        Optional<City> city = cityRepository.findById(cityId);
+
+        if(city.isEmpty()){
+            throw new IllegalArgumentException("City not found");
+        }
+
+        City existingCity = city.get();
+        existingCity.setLastMeasurementUpdate(newLastMeasurementUpdate);
+
+        // Save the updated city back to the database
+        cityRepository.save(existingCity);
+    }
 }
