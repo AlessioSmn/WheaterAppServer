@@ -27,7 +27,8 @@ public class DataManagerController {
     /* Methods for Initialize Data*/
     @PostMapping("step1-initialize-cities")
     public ResponseEntity<String> initializeCityData() throws IOException{
-        dataInitializeService.initializeCities();
+        dataInitializeService.initializeCitiesMongo();
+        dataInitializeService.initializeCitiesRedis();
         return ResponseEntity.status(HttpStatus.OK).body("Citites Data Initialized successfully. Check Log to Verify");
     }
 

@@ -217,9 +217,10 @@ public class DataRefreshService {
         }
         catch (IOException e) {
             // TODO: handle exception
+            System.out.println("eccezione IO");
         }
         catch (Exception e){
-            System.out.println("");
+            System.out.println("eccezione");
         }
 
     }

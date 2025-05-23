@@ -10,6 +10,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.Optional;
+import java.util.Map;
+import java.util.HashMap;
+import redis.clients.jedis.Jedis;
 
 import it.unipi.lsmsd.model.EWEThreshold;
 import org.slf4j.Logger;
@@ -28,7 +31,8 @@ import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
 import it.unipi.lsmsd.utility.MongoInitializer;
-import it.unipi.lsmsd.utility.StatisticsUtility;
+import it.unipi.lsmsd.utility.CityBucketResolver;
+import redis.clients.jedis.JedisPool;
 
 import static it.unipi.lsmsd.utility.StatisticsUtility.getEweThresholdsFromMeasurements;
 
@@ -39,6 +43,8 @@ public class DataInitializeService {
     private CityService cityService;
     @Autowired
     private HourlyMeasurementService hourlyMeasurementService;
+    @Autowired
+    private JedisPool jedisPool;
 
     private static final double PERCENTILE = 1;
 
@@ -50,13 +56,35 @@ public class DataInitializeService {
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
   
-    public void initializeCities() throws IOException{
+    public void initializeCitiesMongo() throws IOException{
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         Resource resource = resolver.getResource("classpath:data_init/cities.json");
         try (InputStream is = resource.getInputStream()){
             List<CityDTO> cities = objectMapper.readValue(is, new TypeReference<List<CityDTO>>() {});
             // Save to the MondoDB
             cityService.saveCities(cities);
+        }
+    }
+
+    public void initializeCitiesRedis() throws IOException{
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        Resource resource = resolver.getResource("classpath:data_init/cities.json");
+        try (InputStream is = resource.getInputStream()){
+            List<CityDTO> cities = objectMapper.readValue(is, new TypeReference<List<CityDTO>>() {});
+            // Save in Redis
+            try (Jedis jedis = jedisPool.getResource()) {
+                for(CityDTO c : cities) {
+                    Map<String, String> cityFields = new HashMap<>();
+                    cityFields.put("name", c.getName());
+                    cityFields.put("region", c.getRegion());
+                    String targetBucket = CityBucketResolver.getBucket(c.get_id());
+
+                    String cityKey = String.format("{%s}:%s", targetBucket, c.get_id());
+
+                    jedis.hset(cityKey, cityFields);
+                    jedis.sadd("region:" + c.getRegion(), cityKey);
+                }
+            }
         }
     }
 
