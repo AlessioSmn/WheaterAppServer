@@ -67,7 +67,7 @@ public class AutomatingService {
 
         updateExtremeWeatherEvents();
 
-        update24HForecasts();
+        updateForecasts();
     }
 
     private void getListOfCities(){
@@ -94,7 +94,7 @@ public class AutomatingService {
         }
     }
 
-    private void update24HForecasts(){
+    private void updateForecasts(){
         // Empty redis
         redisForecastService.deleteAllForecast();
 

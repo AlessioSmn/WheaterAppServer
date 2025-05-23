@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -34,6 +35,9 @@ public class HourlyMeasurementService {
     @Autowired
     private CityRepository cityRepository;
 
+    @Autowired
+    private CityService cityService;
+
     public void refreshHourlyMeasurementsAutomaticFromOpenMeteo(String cityId) throws JsonProcessingException {
         Optional<City> optionalCity = cityRepository.findById(cityId);
         if(optionalCity.isEmpty()){
@@ -42,14 +46,17 @@ public class HourlyMeasurementService {
         City city = optionalCity.get();
 
         LocalDateTime lastMeasurementUpdate = city.getLastMeasurementUpdate();
-        LocalDateTime now = LocalDateTime.now();
+        // The day after
+        LocalDate lastMeasurementUpdate_date = lastMeasurementUpdate.toLocalDate().plusDays(1);
+        // Up until yesterday
+        LocalDate yesterday = LocalDate.now().minusDays(1);
 
         // Validate the CityDTO values
         APIResponseDTO responseDTO = dataHarvestService.getCityHistoricalMeasurement(
                 city.getLatitude(),
                 city.getLongitude(),
-                lastMeasurementUpdate.toLocalDate().toString(),
-                now.toLocalDate().toString()
+                lastMeasurementUpdate_date.toString(),
+                yesterday.toString()
         );
 
         HourlyMeasurementDTO hourlyMeasurementDTO = responseDTO.getHourly();
@@ -58,8 +65,7 @@ public class HourlyMeasurementService {
         // Save the data in MongoDB
         saveHourlyMeasurements(hourlyMeasurementDTO);
 
-        // Update the last updated date
-        city.setLastMeasurementUpdate(now.minusDays(1));
+        cityService.setLastMeasurementUpdateById(cityId, yesterday.atTime(23, 0));
     }
 
     // TODO : Throw specific error type for every exception

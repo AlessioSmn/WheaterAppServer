@@ -3,6 +3,9 @@ package it.unipi.lsmsd.service;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -146,6 +149,12 @@ public class DataInitializeService {
             String startDate = timeList.get(0);
             // Update the city Last Update date
             cityService.updateStartEndDate(startDate, endDate, cityId);
+
+            // Update lastMeasurementUpdate
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+            LocalDateTime endDate_toLDT = LocalDateTime.parse(endDate, formatter);
+            cityService.setLastMeasurementUpdateById(cityId, endDate_toLDT);
+
             logger.info("Added HourlyMeasurement for "+cityId+" and updated city.endDate = "+ endDate);
 
         } catch (IOException e) {
