@@ -23,7 +23,7 @@ public final class CityUtility {
     // 23 characters long
     // Static function for reusuabilty
     public static String generateCityId(String name, String region, Double latitude, Double longitude) {
-        DecimalFormat df = new DecimalFormat("#.####");  // Format coordinates to 4 decimal places
+        DecimalFormat df = new DecimalFormat("0.0000");  // Format coordinates to 4 decimal places
         // Generate code based on each inputs
         String latCode = df.format(latitude);
         String lonCode = df.format(longitude);
