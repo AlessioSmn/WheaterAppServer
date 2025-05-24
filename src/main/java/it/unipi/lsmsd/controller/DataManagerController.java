@@ -24,6 +24,24 @@ public class DataManagerController {
     @Autowired
     DataRefreshService dataRefreshService;
 
+    @PostMapping("step-all")
+    public ResponseEntity<String> initializeAll() throws IOException{
+
+        // Step 1
+        dataInitializeService.initializeCitiesMongo();
+        dataInitializeService.initializeCitiesRedis();
+        // Step 2
+        dataInitializeService.initializeMeasurements();
+        // Step 3
+        dataRefreshService.refreshHistoricalMeasurement();
+        // Step 4
+        dataRefreshService.initializeExtremeWeatherEvents();
+        // Step 5
+        dataRefreshService.refreshForecast();
+
+        return ResponseEntity.status(HttpStatus.OK).body("Initialization complete. Check Log to Verify");
+    }
+
     /* Methods for Initialize Data*/
     @PostMapping("step1-initialize-cities")
     public ResponseEntity<String> initializeCityData() throws IOException{

@@ -50,7 +50,7 @@ public class CityController {
         }
     }
 
-    @PostMapping("/add-cities")
+    @PostMapping("/add-cities__THIS_MUST_BE_DELETED")
     public ResponseEntity<String> addCities() throws IOException{
         String response = cityService.saveCitiesFromList();
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

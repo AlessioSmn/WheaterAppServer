@@ -1,5 +1,9 @@
 package it.unipi.lsmsd.utility;
 
+import it.unipi.lsmsd.exception.BucketException;
+import it.unipi.lsmsd.exception.BucketNotDefinedForRegionException;
+import it.unipi.lsmsd.exception.RegionCodeNotRecognizedException;
+
 import java.util.*;
 
 public class CityBucketResolver {
@@ -39,23 +43,23 @@ public class CityBucketResolver {
             "Sicily", "Sardinia", "Molise", "Apulia", "Calabria", "Campania", "Basilicata"
     );
 
-    public static String getBucket(String cityId) {
+    public static String getBucket(String cityId) throws BucketException {
         String[] parts = cityId.split("-");
         if (parts.length < 2) {
-            return "Invalid ID format.";
+            throw new BucketException("CityId string has fewer than 2 parts");
         }
 
         String regionCode = parts[0].toLowerCase(); // e.g., "tus"
         String region = regionCodeToName.get(regionCode);
 
         if (region == null) {
-            return "Unknown region code: " + regionCode;
+            throw new RegionCodeNotRecognizedException("Region code: " + regionCode);
         }
 
         if (bucket1.contains(region)) return "bucket1";
         if (bucket2.contains(region)) return "bucket2";
         if (bucket3.contains(region)) return "bucket3";
 
-        return "No bucket defined for region: " + region;
+        throw new BucketNotDefinedForRegionException("Bucket not defined for region: " + regionCode + " - region: " + region);
     }
 }
