@@ -2,8 +2,6 @@ package it.unipi.lsmsd.controller;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

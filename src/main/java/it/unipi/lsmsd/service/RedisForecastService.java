@@ -12,9 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
-import it.unipi.lsmsd.utility.CityUtility;
 import it.unipi.lsmsd.utility.CityBucketResolver;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -337,7 +335,14 @@ public class RedisForecastService {
         ArrayNode tempArray = mapper.createArrayNode();
         ArrayNode windArray = mapper.createArrayNode();
 
-        for (int i = 0; i < 24; i++) {
+        // if targetDay is today, past hours won't be shown
+        int startHour = 0;
+
+        if (targetDay.equals(LocalDate.now())) {
+            startHour = LocalTime.now().getHour();
+        }
+
+        for (int i = startHour; i < 24; i++) {
             rainArray.add(rainSum[i] / weightSum);
             snowArray.add(snowSum[i] / weightSum);
             tempArray.add(tempSum[i] / weightSum);
