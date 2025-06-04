@@ -157,7 +157,8 @@ public class RedisForecastService {
             for (Map.Entry<String, HourlyMeasurementDTO> entry : dailyDTOs.entrySet()) {
                 String day = entry.getKey();
                 HourlyMeasurementDTO dayDTO = entry.getValue();
-                String redisKey = String.format("forecast:{%s}:%s:%s", CityBucketResolver.getRegionFromId(dto.getCityId()), dto.getCityId(), day);
+                String redisKey = String.format("forecast:{%s}%s:%s",
+                        dto.getCityId().substring(0, 3), dto.getCityId().substring(3), day);
                 String json = mapper.writeValueAsString(dayDTO);
     
                 jedis.set(redisKey, json);                 // Save to Redis
@@ -208,7 +209,8 @@ public class RedisForecastService {
 
         try (Jedis jedis = jedisPool.getResource()) {
 
-            String redisKey = String.format("forecast:{%s}:%s:%s", CityBucketResolver.getRegionFromId(cityId), cityId, targetDate.format(formatter));
+            String redisKey = String.format("forecast:{%s}%s:%s",
+                    cityId.substring(0, 3), cityId.substring(3), targetDate.format(formatter));
 
             return jedis.get(redisKey);
         }
@@ -228,7 +230,7 @@ public class RedisForecastService {
             //Loop through the next 7 days (including today)
             for (int i = 0; i < 7; i++) {
                 String dayKey = currentDate.plusDays(i).format(formatter);  // Format the date for each day (e.g., "2025-03-15")
-                redisKeys.add(String.format("forecast:{%s}:%s:%s", CityBucketResolver.getRegionFromId(cityId), cityId, dayKey));
+                redisKeys.add(String.format("forecast:{%s}%s:%s", cityId.substring(0, 3), cityId.substring(3), dayKey));
             }
 
             List<String> results = jedis.mget(redisKeys.toArray(new String[0]));
@@ -275,12 +277,11 @@ public class RedisForecastService {
         // Need to have first letter uppercase, last in lowercase
         region = region.substring(0, 1).toUpperCase() + region.substring(1).toLowerCase();
 
-        String redisRegionKey = "region:{" + region + "}";
+        String redisRegionKey = "region:{" + CityBucketResolver.getIdFromRegion(region) + "}";
 
         List<City> targetCities = new ArrayList<>();
         try (Jedis jedis = jedisPool.getResource()) {
             Set<String> cityKeys = jedis.smembers(redisRegionKey);
-
             for (String cityKey : cityKeys) {
                 Map<String, String> cityHash = jedis.hgetAll(cityKey);
 
@@ -288,7 +289,8 @@ public class RedisForecastService {
                     City city = new City();
                     city.setName(cityHash.get("name"));
                     city.setRegion(cityHash.get("region"));
-                    city.setId(cityKey.split(":")[2]);
+                    city.setId(cityKey.split(":")[1].substring(1, 4) + cityKey.split(":")[1].substring(5));
+                    System.out.println(city.getId());
                     String[] parts = cityKey.split("-");
                     city.setLatitude(Double.parseDouble(parts[2]));
                     city.setLongitude(Double.parseDouble(parts[3]));
@@ -306,10 +308,15 @@ public class RedisForecastService {
         ObjectMapper mapper = new ObjectMapper();
         ArrayNode distancesArray = mapper.createArrayNode();
 
+        List<String> redisKeys = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        double[] arrayWeight = new double[targetCities.size()];
+        int iter = 0;
         for (City city : targetCities) {
             double distance = haversine(latitude, longitude, city.getLatitude(), city.getLongitude());
             double weight = distance == 0 ? 1000 : 1000 / distance;
             weightSum += weight;
+            arrayWeight[iter++] = weight;
 
             ObjectNode cityDistance = mapper.createObjectNode();
             cityDistance.put("city", city.getName());
@@ -319,13 +326,18 @@ public class RedisForecastService {
             cityDistance.put("weight", weight);
             distancesArray.add(cityDistance);
 
-            String json = getForecastTargetDay(city.getId(), targetDay);
-            if (json == null || json.isEmpty()) {
-                continue;
-            }
+            redisKeys.add(String.format(
+                    "forecast:{%s}%s:%s",
+                    city.getId().substring(0, 3), city.getId().substring(3), targetDay.format(formatter)));
+        }
 
-            try {
-                JsonNode root = mapper.readTree(json);
+        try(Jedis jedis =  jedisPool.getResource()){
+            List<String> results = jedis.mget(redisKeys.toArray(new String[0]));
+
+            iter = 0;
+            for(String result : results){
+                JsonNode root = mapper.readTree(result);
+                double weight = arrayWeight[iter++];
 
                 for (int i = 0; i < 24; i++) {
                     rainSum[i] += root.get("rain").get(i).asDouble() * weight;
@@ -333,9 +345,10 @@ public class RedisForecastService {
                     tempSum[i] += root.get("temperature_2m").get(i).asDouble() * weight;
                     windSum[i] += root.get("wind_speed_10m").get(i).asDouble() * weight;
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
         }
 
         // output formatting

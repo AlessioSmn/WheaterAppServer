@@ -81,9 +81,9 @@ public class DataInitializeService {
                     cityFields.put("name", c.getName());
                     cityFields.put("region", c.getRegion());
 
-                    String cityKey = String.format("city:{%s}:%s", c.getRegion(), c.get_id());
+                    String cityKey = String.format("city:{%s}%s", c.get_id().substring(0, 3), c.get_id().substring(3));
 
-                    String regionSetKey = String.format("region:{%s}", c.getRegion());
+                    String regionSetKey = String.format("region:{%s}", c.get_id().substring(0, 3));
 
                     jedis.hset(cityKey, cityFields);
                     jedis.sadd(regionSetKey, cityKey);
