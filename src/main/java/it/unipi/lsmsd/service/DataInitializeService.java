@@ -34,6 +34,7 @@ import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
 import it.unipi.lsmsd.utility.MongoInitializer;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 
 import static it.unipi.lsmsd.utility.StatisticsUtility.getEweThresholdsFromMeasurements;
@@ -46,7 +47,7 @@ public class DataInitializeService {
     @Autowired
     private HourlyMeasurementService hourlyMeasurementService;
     @Autowired
-    private JedisPool jedisPool;
+    private JedisCluster jedisCluster;
 
     private static final double PERCENTILE = 1;
 
@@ -74,6 +75,8 @@ public class DataInitializeService {
 
         try (InputStream is = resource.getInputStream()) {
             List<CityDTO> cities = objectMapper.readValue(is, new TypeReference<List<CityDTO>>() {});
+            /*
+            old non-cluster version
 
             try (Jedis jedis = jedisPool.getResource()) {
                 for (CityDTO c : cities) {
@@ -88,6 +91,19 @@ public class DataInitializeService {
                     jedis.hset(cityKey, cityFields);
                     jedis.sadd(regionSetKey, cityKey);
                 }
+            }
+            */
+            for (CityDTO c : cities) {
+                Map<String, String> cityFields = new HashMap<>();
+                cityFields.put("name", c.getName());
+                cityFields.put("region", c.getRegion());
+
+                String cityKey = String.format("city:{%s}%s", c.get_id().substring(0, 3), c.get_id().substring(3));
+
+                String regionSetKey = String.format("region:{%s}", c.get_id().substring(0, 3));
+
+                jedisCluster.hset(cityKey, cityFields);
+                jedisCluster.sadd(regionSetKey, cityKey);
             }
         }
     }

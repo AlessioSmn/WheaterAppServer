@@ -11,14 +11,11 @@ import it.unipi.lsmsd.utility.PasswordHashUtil;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import java.util.Optional;
 
 @Service
 public class UserService {
