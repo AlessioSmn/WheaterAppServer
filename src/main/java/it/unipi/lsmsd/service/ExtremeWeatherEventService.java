@@ -6,7 +6,6 @@ import it.unipi.lsmsd.model.*;
 import it.unipi.lsmsd.repository.CityRepository;
 import it.unipi.lsmsd.repository.ExtremeWeatherEventRepository;
 import it.unipi.lsmsd.repository.HourlyMeasurementRepository;
-import it.unipi.lsmsd.service.UserService;
 import it.unipi.lsmsd.utility.QuadrupleEWEInformationHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
@@ -31,8 +30,6 @@ public class ExtremeWeatherEventService {
     private HourlyMeasurementRepository hourlyMeasurementRepository;
     @Autowired
     private CityRepository cityRepository;
-    @Autowired
-    private UserService userService;
     @Autowired
     private CityService cityService;
 
@@ -113,8 +110,6 @@ public class ExtremeWeatherEventService {
         Date endTime = Date.from(endTimeInterval.toInstant(ZoneOffset.UTC));
         List<HourlyMeasurement> hourlyMeasurements = hourlyMeasurementRepository.findByCityIdAndTimeBetweenOrderByTimeTimeAsc(cityId, startTime, endTime);
 
-        // TODO log time interval of search and found measurements, or at least the number of found measurements
-
         // Gets the target city, in order to get the thresholds
         Optional<City> city = cityRepository.findById(cityId);
         if (city.isEmpty())
@@ -165,23 +160,12 @@ public class ExtremeWeatherEventService {
                 if (foundStrength > 0 &&  ongoingStrength == 0){
                     ongoingExtremeWeatherEvents.get(i).setStrength(foundStrength);
                     ongoingExtremeWeatherEvents.get(i).setDateStart(measurement.getTime());
-
-                    // TODO log the fact that a new EWE is found, so log:
-                    //  type
-                    //  start date
-                    //  strength
                 }
 
                 // Update ongoing event strength if a greater strength is detected
                 if (foundStrength > ongoingStrength && ongoingStrength > 0) {
                     // Updated the strength with the max value
                     ongoingExtremeWeatherEvents.get(i).setStrength(foundStrength);
-
-                    // TODO log the fact that a EWE is updated, so log:
-                    //  type
-                    //  start date
-                    //  old strength
-                    //  new strength
                 }
 
                 // If the found strength is 0 but the event was ongoing, it means the event has ended
@@ -201,12 +185,6 @@ public class ExtremeWeatherEventService {
 
                     // Reset the strength to zero and both dates to null
                     ongoingExtremeWeatherEvents.get(i).resetData();
-
-                    // TODO log the fact that an EWE is concluded, so log:
-                    //  type
-                    //  start date
-                    //  end date
-                    //  strength
                 }
             }
         }

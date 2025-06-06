@@ -2,14 +2,11 @@ package it.unipi.lsmsd.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import it.unipi.lsmsd.DTO.APIResponseDTO;
-import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
 import it.unipi.lsmsd.model.City;
 import it.unipi.lsmsd.model.HourlyMeasurement;
 import it.unipi.lsmsd.repository.CityRepository;
 import it.unipi.lsmsd.repository.HourlyMeasurementRepository;
-import it.unipi.lsmsd.utility.CityUtility;
-import it.unipi.lsmsd.utility.ISODateUtil;
 import it.unipi.lsmsd.utility.Mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,24 +78,6 @@ public class HourlyMeasurementService {
             List<HourlyMeasurement> batch = measurements.subList(i, end);
             hourlyMeasurementRepository.insert(batch);
         }
-    }
-
-    // Get all the measurements with city name
-    public HourlyMeasurementDTO getHourlyMeasurements(CityDTO cityDTO) {
-        String cityId = CityUtility.generateCityId(cityDTO.getName(), cityDTO.getRegion() , cityDTO.getLatitude(), cityDTO.getLongitude());
-        // // Convert date from String to ISO Date
-        // LocalDate localDate = LocalDate.parse(cityDTO.getStartDate());
-        // LocalDateTime localDateTime = localDate.atStartOfDay();
-        // ZonedDateTime localZonedDateTime = localDateTime.atZone(localZone);
-        // Instant utcInstant = localZonedDateTime.toInstant();
-
-        Date startDate = ISODateUtil.getISODate(cityDTO.getStartDate()+"T00:00");
-        Date endDate = ISODateUtil.getISODate(cityDTO.getEndDate()+"T23:00");
-        
-        List<HourlyMeasurement> measurements = hourlyMeasurementRepository.findByCityIdAndTimeBetweenOrderByTimeTimeAsc(cityId, startDate, endDate);
-        // Map List<HourlyMeasurement> to HourlyMeasurementDTO
-        HourlyMeasurementDTO hourlyMeasurementDTO = Mapper.mapHourlyMeasurementDTO(measurements);
-        return hourlyMeasurementDTO;
     }
 
     public void deleteHourlyMeasurements(String cityId, Date startDate, Date endDate){

@@ -8,24 +8,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import it.unipi.lsmsd.DTO.APIResponseDTO;
-import it.unipi.lsmsd.DTO.CityDTO;
-import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
-import it.unipi.lsmsd.service.DataHarvestService;
 import it.unipi.lsmsd.service.RedisForecastService;
-import it.unipi.lsmsd.service.HourlyMeasurementService;
-import it.unipi.lsmsd.utility.CityUtility;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 @RestController
 @RequestMapping("/forecast")
 public class HourlyMeasurementController {
 
-    @Autowired
-    private DataHarvestService dataHarvestService;
-    @Autowired
-    private HourlyMeasurementService hourlyMeasurementService;
     @Autowired
     private RedisForecastService forecastRedisService;
 

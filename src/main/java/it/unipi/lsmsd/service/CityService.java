@@ -6,26 +6,16 @@ import it.unipi.lsmsd.exception.CityNotFoundException;
 import it.unipi.lsmsd.model.City;
 import it.unipi.lsmsd.model.EWEThreshold;
 import it.unipi.lsmsd.model.Role;
-import it.unipi.lsmsd.service.UserService;
 import it.unipi.lsmsd.repository.CityRepository;
-import it.unipi.lsmsd.utility.CityUtility;
 import it.unipi.lsmsd.utility.ISODateUtil;
 import it.unipi.lsmsd.utility.Mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import org.springframework.dao.DuplicateKeyException;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -96,36 +86,6 @@ public class CityService {
         for(CityDTO cityDTO: cityDTOs){ cities.add(Mapper.mapCity(cityDTO));}
         cityRepository.saveAll(cities);
         return "Saved";
-    }
-
-    // Gets a List of City Names from a file and gets the city info one API request a time from Open-Meteo
-    // Saves the list of cities to MongoDB 
-    public String saveCitiesFromList() throws IOException{
-        // Read city name from the text file into list of cityName
-        List<String> cityNameList = CityUtility.loadCityNames();
-        List<City> cityList = new ArrayList<>();
-        // To keep track of successful addition of city
-        String savedList = "";
-
-        // Loop through each name, get city info from Open-Meteo and save as DTO
-        for (String cityName : cityNameList) {
-            try {
-                CityDTO cityDTO = dataHarvestService.getCity(cityName, "IT");
-                // Map and add to the list
-                cityList.add(Mapper.mapCity(cityDTO));
-                // Respectful delay to avoid hammering API
-                Thread.sleep(500); // 500ms delay
-                // Strategy to track cities that were fetched from the Open-Meteo GeoCoding API
-                savedList += cityName +"\n";
-            } catch (Exception ignored) {
-
-            }
-        }
-
-        // Save to the MondoDB
-        cityRepository.saveAll(cityList);
-
-        return savedList;
     }
 
     // Saves the city to the DB and returns the cityID
