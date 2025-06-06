@@ -5,7 +5,6 @@ import it.unipi.lsmsd.exception.ThresholdsNotPresentException;
 import it.unipi.lsmsd.exception.UnauthorizedException;
 import it.unipi.lsmsd.model.ExtremeWeatherEvent;
 import it.unipi.lsmsd.model.Role;
-import it.unipi.lsmsd.service.CityService;
 import it.unipi.lsmsd.service.ExtremeWeatherEventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,9 +23,6 @@ public class ExtremeWeatherEventController {
 
     @Autowired
     private ExtremeWeatherEventService extremeWeatherEventService;
-
-    @Autowired
-    private CityService cityService;
 
     @Autowired
     private UserService userService;
