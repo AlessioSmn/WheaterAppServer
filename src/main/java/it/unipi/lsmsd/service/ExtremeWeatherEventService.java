@@ -1,6 +1,5 @@
 package it.unipi.lsmsd.service;
 
-import it.unipi.lsmsd.DTO.ExtremeWeatherEventDTO;
 import it.unipi.lsmsd.exception.CityNotFoundException;
 import it.unipi.lsmsd.exception.ThresholdsNotPresentException;
 import it.unipi.lsmsd.model.*;

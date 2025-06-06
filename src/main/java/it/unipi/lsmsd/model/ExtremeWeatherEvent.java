@@ -1,6 +1,5 @@
 package it.unipi.lsmsd.model;
 
-import it.unipi.lsmsd.DTO.ExtremeWeatherEventDTO;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
