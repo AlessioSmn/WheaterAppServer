@@ -2,6 +2,7 @@ package it.unipi.lsmsd.controller;
 
 import it.unipi.lsmsd.DTO.UserDTO;
 import it.unipi.lsmsd.exception.EmailFormatException;
+import it.unipi.lsmsd.exception.UnauthorizedException;
 import it.unipi.lsmsd.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -70,6 +71,11 @@ public class UserController {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body("Error Bad-request: " + ex.getMessage() + "\n");
+        }
+        catch (UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.NOT_ACCEPTABLE)
+                    .body(Ue.getMessage() + "\n");
         }
         catch (Exception ex) {
             // Other unexpected errors

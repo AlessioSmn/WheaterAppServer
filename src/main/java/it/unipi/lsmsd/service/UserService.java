@@ -26,6 +26,8 @@ public class UserService {
     @Autowired
     private RedisSessionService sessionRedisService;
 
+    private static final String ADMIN_SECRET_CODE = "ABC123SECRET";
+
     private void checkRole(User user, Role requiredRole) {
         if (user.getRole().ordinal() < requiredRole.ordinal()) {
             throw new UnauthorizedException("Required role: " + requiredRole);
@@ -74,7 +76,6 @@ public class UserService {
             sessionRedisService.saveSession(token, userDTO.getUsername());
             return token;
         } catch (JedisConnectionException e) {
-            // TODO: LOG exception
             throw new JedisConnectionException("Reddis Server Error: " + e.getMessage(), e);
         } catch (Exception ex) {
             throw ex;
@@ -103,8 +104,22 @@ public class UserService {
             // Hash password
             String hashedPassword = PasswordHashUtil.hashPassword(userDTO.getPassword());
 
+            // Requested role or default
+            Role requestedRole = userDTO.getRole() != null ? userDTO.getRole() : Role.REGISTERED_USER;
+
             // Create User model from UserDTO
-            User user = new User(userDTO.getUsername(), hashedPassword, userDTO.getEmail(), Role.REGISTERED_USER);
+            User user = new User(
+                    userDTO.getUsername(),
+                    hashedPassword,
+                    userDTO.getEmail(),
+                    requestedRole
+            );
+
+            if (requestedRole == Role.ADMIN) {
+                if (userDTO.getAdminCode() == null || !ADMIN_SECRET_CODE.equals(userDTO.getAdminCode())) {
+                    throw new UnauthorizedException("Invalid admin authorization code");
+                }
+            }
 
             // Save the user in the database
             userRepository.save(user);

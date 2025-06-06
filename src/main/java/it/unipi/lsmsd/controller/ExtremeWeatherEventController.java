@@ -142,7 +142,7 @@ public class ExtremeWeatherEventController {
      * @return           a JSON-formatted {@link ResponseEntity} containing a map with keys
      *                   {@code removed} and {@code inserted} indicating how many events were removed and added
      */
-    @DeleteMapping("/duplicates-range")
+    @DeleteMapping("/duplicates/range")
     public ResponseEntity<Object> cleanUpExtremeWeatherEventRange(
             @RequestHeader("Authorization") String token,
             @RequestParam String cityId,
@@ -184,7 +184,7 @@ public class ExtremeWeatherEventController {
      * @return        a JSON-formatted {@link ResponseEntity} containing a map with keys
      *                {@code removed} and {@code inserted} indicating the number of events deleted and created
      */
-    @DeleteMapping("/duplicates-all")
+    @DeleteMapping("/duplicates/all")
     public ResponseEntity<Object> cleanUpExtremeWeatherEventRange(
             @RequestHeader("Authorization") String token,
             @RequestParam String cityId

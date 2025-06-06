@@ -7,6 +7,7 @@ public class UserDTO {
     private String password;
     private String email;
     private Role role;
+    private String adminCode;
 
     //Setters and Getters
     public String getUsername() { return username; }
@@ -24,4 +25,8 @@ public class UserDTO {
     public Role getRole() { return role;}
 
     public void setRole(Role role) { this.role = role; }
+
+    public String getAdminCode() { return adminCode;}
+
+    public void setAdminCode(String adminCode) { this.adminCode = adminCode;}
 }

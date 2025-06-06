@@ -69,7 +69,7 @@ public class DataManagerController {
                     .body("An unexpected error occurred: " + ex.getMessage());
         }
     }
-    @PutMapping("/update/ewe")
+    @PutMapping("/update/ewes")
     public ResponseEntity<Object> updateEWEs(@RequestHeader("Authorization") String token) {
         try{
             automatingService.updateExtremeWeatherEvents(token);
