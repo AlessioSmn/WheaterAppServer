@@ -1,13 +1,13 @@
 package it.unipi.lsmsd.controller;
 
-import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.exception.CityException;
 import it.unipi.lsmsd.exception.CityNotFoundException;
 import it.unipi.lsmsd.exception.UnauthorizedException;
+import it.unipi.lsmsd.model.City;
 import it.unipi.lsmsd.model.Role;
+import it.unipi.lsmsd.repository.CityRepository;
 import it.unipi.lsmsd.service.CityService;
-import it.unipi.lsmsd.service.DataHarvestService;
 import it.unipi.lsmsd.service.UserService;
 import it.unipi.lsmsd.utility.Mapper;
 import org.springframework.dao.DuplicateKeyException;
@@ -16,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -26,9 +25,10 @@ public class CityController {
 
     @Autowired
     private CityService cityService;
-
     @Autowired
     private UserService userService;
+    @Autowired
+    private CityRepository cityRepository;
 
     @PostMapping("/add")
     public ResponseEntity<String> addCity(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
@@ -134,19 +134,38 @@ public class CityController {
         }
     }
 
-    // TODO have new cityDTO which maps directly the model to return that one, it the easier way.
-    //  I don't want to return a city with start and end fields, it makes no sense.
-    //  And i believe that its way too complex to manually exclude some field or do a on-the-fly conversion to json
-    @GetMapping("/info")
+    @GetMapping("/by-name")
     public ResponseEntity<Object> getCityByName(@RequestParam String cityName){
         try{
             // Retrieves the city
-            List<CityDTO> cityDto = cityService.getCity(cityName);
+            List<City> cities = cityRepository.findAllByName(cityName);
 
             // Returns all city's information into the body
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body(cityDto); // Spring automatically converts CityDTO to JSON
+                    .body(cities);
+        }
+        catch(NoSuchElementException NSEe){
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("City not found: " + NSEe.getMessage());
+        }
+        catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occurred: " + e.getMessage());
+        }
+    }
+    @GetMapping("/all")
+    public ResponseEntity<Object> getAllCities(){
+        try{
+            // Retrieves the city
+            List<City> cities = cityRepository.findAll();
+
+            // Returns all city's information into the body
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(cities);
         }
         catch(NoSuchElementException NSEe){
             return ResponseEntity

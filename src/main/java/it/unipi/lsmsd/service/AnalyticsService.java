@@ -30,7 +30,6 @@ public class AnalyticsService{
 
     private final MongoCollection<Document> eweCollection;
     private final MongoCollection<Document> measurementCollection;
-    private final MongoCollection<Document> cityCollection;
 
     public AnalyticsService() {
         MongoClient mongoClient = MongoClients.create(
@@ -41,7 +40,6 @@ public class AnalyticsService{
         MongoDatabase database = mongoClient.getDatabase("WeatherApp");
         this.eweCollection = database.getCollection("extreme_weather_events");
         this.measurementCollection = database.getCollection("hourly_measurements");
-        this.cityCollection = database.getCollection("cities");
     }
 
     // <editor-fold desc="Measurements analytics with single city as target [ measurement/city/ ]">
@@ -967,24 +965,4 @@ public class AnalyticsService{
 
     // </editor-fold>
 
-
-
-    // <editor-fold desc="Information for client application">
-
-    /**
-     * Retrieves a list of all cities from the collection, sorted in descending order
-     * based on the number of followers.
-     *
-     * @return a list of {@link Document} objects representing city information,
-     *         ordered by the "followers" field.
-     */
-    public List<Document> citiesInformation(){
-        return StreamSupport.stream(cityCollection.aggregate(
-                List.of(
-                    sort(orderBy(descending("followers")))
-                )).spliterator(), false)
-                .collect(Collectors.toList());
-    }
-
-    // </editor-fold>
 }

@@ -255,15 +255,4 @@ public class AnalyticsController {
 
     // </editor-fold>
 
-
-
-    // <editor-fold desc="Information for client application">
-
-    @GetMapping("/cities-information")
-    public ResponseEntity<Object> citiesInformation() {
-        List<Document> serviceResponse = analyticsService.citiesInformation();
-        return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
-    }
-
-    // </editor-fold>
 }
