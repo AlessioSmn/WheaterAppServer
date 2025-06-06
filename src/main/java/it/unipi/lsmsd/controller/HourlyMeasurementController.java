@@ -21,7 +21,7 @@ import it.unipi.lsmsd.utility.CityUtility;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 @RestController
-@RequestMapping("/hourly")
+@RequestMapping("/forecast")
 public class HourlyMeasurementController {
 
     @Autowired
@@ -108,7 +108,7 @@ public class HourlyMeasurementController {
      * @param cityId the unique identifier of the city for which the forecast is requested
      * @return a {@link ResponseEntity} containing the 24-hour forecast as a JSON-formatted string and an HTTP status code 200 (OK)
      */
-    @GetMapping("/forecast/today")
+    @GetMapping("/today")
     public ResponseEntity<Object> get24HrForecast(@RequestParam String cityId) {
         LocalDate today = LocalDate.now();
         String jsonForecast = forecastRedisService.getForecastTargetDay(cityId, today);
@@ -122,7 +122,7 @@ public class HourlyMeasurementController {
      * @param targetDate the {@link LocalDate} representing the day (in UTC) for which the forecast is desired
      * @return a {@link ResponseEntity} containing the forecast as a JSON-formatted string and an HTTP status code 200 (OK)
      */
-    @GetMapping("/forecast/day")
+    @GetMapping("/day")
     public ResponseEntity<Object> get24HrForecast(@RequestParam String cityId, @RequestParam LocalDate targetDate) {
         String jsonForecast = forecastRedisService.getForecastTargetDay(cityId, targetDate);
         return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
@@ -135,7 +135,7 @@ public class HourlyMeasurementController {
      * @return a {@link ResponseEntity} containing the 7-day forecast as a JSON-formatted string and an HTTP status code 200 (OK)
      * @throws IOException if an I/O error occurs during the retrieval of the forecast data
      */
-    @GetMapping("/forecast/week")
+    @GetMapping("/week")
     public ResponseEntity<Object> get7DayForecast(@RequestParam String cityId) throws IOException {
         String jsonForecast = forecastRedisService.get7DayForecast(cityId);
         return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
@@ -152,7 +152,7 @@ public class HourlyMeasurementController {
      * @param longitude the geographic longitude of the city
      * @return a {@link ResponseEntity} containing the forecast as a JSON-formatted string and an HTTP status code 200 (OK)
      */
-    @GetMapping("/forecast/today/arbitrary-city")
+    @GetMapping("/today/arbitrary-city")
     public ResponseEntity<Object> get24HrForecastArbCity(
             @RequestParam String region,
             @RequestParam Double latitude,
@@ -165,7 +165,7 @@ public class HourlyMeasurementController {
         return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
     }
 
-    @GetMapping("/forecast/day/arbitrary-city")
+    @GetMapping("/day/arbitrary-city")
     public ResponseEntity<Object> get24HrForecastArbCity(
             @RequestParam String region,
             @RequestParam Double latitude,

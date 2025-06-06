@@ -92,7 +92,6 @@ public class CityService {
     }
 
     public String saveCities(List<CityDTO> cityDTOs){
-        // TODO use stream()
         List<City> cities = new ArrayList<>();
         for(CityDTO cityDTO: cityDTOs){ cities.add(Mapper.mapCity(cityDTO));}
         cityRepository.saveAll(cities);
@@ -111,7 +110,6 @@ public class CityService {
         // Loop through each name, get city info from Open-Meteo and save as DTO
         for (String cityName : cityNameList) {
             try {
-                // TODO: Hardcoded countryCode to Italian as only Italian cities added
                 CityDTO cityDTO = dataHarvestService.getCity(cityName, "IT");
                 // Map and add to the list
                 cityList.add(Mapper.mapCity(cityDTO));
@@ -119,8 +117,8 @@ public class CityService {
                 Thread.sleep(500); // 500ms delay
                 // Strategy to track cities that were fetched from the Open-Meteo GeoCoding API
                 savedList += cityName +"\n";
-            } catch (Exception e) {
-                //TODO: Log
+            } catch (Exception ignored) {
+
             }
         }
 
@@ -201,16 +199,6 @@ public class CityService {
         City existingCity = cityOpt.get();
         existingCity.setEweThresholds(cityDTO.getEweThresholds());
         cityRepository.save(existingCity);
-    }
-
-    // Return the list of cities belonging to a given region
-    public List<CityDTO> getCityByRegion(String region) {
-        List<City> cities = cityRepository.findByRegion(region);
-
-        // Convert the list to List<CityDTO>
-        return cities.stream()
-                .map(Mapper::mapCityDTO)
-                .collect(Collectors.toList());
     }
 
     public LocalDateTime getLastEweUpdateById(String cityId) throws IllegalArgumentException{

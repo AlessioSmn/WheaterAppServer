@@ -13,8 +13,6 @@ import it.unipi.lsmsd.utility.ISODateUtil;
 import it.unipi.lsmsd.utility.Mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -67,14 +65,6 @@ public class HourlyMeasurementService {
 
         cityService.setLastMeasurementUpdateById(cityId, yesterday.atTime(23, 0));
     }
-
-    // TODO : Throw specific error type for every exception
-    // Error Type	            HTTP Status Code	        Action
-    // Duplicate Key Error	    409 Conflict	            Inform user of data conflict
-    // Validation Error	        400 Bad                     Request	User corrects input
-    // Network/Timeout Error	504 Gateway                 Timeout	Retry logic or inform user
-    // Write Concern Failure	503 Service                 Unavailable	Retry or alert admin
-    // Unexpected Error	        500 Internal Server Error	Log & alert for investigation
 
     // Saves the list of hourlyMeasurement of the given city to the DB in Time-Series Collection "hourly_measurements" 
     public void saveHourlyMeasurements( HourlyMeasurementDTO hourlyMeasurementDTO) {
