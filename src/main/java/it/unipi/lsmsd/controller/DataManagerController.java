@@ -2,10 +2,14 @@ package it.unipi.lsmsd.controller;
 
 import java.io.IOException;
 
+import it.unipi.lsmsd.exception.UnauthorizedException;
+import it.unipi.lsmsd.model.Role;
+import it.unipi.lsmsd.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,53 +28,140 @@ public class DataManagerController {
     @Autowired
     DataRefreshService dataRefreshService;
 
-    @PostMapping("step-all")
-    public ResponseEntity<String> initializeAll() throws IOException{
+    @Autowired
+    private UserService userService;
 
-        // Step 1
-        dataInitializeService.initializeCitiesMongo();
-        dataInitializeService.initializeCitiesRedis();
-        // Step 2
-        dataInitializeService.initializeMeasurements();
-        // Step 3
-        dataRefreshService.refreshHistoricalMeasurement();
-        // Step 4
-        dataRefreshService.initializeExtremeWeatherEvents();
-        // Step 5
-        dataRefreshService.refreshForecast();
+    @PostMapping("step-all")
+    public ResponseEntity<String> initializeAll(
+            @RequestHeader("Authorization") String token) throws IOException{
+        try {
+            userService.getAndCheckUserFromToken(token, Role.ADMIN);
+
+            // Step 1
+            dataInitializeService.initializeCitiesMongo();
+            dataInitializeService.initializeCitiesRedis();
+            // Step 2
+            dataInitializeService.initializeMeasurements();
+            // Step 3
+            dataRefreshService.refreshHistoricalMeasurement();
+            // Step 4
+            dataRefreshService.initializeExtremeWeatherEvents();
+            // Step 5
+            dataRefreshService.refreshForecast();
+        }
+        catch(UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: " + Ue.getMessage());
+        }
+        catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal server error: " + e.getMessage());
+        }
 
         return ResponseEntity.status(HttpStatus.OK).body("Initialization complete. Check Log to Verify");
     }
 
     /* Methods for Initialize Data*/
     @PostMapping("step1-initialize-cities")
-    public ResponseEntity<String> initializeCityData() throws IOException{
-        dataInitializeService.initializeCitiesMongo();
-        dataInitializeService.initializeCitiesRedis();
+    public ResponseEntity<String> initializeCityData(
+            @RequestHeader("Authorization") String token) throws IOException{
+        try {
+            userService.getAndCheckUserFromToken(token, Role.ADMIN);
+            dataInitializeService.initializeCitiesMongo();
+            dataInitializeService.initializeCitiesRedis();
+        }
+        catch(UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: " + Ue.getMessage());
+        }
+        catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal server error: " + e.getMessage());
+        }
         return ResponseEntity.status(HttpStatus.OK).body("Citites Data Initialized successfully. Check Log to Verify");
     }
 
     @PostMapping("step2-initialize-hourly-measurements")
-    public ResponseEntity<String> initializeMeasurementData() throws IOException{
-        dataInitializeService.initializeMeasurements();
-        return ResponseEntity.status(HttpStatus.OK).body("Measurements Data Initialized successfully. Check Log to Verify");
+    public ResponseEntity<String> initializeMeasurementData(
+            @RequestHeader("Authorization") String token) throws IOException{
+        try{
+            userService.getAndCheckUserFromToken(token, Role.ADMIN);
+            dataInitializeService.initializeMeasurements();
+            return ResponseEntity.status(HttpStatus.OK).body("Measurements Data Initialized successfully. Check Log to Verify");
+        }
+        catch(UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: " + Ue.getMessage());
+        }
+        catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal server error: " + e.getMessage());
+        }
     }
 
     @PostMapping("step3-refresh-historical")
-    public ResponseEntity<String> refreshHistoricalMeasurement() throws JsonProcessingException, IOException{
-        dataRefreshService.refreshHistoricalMeasurement();
-        return ResponseEntity.status(HttpStatus.OK).body("Historical Measurements Data Refreshed successfully. Check Log to Verify");
+    public ResponseEntity<String> refreshHistoricalMeasurement(
+            @RequestHeader("Authorization") String token) throws JsonProcessingException, IOException{
+        try{
+            userService.getAndCheckUserFromToken(token, Role.ADMIN);
+            dataRefreshService.refreshHistoricalMeasurement();
+            return ResponseEntity.status(HttpStatus.OK).body("Historical Measurements Data Refreshed successfully. Check Log to Verify");
+        }
+        catch(UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: " + Ue.getMessage());
+        }
+        catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal server error: " + e.getMessage());
+        }
     }
 
     @PostMapping("step4-initialize-extremeWeatherEvents")
-    public ResponseEntity<String> initializeExtremeWeatherEvents(){
-        dataRefreshService.initializeExtremeWeatherEvents();
-        return ResponseEntity.status(HttpStatus.OK).body("EWE initialized successfully. Check Log to Verify");
+    public ResponseEntity<String> initializeExtremeWeatherEvents(
+            @RequestHeader("Authorization") String token){
+        try{
+            userService.getAndCheckUserFromToken(token, Role.ADMIN);
+            dataRefreshService.initializeExtremeWeatherEvents();
+            return ResponseEntity.status(HttpStatus.OK).body("EWE initialized successfully. Check Log to Verify");
+        }
+        catch(UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: " + Ue.getMessage());
+        }
+        catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal server error: " + e.getMessage());
+        }
     }
 
     @PostMapping("step5-refresh-forecast")
-    public ResponseEntity<String> refreshforecast() throws JsonProcessingException{
+    public ResponseEntity<String> refreshforecast(
+            @RequestHeader("Authorization") String token) throws JsonProcessingException{
+        try{
+        userService.getAndCheckUserFromToken(token, Role.ADMIN);
         dataRefreshService.refreshForecast();
         return ResponseEntity.status(HttpStatus.OK).body("Forecast Data Refreshed successfully. Check Log to Verify");
+        }
+        catch(UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: " + Ue.getMessage());
+        }
+        catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal server error: " + e.getMessage());
+        }
     }
 }

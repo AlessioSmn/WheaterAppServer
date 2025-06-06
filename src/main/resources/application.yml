@@ -5,9 +5,9 @@ debug: true
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/WeatherApp
-      database: WeatherApp
+      uri: mongodb://localhost:27017,localhost:27018,localhost:27019/WeatherApp?replicaSet=rs0
       auto-index-creation: true
+      database: WeatherApp
   mongo:
     measurement-collection: hourly_measurements
     city-collection: cities

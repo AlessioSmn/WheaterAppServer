@@ -4,6 +4,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
+
+import java.util.HashSet;
+import java.util.Set;
 
 // Configuration class where Spring will look for bean definitions
 @Configuration
@@ -29,5 +34,19 @@ public class RedisConfig {
         int port = 6379;
         //A thread-safe pool of Redis connections
         return new JedisPool(poolConfig, host, port);
+    }
+
+    // method to connect with a Redis Cluster
+    @Bean
+    public JedisCluster jedisCluster() {
+        Set<HostAndPort> clusterNodes = new HashSet<>();
+        clusterNodes.add(new HostAndPort("localhost", 7000));
+        clusterNodes.add(new HostAndPort("localhost", 7001));
+        clusterNodes.add(new HostAndPort("localhost", 7002));
+        clusterNodes.add(new HostAndPort("localhost", 7003));
+        clusterNodes.add(new HostAndPort("localhost", 7004));
+        clusterNodes.add(new HostAndPort("localhost", 7005));
+
+        return new JedisCluster(clusterNodes);
     }
 }

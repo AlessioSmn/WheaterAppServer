@@ -4,8 +4,11 @@ import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.exception.CityException;
 import it.unipi.lsmsd.exception.CityNotFoundException;
+import it.unipi.lsmsd.exception.UnauthorizedException;
+import it.unipi.lsmsd.model.Role;
 import it.unipi.lsmsd.service.CityService;
 import it.unipi.lsmsd.service.DataHarvestService;
+import it.unipi.lsmsd.service.UserService;
 import it.unipi.lsmsd.utility.Mapper;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +27,13 @@ public class CityController {
     @Autowired
     private CityService cityService;
 
+    @Autowired
+    private UserService userService;
+
     @PostMapping("/add")
     public ResponseEntity<String> addCity(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
         try{
+            userService.getAndCheckUserFromToken(token, Role.ADMIN);
             cityService.saveCity(cityDTO, token);
 
             return ResponseEntity
@@ -43,6 +50,11 @@ public class CityController {
                     .status(HttpStatus.CONFLICT)
                     .body("Illegal argument: " + IAe.getMessage());
         }
+        catch(UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: " + Ue.getMessage());
+        }
         catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -50,15 +62,10 @@ public class CityController {
         }
     }
 
-    @PostMapping("/add-cities__THIS_MUST_BE_DELETED")
-    public ResponseEntity<String> addCities() throws IOException{
-        String response = cityService.saveCitiesFromList();
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
     @PostMapping("/add-with-thresholds")
     public ResponseEntity<String> addCityWithThresholds(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
         try{
+            userService.getAndCheckUserFromToken(token, Role.ADMIN);
             cityService.saveCityWithThresholds(cityDTO, token);
 
             return ResponseEntity
@@ -75,6 +82,11 @@ public class CityController {
                     .status(HttpStatus.CONFLICT)
                     .body("Illegal argument: " + IAe.getMessage());
         }
+        catch(UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: " + Ue.getMessage());
+        }
         catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -88,6 +100,7 @@ public class CityController {
     @PostMapping("/update-thresholds")
     public ResponseEntity<Object> updateCityThresholds(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
         try{
+            userService.getAndCheckUserFromToken(token, Role.ADMIN);
             // Update the city threshold
             cityService.updateCityThresholds(cityDTO, token);
 
@@ -108,6 +121,11 @@ public class CityController {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body("City not identifiable: " + Ce.getMessage());
+        }
+        catch(UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: " + Ue.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity

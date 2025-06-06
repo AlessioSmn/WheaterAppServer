@@ -3,6 +3,7 @@ package it.unipi.lsmsd.service;
 import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.model.City;
 import it.unipi.lsmsd.repository.CityRepository;
+import it.unipi.lsmsd.utility.CityBucketResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,12 +13,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
-import it.unipi.lsmsd.utility.CityUtility;
-import it.unipi.lsmsd.utility.CityBucketResolver;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -32,7 +32,7 @@ public class RedisForecastService {
     // Constant Jedis connection pool instance of Redis running on localhost and 
     // default Redis port 6379 to manage connections
     @Autowired
-    private JedisPool jedisPool;
+    private JedisCluster jedisCluster;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
@@ -121,50 +121,49 @@ public class RedisForecastService {
      * <p>
      * The input {@link HourlyMeasurementDTO} is divided based on the date portion of the timestamp,
      * and each resulting daily forecast is serialized to JSON and saved under a Redis key following the format:
-     * {@code forecast:{bucket}:{cityId}:{date}}. Each entry is given a time-to-live (TTL) of 24 hours.
+     * {@code forecast:{cityId}:date}. Each entry is given a time-to-live (TTL) of 24 hours.
      *
      * @param dto the {@link HourlyMeasurementDTO} containing the full hourly forecast data to be persisted
      * @throws JsonProcessingException if an error occurs during the JSON serialization of any daily forecast
      */
     public void saveForecast(HourlyMeasurementDTO dto) throws JsonProcessingException {
-        try (Jedis jedis = jedisPool.getResource()) {
-            // 1. Split input DTO into daily DTOs
-            Map<String, HourlyMeasurementDTO> dailyDTOs = new LinkedHashMap<>();
-            List<String> timeList = dto.getTime();
-            for (int i = 0; i < timeList.size(); i++) {
-                String dateTime = timeList.get(i);
-                String day = dateTime.split("T")[0];
+        // 1. Split input DTO into daily DTOs
+        Map<String, HourlyMeasurementDTO> dailyDTOs = new LinkedHashMap<>();
+        List<String> timeList = dto.getTime();
+        for (int i = 0; i < timeList.size(); i++) {
+            String dateTime = timeList.get(i);
+            String day = dateTime.split("T")[0];
     
-                // Initialize DTO for the day if not already present
-                dailyDTOs.computeIfAbsent(day, d -> {
-                    HourlyMeasurementDTO dayDTO = new HourlyMeasurementDTO();
-                    dayDTO.setTime(new ArrayList<>());
-                    dayDTO.setTemperature(new ArrayList<>());
-                    dayDTO.setRain(new ArrayList<>());
-                    dayDTO.setSnowfall(new ArrayList<>());
-                    dayDTO.setWindspeed(new ArrayList<>());
-                    return dayDTO;
-                });
+            // Initialize DTO for the day if not already present
+            dailyDTOs.computeIfAbsent(day, d -> {
+                HourlyMeasurementDTO dayDTO = new HourlyMeasurementDTO();
+                dayDTO.setTime(new ArrayList<>());
+                dayDTO.setTemperature(new ArrayList<>());
+                dayDTO.setRain(new ArrayList<>());
+                dayDTO.setSnowfall(new ArrayList<>());
+                dayDTO.setWindspeed(new ArrayList<>());
+                return dayDTO;
+            });
     
-                // Populate the daily DTO
-                HourlyMeasurementDTO dailyDTO = dailyDTOs.get(day);
-                dailyDTO.getTime().add(dateTime);
-                dailyDTO.getTemperature().add(dto.getTemperature().get(i));
-                dailyDTO.getRain().add(dto.getRain().get(i));
-                dailyDTO.getSnowfall().add(dto.getSnowfall().get(i));
-                dailyDTO.getWindspeed().add(dto.getWindspeed().get(i));
-            }
+            // Populate the daily DTO
+            HourlyMeasurementDTO dailyDTO = dailyDTOs.get(day);
+            dailyDTO.getTime().add(dateTime);
+            dailyDTO.getTemperature().add(dto.getTemperature().get(i));
+            dailyDTO.getRain().add(dto.getRain().get(i));
+            dailyDTO.getSnowfall().add(dto.getSnowfall().get(i));
+            dailyDTO.getWindspeed().add(dto.getWindspeed().get(i));
+        }
     
-            // 2. Store each daily DTO in Redis    
-            for (Map.Entry<String, HourlyMeasurementDTO> entry : dailyDTOs.entrySet()) {
-                String day = entry.getKey();
-                HourlyMeasurementDTO dayDTO = entry.getValue();
-                String redisKey = String.format("forecast:{%s}:%s:%s", CityBucketResolver.getBucket(dto.getCityId()), dto.getCityId(), day);
-                String json = mapper.writeValueAsString(dayDTO);
+        // 2. Store each daily DTO in Redis
+        for (Map.Entry<String, HourlyMeasurementDTO> entry : dailyDTOs.entrySet()) {
+            String day = entry.getKey();
+            HourlyMeasurementDTO dayDTO = entry.getValue();
+            String redisKey = String.format("forecast:{%s}%s:%s",
+                    dto.getCityId().substring(0, 3), dto.getCityId().substring(3), day);
+            String json = mapper.writeValueAsString(dayDTO);
     
-                jedis.set(redisKey, json);                 // Save to Redis
-                jedis.expire(redisKey, 86400);             // Set TTL: 24 hours
-            }
+            jedisCluster.set(redisKey, json);                 // Save to Redis
+            jedisCluster.expire(redisKey, 86400);             // Set TTL: 24 hours
         }
     }
 
@@ -176,19 +175,30 @@ public class RedisForecastService {
      * without blocking the Redis server.
      */
     public void deleteAllForecast() {
-        try (Jedis jedis = jedisPool.getResource()) {
-            String cursor = "0";
-            String pattern = "forecast:*";
-            do {
-                ScanResult<String> scanResult = jedis.scan(cursor, new ScanParams().match(pattern).count(100));
-                List<String> keys = scanResult.getResult();
-                if (!keys.isEmpty()) {
-                    jedis.del(keys.toArray(new String[0]));
-                }
-                cursor = scanResult.getCursor();
-            } while (!cursor.equals("0"));
+        for (Map.Entry<String, ConnectionPool> entry : jedisCluster.getClusterNodes().entrySet()) {
+            String node = entry.getKey(); // es: "127.0.0.1:7000"
+            String[] hostPort = node.split(":");
+            String host = hostPort[0];
+            int port = Integer.parseInt(hostPort[1]);
+
+            try (Jedis jedis = new Jedis(host, port)) {
+                // solo sui nodi master
+                if (!jedis.info("replication").contains("role:master")) continue;
+
+                String cursor = ScanParams.SCAN_POINTER_START;
+                do {
+                    ScanParams params = new ScanParams().match("forecast:*").count(100);
+                    ScanResult<String> scanResult = jedis.scan(cursor, params);
+                    List<String> keys = scanResult.getResult();
+                    if (!keys.isEmpty()) {
+                        jedis.del(keys.toArray(new String[0]));
+                    }
+                    cursor = scanResult.getCursor();
+                } while (!cursor.equals("0"));
+            }
         }
     }
+
 
     // </editor-fold>
 
@@ -208,43 +218,47 @@ public class RedisForecastService {
     public String getForecastTargetDay(String cityId, LocalDate targetDate){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        try (Jedis jedis = jedisPool.getResource()) {
+            String redisKey = String.format("forecast:{%s}%s:%s",
+                    cityId.substring(0, 3), cityId.substring(3), targetDate.format(formatter));
 
-            String redisKey = String.format("forecast:{%s}:%s:%s", CityBucketResolver.getBucket(cityId), cityId, targetDate.format(formatter));
-
-            return jedis.get(redisKey);
-        }
+            return jedisCluster.get(redisKey);
     }
 
     // Get full 7-day forecast
     public String get7DayForecast(String cityId) throws IOException {
 
-        try (Jedis jedis = jedisPool.getResource()) {  
             //Define date format for Redis key (yyyy-MM-dd) and get current date
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); 
             LocalDate currentDate = LocalDate.now();
             
             // List to hold the 7-day forecast data
             List<HourlyMeasurementDTO> allDaysData = new ArrayList<>();
+            List<String> redisKeys = new ArrayList<>();
     
             //Loop through the next 7 days (including today)
             for (int i = 0; i < 7; i++) {
                 String dayKey = currentDate.plusDays(i).format(formatter);  // Format the date for each day (e.g., "2025-03-15")
-                String redisKey = String.format("forecast:{%s}:%s:%s", CityBucketResolver.getBucket(cityId), cityId, dayKey); // Construct the Redis key using cityId and the date
+                redisKeys.add(String.format("forecast:{%s}%s:%s", cityId.substring(0, 3), cityId.substring(3), dayKey));
+            }
 
-                // Retrieve the forecast JSON for that day from Redis
-                String json = jedis.get(redisKey);
-                
-                // If the data for that day exists in Redis, deserialize it into HourlyMeasurementDTO
-                if (json != null) {
-                    HourlyMeasurementDTO dayDTO = mapper.readValue(json, HourlyMeasurementDTO.class);  // Deserialize the JSON
-                    allDaysData.add(dayDTO);  // Add the day’s data to the list
+            List<String> results = jedisCluster.mget(redisKeys.toArray(new String[0]));
+
+            ObjectMapper mapper = new ObjectMapper();
+
+            for (String json : results) {
+                if (json != null && !json.isEmpty()) {
+                    try {
+                        HourlyMeasurementDTO dayData = mapper.readValue(json, HourlyMeasurementDTO.class);
+                        allDaysData.add(dayData);
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
     
             // 11. Serialize the list of 7-day forecast data as a JSON array and return it
             return mapper.writeValueAsString(allDaysData);
-        }
     }
 
     /**
@@ -270,25 +284,23 @@ public class RedisForecastService {
         // Need to have first letter uppercase, last in lowercase
         region = region.substring(0, 1).toUpperCase() + region.substring(1).toLowerCase();
 
-        String redisRegionKey = "region:" + region;
+        String redisRegionKey = "region:{" + CityBucketResolver.getIdFromRegion(region) + "}";
 
         List<City> targetCities = new ArrayList<>();
-        try (Jedis jedis = jedisPool.getResource()) {
-            Set<String> cityKeys = jedis.smembers(redisRegionKey);
+        Set<String> cityKeys = jedisCluster.smembers(redisRegionKey);
+        for (String cityKey : cityKeys) {
+            Map<String, String> cityHash = jedisCluster.hgetAll(cityKey);
 
-            for (String cityKey : cityKeys) {
-                Map<String, String> cityHash = jedis.hgetAll(cityKey);
-
-                if (!cityHash.isEmpty()) {
-                    City city = new City();
-                    city.setName(cityHash.get("name"));
-                    city.setRegion(cityHash.get("region"));
-                    city.setId(cityKey.split(":")[1]);
-                    String[] parts = cityKey.split("-");
-                    city.setLatitude(Double.parseDouble(parts[2]));
-                    city.setLongitude(Double.parseDouble(parts[3]));
-                    targetCities.add(city);
-                }
+            if (!cityHash.isEmpty()) {
+                City city = new City();
+                city.setName(cityHash.get("name"));
+                city.setRegion(cityHash.get("region"));
+                city.setId(cityKey.split(":")[1].substring(1, 4) + cityKey.split(":")[1].substring(5));
+                System.out.println(city.getId());
+                String[] parts = cityKey.split("-");
+                city.setLatitude(Double.parseDouble(parts[2]));
+                city.setLongitude(Double.parseDouble(parts[3]));
+                targetCities.add(city);
             }
         }
 
@@ -301,10 +313,15 @@ public class RedisForecastService {
         ObjectMapper mapper = new ObjectMapper();
         ArrayNode distancesArray = mapper.createArrayNode();
 
+        List<String> redisKeys = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        double[] arrayWeight = new double[targetCities.size()];
+        int iter = 0;
         for (City city : targetCities) {
             double distance = haversine(latitude, longitude, city.getLatitude(), city.getLongitude());
             double weight = distance == 0 ? 1000 : 1000 / distance;
             weightSum += weight;
+            arrayWeight[iter++] = weight;
 
             ObjectNode cityDistance = mapper.createObjectNode();
             cityDistance.put("city", city.getName());
@@ -314,22 +331,32 @@ public class RedisForecastService {
             cityDistance.put("weight", weight);
             distancesArray.add(cityDistance);
 
-            String json = getForecastTargetDay(city.getId(), targetDay);
-            if (json == null || json.isEmpty()) continue;
+            redisKeys.add(String.format(
+                    "forecast:{%s}%s:%s",
+                    city.getId().substring(0, 3), city.getId().substring(3), targetDay.format(formatter)));
+        }
 
+        List<String> results = jedisCluster.mget(redisKeys.toArray(new String[0]));
+
+        iter = 0;
+        for (String result : results) {
+            JsonNode root = null;
             try {
-                JsonNode root = mapper.readTree(json);
+                root = mapper.readTree(result);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            double weight = arrayWeight[iter++];
 
-                for (int i = 0; i < 24; i++) {
-                    rainSum[i] += root.get("rain").get(i).asDouble() * weight;
-                    snowSum[i] += root.get("snowfall").get(i).asDouble() * weight;
-                    tempSum[i] += root.get("temperature_2m").get(i).asDouble() * weight;
-                    windSum[i] += root.get("wind_speed_10m").get(i).asDouble() * weight;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+            for (int i = 0; i < 24; i++) {
+                rainSum[i] += root.get("rain").get(i).asDouble() * weight;
+                snowSum[i] += root.get("snowfall").get(i).asDouble() * weight;
+                tempSum[i] += root.get("temperature_2m").get(i).asDouble() * weight;
+                windSum[i] += root.get("wind_speed_10m").get(i).asDouble() * weight;
             }
         }
+
+        // output formatting
 
         ArrayNode timeArray = mapper.createArrayNode();
         ArrayNode rainArray = mapper.createArrayNode();
@@ -337,7 +364,10 @@ public class RedisForecastService {
         ArrayNode tempArray = mapper.createArrayNode();
         ArrayNode windArray = mapper.createArrayNode();
 
-        for (int i = 0; i < 24; i++) {
+        // if targetDay is today, past hours won't be shown
+        int startHour = 0;
+
+        for (int i = startHour; i < 24; i++) {
             rainArray.add(rainSum[i] / weightSum);
             snowArray.add(snowSum[i] / weightSum);
             tempArray.add(tempSum[i] / weightSum);

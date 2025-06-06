@@ -62,4 +62,24 @@ public class CityBucketResolver {
 
         throw new BucketNotDefinedForRegionException("Bucket not defined for region: " + regionCode + " - region: " + region);
     }
+
+    public static String getRegionFromId(String cityId){
+        String[] parts = cityId.split("-");
+        if (parts.length < 2) {
+            throw new BucketException("CityId string has fewer than 2 parts");
+        }
+
+        String regionCode = parts[0].toLowerCase();
+        return regionCodeToName.get(regionCode);
+    }
+
+    public static String getIdFromRegion(String region) {
+        for (Map.Entry<String, String> entry : regionCodeToName.entrySet()) {
+            if (entry.getValue().equalsIgnoreCase(region)) {
+                return entry.getKey();
+            }
+        }
+        throw new IllegalArgumentException("Region name is not valid");
+    }
+
 }

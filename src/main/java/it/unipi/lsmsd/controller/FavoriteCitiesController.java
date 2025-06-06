@@ -1,5 +1,6 @@
 package it.unipi.lsmsd.controller;
 
+import it.unipi.lsmsd.exception.UnauthorizedException;
 import it.unipi.lsmsd.service.FavoriteCityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,13 @@ public class FavoriteCitiesController {
                     .status(HttpStatus.OK)
                     .body(response);
 
-        }catch(Exception ex){
+        }
+        catch(UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: " + Ue.getMessage());
+        }
+        catch(Exception ex){
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An unexpected error occurred: " + ex.getMessage());
@@ -40,7 +47,13 @@ public class FavoriteCitiesController {
                     .status(HttpStatus.OK)
                     .body(response);
 
-        }catch(Exception ex){
+        }
+        catch(UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: " + Ue.getMessage());
+        }
+        catch(Exception ex){
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An unexpected error occurred: " + ex.getMessage());

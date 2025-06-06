@@ -2,7 +2,9 @@ package it.unipi.lsmsd.controller;
 
 import it.unipi.lsmsd.exception.CityNotFoundException;
 import it.unipi.lsmsd.exception.ThresholdsNotPresentException;
+import it.unipi.lsmsd.exception.UnauthorizedException;
 import it.unipi.lsmsd.model.ExtremeWeatherEvent;
+import it.unipi.lsmsd.model.Role;
 import it.unipi.lsmsd.service.CityService;
 import it.unipi.lsmsd.service.ExtremeWeatherEventService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import it.unipi.lsmsd.service.UserService;
 
 @RestController
 @RequestMapping("/ewe")
@@ -24,6 +27,9 @@ public class ExtremeWeatherEventController {
 
     @Autowired
     private CityService cityService;
+
+    @Autowired
+    private UserService userService;
 
     /**
      * Endpoint that triggers the automatic update of Extreme Weather Events for a specified city.
@@ -41,6 +47,7 @@ public class ExtremeWeatherEventController {
             @RequestParam String cityId
     ) {
         try {
+            userService.getAndCheckUserFromToken(token, Role.ADMIN);
             List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEventAutomatic(cityId);
 
             return ResponseEntity.ok()
@@ -57,6 +64,11 @@ public class ExtremeWeatherEventController {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body("Thresholds not present: " + TNPe.getMessage());
+        }
+        catch(UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: " + Ue.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity
@@ -86,6 +98,7 @@ public class ExtremeWeatherEventController {
     ) {
 
         try {
+            userService.getAndCheckUserFromToken(token, Role.ADMIN);
             // Call service updateExtremeWeatherEvent over time interval (startTime; endTime)
             List<ExtremeWeatherEvent> createdEWEs = extremeWeatherEventService.updateExtremeWeatherEvent(cityId, startTime, endTime);
 
@@ -103,6 +116,11 @@ public class ExtremeWeatherEventController {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body("Thresholds not present: " + TNPe.getMessage());
+        }
+        catch(UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: " + Ue.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity
@@ -135,9 +153,22 @@ public class ExtremeWeatherEventController {
             @RequestParam LocalDateTime startTime,
             @RequestParam LocalDateTime endTime
     ) {
-        // Call the relative service
-        Map<String, Integer> cleanupResult = extremeWeatherEventService.cleanExtremeWeatherEventDuplicatesRange(cityId, startTime, endTime);
-
+        Map<String, Integer> cleanupResult;
+        try {
+            userService.getAndCheckUserFromToken(token, Role.ADMIN);
+            // Call the relative service
+            cleanupResult = extremeWeatherEventService.cleanExtremeWeatherEventDuplicatesRange(cityId, startTime, endTime);
+        }
+        catch(UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: " + Ue.getMessage());
+        }
+        catch(Exception e){
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal Server Error: " + e.getMessage());
+        }
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(cleanupResult);
@@ -162,12 +193,24 @@ public class ExtremeWeatherEventController {
             @RequestHeader("Authorization") String token,
             @RequestParam String cityId
     ) {
-        // Call the relative service
-        Map<String, Integer> cleanupResult = extremeWeatherEventService.cleanExtremeWeatherEventDuplicatesAll(cityId);
+        try{
+            userService.getAndCheckUserFromToken(token, Role.ADMIN);
+            // Call the relative service
+            Map<String, Integer> cleanupResult = extremeWeatherEventService.cleanExtremeWeatherEventDuplicatesAll(cityId);
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(cleanupResult);
-
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(cleanupResult);
+        }
+        catch(UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: " + Ue.getMessage());
+        }
+        catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal Server error: " + e.getMessage());
+        }
     }
 }

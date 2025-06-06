@@ -34,7 +34,7 @@ import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
 import it.unipi.lsmsd.utility.MongoInitializer;
-import it.unipi.lsmsd.utility.CityBucketResolver;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 
 import static it.unipi.lsmsd.utility.StatisticsUtility.getEweThresholdsFromMeasurements;
@@ -47,7 +47,7 @@ public class DataInitializeService {
     @Autowired
     private HourlyMeasurementService hourlyMeasurementService;
     @Autowired
-    private JedisPool jedisPool;
+    private JedisCluster jedisCluster;
 
     private static final double PERCENTILE = 1;
 
@@ -69,27 +69,45 @@ public class DataInitializeService {
         }
     }
 
-    public void initializeCitiesRedis() throws IOException{
+    public void initializeCitiesRedis() throws IOException {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         Resource resource = resolver.getResource("classpath:data_init/cities.json");
-        try (InputStream is = resource.getInputStream()){
+
+        try (InputStream is = resource.getInputStream()) {
             List<CityDTO> cities = objectMapper.readValue(is, new TypeReference<List<CityDTO>>() {});
-            // Save in Redis
+            /*
+            old non-cluster version
+
             try (Jedis jedis = jedisPool.getResource()) {
-                for(CityDTO c : cities) {
+                for (CityDTO c : cities) {
                     Map<String, String> cityFields = new HashMap<>();
                     cityFields.put("name", c.getName());
                     cityFields.put("region", c.getRegion());
-                    String targetBucket = CityBucketResolver.getBucket(c.get_id());
 
-                    String cityKey = String.format("{%s}:%s", targetBucket, c.get_id());
+                    String cityKey = String.format("city:{%s}%s", c.get_id().substring(0, 3), c.get_id().substring(3));
+
+                    String regionSetKey = String.format("region:{%s}", c.get_id().substring(0, 3));
 
                     jedis.hset(cityKey, cityFields);
-                    jedis.sadd("region:" + c.getRegion(), cityKey);
+                    jedis.sadd(regionSetKey, cityKey);
                 }
+            }
+            */
+            for (CityDTO c : cities) {
+                Map<String, String> cityFields = new HashMap<>();
+                cityFields.put("name", c.getName());
+                cityFields.put("region", c.getRegion());
+
+                String cityKey = String.format("city:{%s}%s", c.get_id().substring(0, 3), c.get_id().substring(3));
+
+                String regionSetKey = String.format("region:{%s}", c.get_id().substring(0, 3));
+
+                jedisCluster.hset(cityKey, cityFields);
+                jedisCluster.sadd(regionSetKey, cityKey);
             }
         }
     }
+
 
     // public void initializeHourlyHistoricalMeasurement() throws IOException{
     //     String cityId = "pis-tus-43.7085-10.4036";
