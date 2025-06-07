@@ -4,9 +4,10 @@ import it.unipi.lsmsd.exception.CityNotFoundException;
 import it.unipi.lsmsd.exception.ThresholdsNotPresentException;
 import it.unipi.lsmsd.model.*;
 import it.unipi.lsmsd.repository.CityRepository;
-import it.unipi.lsmsd.repository.ExtremeWeatherEventRepository;
+//import it.unipi.lsmsd.repository.ExtremeWeatherEventRepository;
 import it.unipi.lsmsd.repository.HourlyMeasurementRepository;
 import it.unipi.lsmsd.utility.QuadrupleEWEInformationHolder;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
@@ -24,14 +25,57 @@ import static it.unipi.lsmsd.utility.EWEUtility.getEmptyListOfEWEs;
 @Service
 public class ExtremeWeatherEventService {
 
-    @Autowired
-    private ExtremeWeatherEventRepository eweRepository;
+    //@Autowired
+    //private ExtremeWeatherEventRepository eweRepository;
     @Autowired
     private HourlyMeasurementRepository hourlyMeasurementRepository;
     @Autowired
     private CityRepository cityRepository;
     @Autowired
     private CityService cityService;
+
+    public List<ExtremeWeatherEvent> getEventsOfCity(String cityId) {
+        return cityRepository.findById(cityId)
+                .map(City::getEweList)
+                .orElse(Collections.emptyList());
+    }
+
+    public List<ExtremeWeatherEvent> getOngoingEvents(String cityId) {
+        return cityRepository.findCityWithOngoingEvents(cityId)
+                .map(city -> city.getEweList().stream()
+                        .filter(e -> e.getDateEnd() == null)
+                        .collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
+    }
+
+    public List<ExtremeWeatherEvent> getEventsByCategorySorted(String cityId, ExtremeWeatherEventCategory category) {
+        return cityRepository.findCityWithEventsOfCategory(cityId, category.name())
+                .map(city -> city.getEweList().stream()
+                        .filter(e -> category.equals(e.getCategory()))
+                        .sorted(Comparator.comparing(ExtremeWeatherEvent::getDateStart))
+                        .collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
+    }
+
+    public List<ExtremeWeatherEvent> getEventsOngoingAt(String cityId, LocalDateTime time) {
+        return cityRepository.findCityWithEventsStartedBefore(cityId, time)
+                .map(city -> city.getEweList().stream()
+                        .filter(e -> e.getDateEnd() == null && !e.getDateStart().isAfter(time))
+                        .collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
+    }
+
+    public List<ExtremeWeatherEvent> getEventsInRangeWithCategory(String cityId, ExtremeWeatherEventCategory category, LocalDateTime start, LocalDateTime end) {
+        return cityRepository.findCityWithEventsInRangeAndCategory(cityId, category.name(), start, end)
+                .map(city -> city.getEweList().stream()
+                        .filter(e -> category.equals(e.getCategory()) &&
+                                (e.getDateStart().isEqual(start) || e.getDateStart().isAfter(start)) &&
+                                (e.getDateStart().isEqual(end) || e.getDateStart().isBefore(end)))
+                        .sorted(Comparator.comparing(ExtremeWeatherEvent::getDateStart))
+                        .collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
+    }
+
 
     public List<ExtremeWeatherEvent> updateExtremeWeatherEventAutomatic(
             String cityId
@@ -104,11 +148,14 @@ public class ExtremeWeatherEventService {
             LocalDateTime startTimeInterval,
             LocalDateTime endTimeInterval
     ) throws CityNotFoundException, ThresholdsNotPresentException {
+        System.out.println(cityId);
 
         // Gets all measurements for a given city
         Date startTime = Date.from(startTimeInterval.toInstant(ZoneOffset.UTC));
         Date endTime = Date.from(endTimeInterval.toInstant(ZoneOffset.UTC));
         List<HourlyMeasurement> hourlyMeasurements = hourlyMeasurementRepository.findByCityIdAndTimeBetweenOrderByTimeTimeAsc(cityId, startTime, endTime);
+        System.out.println(startTime + " " + endTime);
+        System.out.println(hourlyMeasurements.size());
 
         // Gets the target city, in order to get the thresholds
         Optional<City> city = cityRepository.findById(cityId);
@@ -143,6 +190,7 @@ public class ExtremeWeatherEventService {
         // Checks all measurements against all thresholds
         for (HourlyMeasurement measurement : hourlyMeasurements) {
 
+            System.out.println("paolo");
             // Gets the list of current EWE
             foundEWEs = getCurrentEWEs(measurement, eweThresholds);
 
@@ -150,6 +198,7 @@ public class ExtremeWeatherEventService {
             // thanks to the fact that the two arrays are always ordinated by category in the same way
             for (int i = 0; i < ExtremeWeatherEventCategory.values().length; i++) {
 
+                System.out.println("ciao");
                 // Find the ongoing ewe strength and found ewe strength
                 int foundStrength = foundEWEs.get(i).getSecond();
                 int ongoingStrength = ongoingExtremeWeatherEvents.get(i).getStrength();
@@ -158,18 +207,21 @@ public class ExtremeWeatherEventService {
 
                 // Set new startDate if a new EWE is found
                 if (foundStrength > 0 &&  ongoingStrength == 0){
+                    System.out.println("1");
                     ongoingExtremeWeatherEvents.get(i).setStrength(foundStrength);
                     ongoingExtremeWeatherEvents.get(i).setDateStart(measurement.getTime());
                 }
 
                 // Update ongoing event strength if a greater strength is detected
                 if (foundStrength > ongoingStrength && ongoingStrength > 0) {
+                    System.out.println("2");
                     // Updated the strength with the max value
                     ongoingExtremeWeatherEvents.get(i).setStrength(foundStrength);
                 }
 
                 // If the found strength is 0 but the event was ongoing, it means the event has ended
                 if (foundStrength == 0 && ongoingStrength > 0) {
+                    System.out.println("3");
 
                     // The EWE has terminated, so it can be saved into the repository
                     ongoingExtremeWeatherEvents.get(i).setDateEnd(measurement.getTime());
@@ -178,10 +230,13 @@ public class ExtremeWeatherEventService {
                     ExtremeWeatherEvent newEWE = createNewEWE(city.get(), ongoingExtremeWeatherEvents.get(i), true);
 
                     // Add it to repos
-                    ExtremeWeatherEvent insertedEwe = eweRepository.save(newEWE);
-
+                    //ExtremeWeatherEvent insertedEwe = eweRepository.save(newEWE);
+                    newEWE.setId(new ObjectId().toHexString());
+                    city.get().getEweList().add(newEWE);
+                    cityRepository.save(city.get());
                     // Add its id to the list of completed EWEs
-                    compltedEWEs.add(insertedEwe);
+                    compltedEWEs.add(newEWE);
+                    System.out.println(newEWE);
 
                     // Reset the strength to zero and both dates to null
                     ongoingExtremeWeatherEvents.get(i).resetData();
@@ -194,15 +249,20 @@ public class ExtremeWeatherEventService {
 
             // The ongoing ewe have a non-null Start Date and a null End Date
             if(ongoingEwe.getDateStart() != null && ongoingEwe.getDateEnd() == null){
+                System.out.println("4");
 
                 // Create new EWE, without setting the end date field
                 ExtremeWeatherEvent newEWE = createNewEWE(city.get(), ongoingEwe, false);
 
                 // Add it to repos
-                ExtremeWeatherEvent insertedEwe = eweRepository.save(newEWE);
-
+                //ExtremeWeatherEvent insertedEwe = eweRepository.save(newEWE);
+                newEWE.setId(new ObjectId().toHexString());
+                city.get().getEweList().add(newEWE);
+                cityRepository.save(city.get());
                 // Add its id to the list of completed EWEs
-                compltedEWEs.add(insertedEwe);
+                compltedEWEs.add(newEWE);
+                // Add its id to the list of completed EWEs
+                //compltedEWEs.add(insertedEwe);
             }
         }
 
@@ -227,7 +287,7 @@ public class ExtremeWeatherEventService {
         Map<ExtremeWeatherEventCategory, List<ExtremeWeatherEvent>> eweListsByCategory = new HashMap<>();
 
         for (ExtremeWeatherEventCategory category : ExtremeWeatherEventCategory.values()) {
-            List<ExtremeWeatherEvent> eweList = eweRepository.findByCityIdAndCategoryOrderByDateStart(cityId, category);
+            List<ExtremeWeatherEvent> eweList = getEventsByCategorySorted(cityId, category);//eweRepository.findByCityIdAndCategoryOrderByDateStart(cityId, category);
             eweListsByCategory.put(category, eweList);
         }
 
@@ -253,7 +313,7 @@ public class ExtremeWeatherEventService {
         Map<ExtremeWeatherEventCategory, List<ExtremeWeatherEvent>> eweListsByCategory = new HashMap<>();
 
         for (ExtremeWeatherEventCategory category : ExtremeWeatherEventCategory.values()) {
-            List<ExtremeWeatherEvent> eweList = eweRepository.findByCityIdAndCategoryAndDateStartBetweenOrderByDateStart(
+            List<ExtremeWeatherEvent> eweList = getEventsInRangeWithCategory(//eweRepository.findByCityIdAndCategoryAndDateStartBetweenOrderByDateStart(
                     cityId, category, startTimeInterval, endTimeInterval
             );
             eweListsByCategory.put(category, eweList);
@@ -373,11 +433,22 @@ public class ExtremeWeatherEventService {
                 insertedCount++;
             }
 
-            // Delete all marked EWEs
-            eweRepository.deleteAll(eweToRemove);
+            //eweRepository.deleteAll(eweToRemove);
+            //eweRepository.saveAll(eweToInsert);
+            City city = cityRepository.findById(cityId)
+                    .orElseThrow(() -> new RuntimeException("City not found"));
 
-            // Insert all new merged EWEs
-            eweRepository.saveAll(eweToInsert);
+            city.getEweList().removeIf(eweToRemove::contains);
+
+            for (ExtremeWeatherEvent newEwe : eweToInsert) {
+                if (newEwe.getId() == null) {
+                    newEwe.setId(UUID.randomUUID().toString());
+                }
+            }
+
+            city.getEweList().addAll(eweToInsert);
+
+            cityRepository.save(city);
         }
 
         // Return the counts of removed and inserted EWEs in a Map
@@ -432,10 +503,14 @@ public class ExtremeWeatherEventService {
         List<QuadrupleEWEInformationHolder> currentLocalEWEs = new ArrayList<>();
 
         // Searches the ongoing EWEs in the db started after the given startDate
-        List<ExtremeWeatherEvent> ongoingLocalEWEs = eweRepository.findByCityIdAndDateEndIsNullAndDateStartLessThanEqual(city.getId(), dateStart);
+        List<ExtremeWeatherEvent> ongoingLocalEWEs = getEventsOngoingAt(city.getId(), dateStart);//eweRepository.findByCityIdAndDateEndIsNullAndDateStartLessThanEqual(city.getId(), dateStart);
+
+        city.getEweList().removeIf(ongoingLocalEWEs::contains);
+
+        cityRepository.save(city);
 
         // Deletes the EWEs from the repository
-        eweRepository.deleteAll(ongoingLocalEWEs);
+        //eweRepository.deleteAll(ongoingLocalEWEs);
 
         // Map each EWE of ongoingLocalEWEs into a QuadrupleEWEInformationHolder
         return ongoingLocalEWEs.stream()

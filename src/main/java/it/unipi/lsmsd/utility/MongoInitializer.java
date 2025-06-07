@@ -65,9 +65,8 @@ public class MongoInitializer implements CommandLineRunner {
             if (!mongoCollectionList.contains(userCollectionName)) {
                 database.createCollection(userCollectionName);
                 MongoCollection<Document> userColl = database.getCollection(userCollectionName);
-                // Create unique index for users collection with username and email 
+                // Create unique index for users collection with username
                 userColl.createIndex(Indexes.ascending("username"), new IndexOptions().unique(true));
-                userColl.createIndex(Indexes.ascending("email"), new IndexOptions().unique(true));
                 // log
                 logger.info("MongoDB: Collection '" + userCollectionName + "' has been created");
             }
