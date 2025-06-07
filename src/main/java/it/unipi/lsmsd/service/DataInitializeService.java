@@ -178,6 +178,7 @@ public class DataInitializeService {
             String cityId = Optional.ofNullable(resource.getFilename())
                     .map(name -> name.replace(".json", ""))
                     .orElseThrow(() -> new IllegalArgumentException("City ID cannot be determined from filename: "));
+            System.out.println("Initializing measurements of city: " + cityId);
 
             dto.setCityId(cityId);
             // Save the parsed measurement to MongoDB
