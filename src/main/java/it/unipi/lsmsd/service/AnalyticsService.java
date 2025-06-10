@@ -28,7 +28,6 @@ import java.util.stream.StreamSupport;
 @Service
 public class AnalyticsService{
 
-    private final MongoCollection<Document> eweCollection;
     private final MongoCollection<Document> measurementCollection;
 
     public AnalyticsService() {
@@ -38,7 +37,6 @@ public class AnalyticsService{
                         .build()
         );
         MongoDatabase database = mongoClient.getDatabase("WeatherApp");
-        this.eweCollection = database.getCollection("extreme_weather_events");
         this.measurementCollection = database.getCollection("hourly_measurements");
     }
 
@@ -621,33 +619,35 @@ public class AnalyticsService{
             LocalDateTime startDate,
             LocalDateTime endDate,
             String region
-    ){
+    ) {
 
         String regionPrefix = region.substring(0, 3).toLowerCase();
 
         String projectedName = "ExtremeWeatherEvent count";
-        return StreamSupport.stream(eweCollection.aggregate(
-                Arrays.asList(
-                        match(and(
-                                regex("cityId", "^" + regionPrefix + "-"),
-                                eq("category", EweCategory.name().toUpperCase()),
-                                gte("dateStart", startDate),
-                                lte("dateEnd", endDate)
-                        )),
-                        group(
-                                "$cityId",
-                                sum(projectedName, 1)
-                        ),
-                        project(fields(
-                                computed("cityId", "$_id"),
-                                include(projectedName)
-                        )),
-                        sort(orderBy(
-                                descending(projectedName)
-                        ))
-                )).spliterator(), false)
+        return StreamSupport.stream(cityCollection.aggregate(
+                        Arrays.asList(
+                                match(regex("_id", "^" + regionPrefix + "-")),
+                                unwind("$eweList"),
+                                match(and(
+                                        eq("eweList.category", EweCategory.name().toUpperCase()),
+                                        gte("eweList.dateStart", startDate),
+                                        lte("eweList.dateEnd", endDate)
+                                )),
+                                group(
+                                        "$_id",
+                                        sum(projectedName, 1)
+                                ),
+                                project(fields(
+                                        computed("cityId", "$_id"),
+                                        include(projectedName)
+                                )),
+                                sort(orderBy(
+                                        descending(projectedName)
+                                ))
+                        )).spliterator(), false)
                 .collect(Collectors.toList());
     }
+
 
     /**
      * Retrieves the number of extreme weather events (EWEs) for each city that match a specified category,
@@ -672,22 +672,21 @@ public class AnalyticsService{
             LocalDateTime startDate,
             LocalDateTime endDate,
             String region
-    ){
-
+    ) {
         String regionPrefix = region.substring(0, 3).toLowerCase();
-
         String projectedName = "ExtremeWeatherEvent count";
-        return StreamSupport.stream(eweCollection.aggregate(
-                Arrays.asList(
+
+        return StreamSupport.stream(cityCollection.aggregate(Arrays.asList(
+                        match(regex("_id", "^" + regionPrefix + "-")),         // seleziona città della regione
+                        unwind("$eweList"),                                    // eventi singoli
                         match(and(
-                                regex("cityId", "^" + regionPrefix + "-"),
-                                eq("category", EweCategory.name().toUpperCase()),
-                                gte("dateStart", startDate),
-                                lte("dateEnd", endDate),
-                                gte("strength", minimumStrength)
+                                eq("eweList.category", EweCategory.name().toUpperCase()),
+                                gte("eweList.dateStart", startDate),
+                                lte("eweList.dateEnd", endDate),
+                                gte("eweList.strength", minimumStrength)
                         )),
                         group(
-                                "$cityId",
+                                "$_id",                                        // raggruppa per id città
                                 sum(projectedName, 1)
                         ),
                         project(fields(
@@ -698,6 +697,7 @@ public class AnalyticsService{
                 )).spliterator(), false)
                 .collect(Collectors.toList());
     }
+
 
     /**
      * Retrieves the maximum strength of a specific extreme weather event (EWE) category
@@ -723,33 +723,34 @@ public class AnalyticsService{
             LocalDateTime startDate,
             LocalDateTime endDate,
             String region
-    ){
-
+    ) {
         String regionPrefix = region.substring(0, 3).toLowerCase();
-
         String projectedName = "Maximum strength";
-        return StreamSupport.stream(eweCollection.aggregate(
-                Arrays.asList(
+
+        return StreamSupport.stream(cityCollection.aggregate(Arrays.asList(
+                        match(regex("_id", "^" + regionPrefix + "-")),
+                        unwind("$eweList"),
                         match(and(
-                                regex("cityId", "^" + regionPrefix + "-"),
-                                eq("category", EweCategory.name().toUpperCase()),
-                                gte("dateStart", startDate),
-                                lte("dateEnd", endDate)
+                                eq("eweList.category", EweCategory.name().toUpperCase()),
+                                gte("eweList.dateStart", startDate),
+                                lte("eweList.dateEnd", endDate)
                         )),
-                        sort(orderBy(descending("strength"))),
+                        sort(orderBy(descending("eweList.strength"))),
                         group(
-                                "$cityId",
-                                first(projectedName, "$strength"),
-                                first("dateStart", "$dateStart"),
-                                first("dateEnd", "$dateEnd")
+                                "$_id",
+                                first(projectedName, "$eweList.strength"),
+                                first("dateStart", "$eweList.dateStart"),
+                                first("dateEnd", "$eweList.dateEnd")
                         ),
                         project(fields(
+                                computed("cityId", "$_id"),
                                 include(projectedName, "dateStart", "dateEnd")
                         )),
                         sort(orderBy(descending(projectedName)))
                 )).spliterator(), false)
                 .collect(Collectors.toList());
     }
+
 
     /**
      * Retrieves the average strength of a specific extreme weather event (EWE) category
@@ -775,24 +776,24 @@ public class AnalyticsService{
             LocalDateTime startDate,
             LocalDateTime endDate,
             String region
-    ){
-
+    ) {
         String regionPrefix = region.substring(0, 3).toLowerCase();
-
         String projectedName = "Average strength";
-        return StreamSupport.stream(eweCollection.aggregate(
-                Arrays.asList(
+
+        return StreamSupport.stream(cityCollection.aggregate(Arrays.asList(
+                        match(regex("_id", "^" + regionPrefix + "-")),
+                        unwind("$eweList"),
                         match(and(
-                                regex("cityId", "^" + regionPrefix + "-"),
-                                eq("category", EweCategory.name().toUpperCase()),
-                                gte("dateStart", startDate),
-                                lte("dateEnd", endDate)
+                                eq("eweList.category", EweCategory.name().toUpperCase()),
+                                gte("eweList.dateStart", startDate),
+                                lte("eweList.dateEnd", endDate)
                         )),
                         group(
-                                "$cityId",
-                                avg(projectedName, "$strength")
+                                "$_id",
+                                avg(projectedName, "$eweList.strength")
                         ),
                         project(fields(
+                                computed("cityId", "$_id"),
                                 include(projectedName)
                         )),
                         sort(orderBy(descending(projectedName)))
@@ -816,50 +817,50 @@ public class AnalyticsService{
             LocalDateTime startDate,
             LocalDateTime endDate,
             String region
-    ){
+    ) {
 
         String regionPrefix = region.substring(0, 3).toLowerCase();
 
         String projectedName = "ExtremeWeatherEvent duration (hours)";
-        return StreamSupport.stream(eweCollection.aggregate(
-                Arrays.asList(
-                        match(and(
-                                regex("cityId", "^" + regionPrefix + "-"),
-                                eq("category", EweCategory.name().toUpperCase()),
-                                gte("dateStart", startDate),
-                                lte("dateEnd", endDate),
-                                exists("dateEnd", true),
-                                ne("dateEnd", null)
-                        )),
-                        // Calculate and add the duration
-                        addFields(
-                            new Field<>(
-                                "durationHours",
-                                    new Document(
-                                    "$divide", Arrays.asList(
+        return StreamSupport.stream(cityCollection.aggregate(
+                        Arrays.asList(
+                                match(regex("_id", "^" + regionPrefix + "-")),
+                                unwind("$eweList"),
+                                match(and(
+                                        eq("eweList.category", EweCategory.name().toUpperCase()),
+                                        gte("eweList.dateStart", startDate),
+                                        lte("eweList.dateEnd", endDate),
+                                        exists("eweList.dateEnd", true),
+                                        ne("eweList.dateEnd", null)
+                                )),
+                                addFields(new Field<>(
+                                        "durationHours",
                                         new Document(
-                                                "$subtract",
-                                                Arrays.asList("$dateEnd", "$dateStart")
-                                        ),
-                                        1000 * 60 * 60 // Milliseconds to hours
-                                    )
-                                )
-                            )
-                        ),
-                        sort(descending("durationHours")),
-                        group("$cityId",
-                                first("dateStart", "$dateStart"),
-                                first("dateEnd", "$dateEnd"),
-                                first("strength", "$strength"),
-                                first(projectedName, "$durationHours")
-                        ),
-                        project(fields(
-                                include("dateStart", "dateEnd", "strength", projectedName)
-                        )),
-                        sort(orderBy(descending(projectedName)))
-                )).spliterator(), false)
+                                                "$divide", Arrays.asList(
+                                                new Document(
+                                                        "$subtract",
+                                                        Arrays.asList("$eweList.dateEnd", "$eweList.dateStart")
+                                                ),
+                                                1000 * 60 * 60
+                                        )
+                                        )
+                                )),
+                                sort(descending("durationHours")),
+                                group("$_id",
+                                        first("dateStart", "$eweList.dateStart"),
+                                        first("dateEnd", "$eweList.dateEnd"),
+                                        first("strength", "$eweList.strength"),
+                                        first(projectedName, "$durationHours")
+                                ),
+                                project(fields(
+                                        computed("cityId", "$_id"),
+                                        include("dateStart", "dateEnd", "strength", projectedName)
+                                )),
+                                sort(orderBy(descending(projectedName)))
+                        )).spliterator(), false)
                 .collect(Collectors.toList());
     }
+
 
     /**
      * Computes the average duration (in hours) of extreme weather events (EWEs)
@@ -876,46 +877,46 @@ public class AnalyticsService{
             LocalDateTime startDate,
             LocalDateTime endDate,
             String region
-    ){
+    ) {
 
         String regionPrefix = region.substring(0, 3).toLowerCase();
 
         String projectedName = "ExtremeWeatherEvent average duration (hours)";
-        return StreamSupport.stream(eweCollection.aggregate(
-                Arrays.asList(
-                        match(and(
-                                regex("cityId", "^" + regionPrefix + "-"),
-                                eq("category", EweCategory.name().toUpperCase()),
-                                gte("dateStart", startDate),
-                                lte("dateEnd", endDate),
-                                exists("dateEnd", true),
-                                ne("dateEnd", null)
-                        )),
-                        // Calculate and add the duration
-                        addFields(
-                                new Field<>(
+        return StreamSupport.stream(cityCollection.aggregate(
+                        Arrays.asList(
+                                match(regex("_id", "^" + regionPrefix + "-")),
+                                unwind("$eweList"),
+                                match(and(
+                                        eq("eweList.category", EweCategory.name().toUpperCase()),
+                                        gte("eweList.dateStart", startDate),
+                                        lte("eweList.dateEnd", endDate),
+                                        exists("eweList.dateEnd", true),
+                                        ne("eweList.dateEnd", null)
+                                )),
+                                addFields(new Field<>(
                                         "durationHours",
                                         new Document(
                                                 "$divide", Arrays.asList(
                                                 new Document(
                                                         "$subtract",
-                                                        Arrays.asList("$dateEnd", "$dateStart")
+                                                        Arrays.asList("$eweList.dateEnd", "$eweList.dateStart")
                                                 ),
-                                                1000 * 60 * 60 // Milliseconds to hours
+                                                1000 * 60 * 60
                                         )
                                         )
-                                )
-                        ),
-                        group("$cityId",
-                                avg(projectedName, "$durationHours")
-                        ),
-                        project(fields(
-                                include(projectedName)
-                        )),
-                        sort(orderBy(descending(projectedName)))
-                )).spliterator(), false)
+                                )),
+                                group("$_id",
+                                        avg(projectedName, "$durationHours")
+                                ),
+                                project(fields(
+                                        computed("cityId", "$_id"),
+                                        include(projectedName)
+                                )),
+                                sort(orderBy(descending(projectedName)))
+                        )).spliterator(), false)
                 .collect(Collectors.toList());
     }
+
 
     /**
      * Computes the average number of extreme weather events for each calendar month
@@ -936,30 +937,27 @@ public class AnalyticsService{
             LocalDateTime endDate
     ) {
         String projectedName = "ExtremeWeatherEvent count";
-        return StreamSupport.stream(eweCollection.aggregate(
-                Arrays.asList(
-                        match(and(
-                                eq("cityId", cityId),
-                                eq("category", EweCategory.name().toUpperCase()),
-                                gte("dateStart", startDate),
-                                lte("dateStart", endDate)
-                        )),
-                        // add month to later group
-                        addFields(
-                                new Field<>("month", new Document("$month", "$dateStart"))
-                        ),
-                        group(
-                                "$month",
-                                sum(projectedName, 1)
-                        ),
-                        // Sort by month
-                        sort(ascending("_id")),
-                        project(fields(
-                                computed("MonthId", "$_id"),
-                                excludeId(),
-                                include(projectedName)
-                        ))
-                )).spliterator(), false)
+        return StreamSupport.stream(cityCollection.aggregate(
+                        Arrays.asList(
+                                match(eq("_id", cityId)),
+                                unwind("$eweList"),
+                                match(and(
+                                        eq("eweList.category", EweCategory.name().toUpperCase()),
+                                        gte("eweList.dateStart", startDate),
+                                        lte("eweList.dateStart", endDate)
+                                )),
+                                addFields(new Field<>("month", new Document("$month", "$eweList.dateStart"))),
+                                group(
+                                        "$month",
+                                        sum(projectedName, 1)
+                                ),
+                                sort(ascending("_id")),
+                                project(fields(
+                                        computed("MonthId", "$_id"),
+                                        excludeId(),
+                                        include(projectedName)
+                                ))
+                        )).spliterator(), false)
                 .collect(Collectors.toList());
     }
 

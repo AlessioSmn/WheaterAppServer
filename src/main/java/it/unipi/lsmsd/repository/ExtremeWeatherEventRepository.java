@@ -6,7 +6,7 @@ import it.unipi.lsmsd.model.ExtremeWeatherEvent;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
+/*
 public interface ExtremeWeatherEventRepository extends MongoRepository<ExtremeWeatherEvent, String> {
     List<ExtremeWeatherEvent> findByCityId(String cityId);
     List<ExtremeWeatherEvent> findByCityIdAndDateEndIsNull(String cityId);
@@ -19,3 +19,4 @@ public interface ExtremeWeatherEventRepository extends MongoRepository<ExtremeWe
             LocalDateTime endTime
     );
 }
+*/
