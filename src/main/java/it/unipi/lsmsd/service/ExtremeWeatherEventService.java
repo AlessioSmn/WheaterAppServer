@@ -190,7 +190,6 @@ public class ExtremeWeatherEventService {
         // Checks all measurements against all thresholds
         for (HourlyMeasurement measurement : hourlyMeasurements) {
 
-            System.out.println("paolo");
             // Gets the list of current EWE
             foundEWEs = getCurrentEWEs(measurement, eweThresholds);
 
@@ -198,7 +197,6 @@ public class ExtremeWeatherEventService {
             // thanks to the fact that the two arrays are always ordinated by category in the same way
             for (int i = 0; i < ExtremeWeatherEventCategory.values().length; i++) {
 
-                System.out.println("ciao");
                 // Find the ongoing ewe strength and found ewe strength
                 int foundStrength = foundEWEs.get(i).getSecond();
                 int ongoingStrength = ongoingExtremeWeatherEvents.get(i).getStrength();
@@ -207,21 +205,18 @@ public class ExtremeWeatherEventService {
 
                 // Set new startDate if a new EWE is found
                 if (foundStrength > 0 &&  ongoingStrength == 0){
-                    System.out.println("1");
                     ongoingExtremeWeatherEvents.get(i).setStrength(foundStrength);
                     ongoingExtremeWeatherEvents.get(i).setDateStart(measurement.getTime());
                 }
 
                 // Update ongoing event strength if a greater strength is detected
                 if (foundStrength > ongoingStrength && ongoingStrength > 0) {
-                    System.out.println("2");
                     // Updated the strength with the max value
                     ongoingExtremeWeatherEvents.get(i).setStrength(foundStrength);
                 }
 
                 // If the found strength is 0 but the event was ongoing, it means the event has ended
                 if (foundStrength == 0 && ongoingStrength > 0) {
-                    System.out.println("3");
 
                     // The EWE has terminated, so it can be saved into the repository
                     ongoingExtremeWeatherEvents.get(i).setDateEnd(measurement.getTime());
@@ -249,7 +244,6 @@ public class ExtremeWeatherEventService {
 
             // The ongoing ewe have a non-null Start Date and a null End Date
             if(ongoingEwe.getDateStart() != null && ongoingEwe.getDateEnd() == null){
-                System.out.println("4");
 
                 // Create new EWE, without setting the end date field
                 ExtremeWeatherEvent newEWE = createNewEWE(city.get(), ongoingEwe, false);
@@ -508,9 +502,6 @@ public class ExtremeWeatherEventService {
         city.getEweList().removeIf(ongoingLocalEWEs::contains);
 
         cityRepository.save(city);
-
-        // Deletes the EWEs from the repository
-        //eweRepository.deleteAll(ongoingLocalEWEs);
 
         // Map each EWE of ongoingLocalEWEs into a QuadrupleEWEInformationHolder
         return ongoingLocalEWEs.stream()
