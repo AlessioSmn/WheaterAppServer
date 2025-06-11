@@ -15,9 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import redis.clients.jedis.JedisCluster;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -29,6 +32,9 @@ public class CityController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private JedisCluster jedisCluster;
 
     @PostMapping("/add")
     public ResponseEntity<String> addCity(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
@@ -106,6 +112,13 @@ public class CityController {
 
             String cityId = Mapper.mapCity(cityDTO).getId();
             CityDTO cityDtoAfter = cityService.getCityWithID(cityId);
+
+            Map<String, String> c = new HashMap<String, String>();
+            c.put("name", cityDTO.getName());
+            c.put("region", cityDTO.getRegion());
+            c.put("elevation", cityDTO.getRegion());
+            jedisCluster.hset
+                    ("city:{" + cityId.substring(0,3) + "}" + cityId.substring(3), c);
 
             // Returns all city's information into the body
             return ResponseEntity

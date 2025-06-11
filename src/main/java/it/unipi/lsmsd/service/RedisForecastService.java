@@ -176,7 +176,7 @@ public class RedisForecastService {
      */
     public void deleteAllForecast() {
         for (Map.Entry<String, ConnectionPool> entry : jedisCluster.getClusterNodes().entrySet()) {
-            String node = entry.getKey(); // es: "127.0.0.1:7000"
+            String node = entry.getKey();
             String[] hostPort = node.split(":");
             String host = hostPort[0];
             int port = Integer.parseInt(hostPort[1]);
@@ -190,12 +190,14 @@ public class RedisForecastService {
                     ScanParams params = new ScanParams().match("forecast:*").count(100);
                     ScanResult<String> scanResult = jedis.scan(cursor, params);
                     List<String> keys = scanResult.getResult();
-                    if (!keys.isEmpty()) {
-                        jedis.del(keys.toArray(new String[0]));
+                    for (String key : keys) {
+                        jedis.del(key);  // safe DEL, one key at a time
                     }
                     cursor = scanResult.getCursor();
+
                 } while (!cursor.equals("0"));
             }
+
         }
     }
 

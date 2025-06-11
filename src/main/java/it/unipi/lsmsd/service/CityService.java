@@ -1,6 +1,9 @@
 package it.unipi.lsmsd.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.DTO.CityDTO;
+import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
 import it.unipi.lsmsd.exception.CityException;
 import it.unipi.lsmsd.exception.CityNotFoundException;
 import it.unipi.lsmsd.model.City;
@@ -14,12 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.dao.DuplicateKeyException;
+import redis.clients.jedis.JedisCluster;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,9 +30,33 @@ public class CityService {
     private CityRepository cityRepository;
     @Autowired
     private DataHarvestService dataHarvestService;
-
+    @Autowired
+    private JedisCluster jedisCluster;
     @Autowired
     private UserService userService;
+    @Autowired
+    private RedisForecastService forecastRedisService;
+
+    private void addInRedis(City city){
+        Map<String, String> c = new HashMap<String, String>();
+        c.put("name", city.getName());
+        c.put("region", city.getRegion());
+        c.put("elevation", city.getRegion());
+        jedisCluster.hset
+                ("city:{" + city.getId().substring(0,3) + "}" + city.getId().substring(3), c);
+
+        CityDTO cityDTO = getCityWithID(city.getId());
+        // Get 7 days forecast and save
+        try{
+            APIResponseDTO apiResponseDTO = dataHarvestService.getCityForecast(cityDTO.getLatitude(), cityDTO.getLongitude(), 0, 7);
+            HourlyMeasurementDTO hourlyMeasurementDTO = apiResponseDTO.getHourly();
+            hourlyMeasurementDTO.setCityId(city.getId());
+            forecastRedisService.saveForecast(hourlyMeasurementDTO);
+        }
+        catch (JsonProcessingException jpe){
+            jpe.printStackTrace();
+        }
+    }
 
     // Get City info with City Name
     public List<CityDTO> getCity(String cityName) throws NoSuchElementException {
@@ -62,6 +87,7 @@ public class CityService {
         // Insert to the DB
         // NOTE: Attempt to "insert" a document with an existing id throws DuplicateKeyException
         cityRepository.insert(city);
+        addInRedis(city);
         return city.getId();
     }
     
@@ -98,6 +124,7 @@ public class CityService {
         // Insert to the DB
         // NOTE: Attempt to "insert" a document with an existing id throws DuplicateKeyException
         cityRepository.insert(city);
+        addInRedis(city);
         return city.getId();
     }
 

@@ -6,11 +6,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,6 +33,7 @@ import com.mongodb.DuplicateKeyException;
 import it.unipi.lsmsd.DTO.APIResponseDTO;
 import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.DTO.HourlyMeasurementDTO;
+import redis.clients.jedis.JedisCluster;
 
 @Service
 public class DataRefreshService {
@@ -52,6 +49,8 @@ public class DataRefreshService {
     private ExtremeWeatherEventService extremeWeatherEventService;
     @Autowired
     private CityRepository cityRepository;
+    @Autowired
+    private JedisCluster jedisCluster;
 
     private final ObjectMapper objectMapper;
 
@@ -200,16 +199,15 @@ public class DataRefreshService {
     }
 
     public void refreshForecast() throws JsonProcessingException{
-
         //Make Sure no stale Forecast exists in DB
+        System.out.println(".");
         forecastRedisService.deleteAllForecast();
-
+/*
         // Use PathMatchingResourcePatternResolver to load the resource from the correct path
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         Resource resource = resolver.getResource("classpath:data_init/citiesId.json");
         try (InputStream is = resource.getInputStream()){
             List<String> cityIdList = objectMapper.readValue(is, new TypeReference<List<String>>() {});
-
 
             for(String cityId : cityIdList){
                 refreshCityForecast(cityId);
@@ -222,7 +220,19 @@ public class DataRefreshService {
         catch (Exception e){
             System.out.println("eccezione");
         }
+*/
+        String[] regCodesList = new String[] {
+                "lom", "emi", "cal", "sar", "umb", "aos", "lat", "cam", "apu", "lig",
+                "tre", "mol", "sic", "ven", "pie", "tus", "the", "abr", "bas", "fri"
+        };
 
+        for(String code: regCodesList) {
+            Set<String> cityIdList = jedisCluster.keys("city:{" + code + "}*");
+            for (String cityId : cityIdList) {
+                System.out.println(cityId.substring(6));
+                refreshCityForecast(code + cityId.substring(10));
+            }
+        }
     }
 
     private void refreshCityForecast(String cityId) throws JsonProcessingException{
