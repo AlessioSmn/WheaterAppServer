@@ -1,6 +1,7 @@
 package it.unipi.lsmsd.repository;
 
 import it.unipi.lsmsd.model.City;
+import it.unipi.lsmsd.model.CityBasicProjection;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -11,6 +12,8 @@ import java.util.Optional;
 @Repository
 public interface CityRepository extends MongoRepository<City, String> {
     List<City> findAllByName(String name);
+    List<CityBasicProjection> findAllBy();
+    List<CityBasicProjection> findAllByNameOrderByFollowers(String name);
     @Query("{ '_id': ?0, 'eweList': { $elemMatch: { 'dateEnd': null } } }")
     Optional<City> findCityWithOngoingEvents(String cityId);
     @Query("{ '_id': ?0, 'eweList': { $elemMatch: { 'category': ?1 } } }")

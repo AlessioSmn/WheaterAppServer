@@ -15,8 +15,7 @@ public class FavoriteCitiesController {
     @Autowired
     private FavoriteCityService favoriteCityService;
 
-    @PostMapping("/add")
-
+    @PutMapping()
     public ResponseEntity<String> addToFavorites(@RequestHeader("Authorization") String token, @RequestParam String targetCityId){
         try{
             String response = favoriteCityService.addToFavorites(token, targetCityId);
@@ -38,7 +37,8 @@ public class FavoriteCitiesController {
         }
     }
 
-    @PostMapping("/remove")
+
+    @DeleteMapping()
     public ResponseEntity<String> removeFromFavorites(@RequestHeader("Authorization") String token, @RequestParam String targetCityId){
         try{
             String response = favoriteCityService.removeFromFavorites(token, targetCityId);

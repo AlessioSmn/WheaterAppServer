@@ -4,7 +4,7 @@ import it.unipi.lsmsd.DTO.CityDTO;
 import it.unipi.lsmsd.exception.CityException;
 import it.unipi.lsmsd.exception.CityNotFoundException;
 import it.unipi.lsmsd.exception.UnauthorizedException;
-import it.unipi.lsmsd.model.City;
+import it.unipi.lsmsd.model.CityBasicProjection;
 import it.unipi.lsmsd.model.Role;
 import it.unipi.lsmsd.repository.CityRepository;
 import it.unipi.lsmsd.service.CityService;
@@ -94,9 +94,6 @@ public class CityController {
         }
     }
 
-    // TODO have new cityDTO which maps directly the model to return that one, it the easier way.
-    //  I don't want to return a city with start and end fields, it makes no sense.
-    //  And i believe that its way too complex to manually exclude some field or do a on-the-fly conversion to json
     @PostMapping("/update-thresholds")
     public ResponseEntity<Object> updateCityThresholds(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
         try{
@@ -138,7 +135,7 @@ public class CityController {
     public ResponseEntity<Object> getCityByName(@RequestParam String cityName){
         try{
             // Retrieves the city
-            List<City> cities = cityRepository.findAllByName(cityName);
+            List<CityBasicProjection> cities = cityRepository.findAllByNameOrderByFollowers(cityName);
 
             // Returns all city's information into the body
             return ResponseEntity
@@ -159,8 +156,7 @@ public class CityController {
     @GetMapping("/all")
     public ResponseEntity<Object> getAllCities(){
         try{
-            // Retrieves the city
-            List<City> cities = cityRepository.findAll();
+            List<CityBasicProjection> cities = cityRepository.findAllBy();
 
             // Returns all city's information into the body
             return ResponseEntity
