@@ -136,6 +136,9 @@ public class DataInitializeService {
                     .map(name -> name.replace(".json", ""))
                     .orElseThrow(() -> new IllegalArgumentException("City ID cannot be determined from filename: "));
 
+            logger.info("Initializing measurements of city: " + cityId);
+            System.out.println("Initializing measurements of city: " + cityId);
+
             dto.setCityId(cityId);
             // Save the parsed measurement to MongoDB
             hourlyMeasurementService.saveHourlyMeasurements(dto);
@@ -152,11 +155,13 @@ public class DataInitializeService {
             String startDate = timeList.get(0);
             // Update the city Last Update date
             cityService.updateStartEndDate(startDate, endDate, cityId);
+            // System.out.println("cityService.updateStartEndDate: cityId:"+cityId+" startDate:"+startDate+" endDate:"+endDate);
 
             // Update lastMeasurementUpdate
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
             LocalDateTime endDate_toLDT = LocalDateTime.parse(endDate, formatter);
             cityService.setLastMeasurementUpdateById(cityId, endDate_toLDT);
+            // System.out.println("cityService.setLastMeasurementUpdateById: cityId:"+cityId+" lastMas.Update:"+endDate_toLDT);
 
             logger.info("Added HourlyMeasurement for "+cityId+" and updated city.endDate = "+ endDate);
 

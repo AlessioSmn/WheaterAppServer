@@ -34,7 +34,7 @@ public class AnalyticsService{
     public AnalyticsService() {
         MongoClient mongoClient = MongoClients.create(
                 MongoClientSettings.builder()
-                        .applyConnectionString(new ConnectionString("mongodb://localhost:27017"))
+                        .applyConnectionString(new ConnectionString("mongodb://localhost:27018"))
                         .build()
         );
         MongoDatabase database = mongoClient.getDatabase("WeatherApp");
@@ -965,24 +965,4 @@ public class AnalyticsService{
 
     // </editor-fold>
 
-
-
-    // <editor-fold desc="Information for client application">
-
-    /**
-     * Retrieves a list of all cities from the collection, sorted in descending order
-     * based on the number of followers.
-     *
-     * @return a list of {@link Document} objects representing city information,
-     *         ordered by the "followers" field.
-     */
-    public List<Document> citiesInformation(){
-        return StreamSupport.stream(cityCollection.aggregate(
-                List.of(
-                    sort(orderBy(descending("followers")))
-                )).spliterator(), false)
-                .collect(Collectors.toList());
-    }
-
-    // </editor-fold>
 }

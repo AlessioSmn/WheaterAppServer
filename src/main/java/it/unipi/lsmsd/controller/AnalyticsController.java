@@ -26,15 +26,6 @@ public class AnalyticsController {
 
     // <editor-fold desc="Measurements analytics with single city as target [ measurement/city/ ]">
 
-    @GetMapping("/measurement/city/total-measurements-count-per-city-TESTAPI")
-    public ResponseEntity<Object> getMeasurementCounts(
-            @RequestParam LocalDateTime start,
-            @RequestParam LocalDateTime end
-    ) {
-        List<Document> serviceResponse = analyticsService.getMeasurementCountByCityInRange(start, end);
-        return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
-    }
-
     @GetMapping("/measurement/city/average")
     public ResponseEntity<Object> averageMeasurementInCityDuringPeriod(
             @RequestParam String cityId,
@@ -255,15 +246,4 @@ public class AnalyticsController {
 
     // </editor-fold>
 
-
-
-    // <editor-fold desc="Information for client application">
-
-    @GetMapping("/cities-information")
-    public ResponseEntity<Object> citiesInformation() {
-        List<Document> serviceResponse = analyticsService.citiesInformation();
-        return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
-    }
-
-    // </editor-fold>
 }
