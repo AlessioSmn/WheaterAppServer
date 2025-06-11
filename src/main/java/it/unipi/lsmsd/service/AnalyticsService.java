@@ -58,8 +58,6 @@ public class AnalyticsService{
             LocalDateTime endDate
     ) {
         String projectedName = "Number of measurements";
-        // TODO delete
-        System.out.println("TODO: getMeasurementCountByCityInRange");
         return StreamSupport.stream(measurementCollection.aggregate(
                 Arrays.asList(
                         match(and(
