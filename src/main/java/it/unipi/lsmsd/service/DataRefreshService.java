@@ -101,25 +101,13 @@ public class DataRefreshService {
                 }
             }
         }
-        catch (IOException e) {
-            // TODO: handle exception
-        }
-        catch (Exception e){
-            System.out.println("");
+        catch (Exception ignored){
         } finally {
             executor.shutdown(); // Ensure that the executor shuts down after all tasks are complete
         }
-
-
-        // // Get the list of cities from the DB
-
-        // // For each city Add Fresh Data
-        // String cityId = "pis-tus-43.7085-10.4036";
-        // refreshCityHistoricalData(cityId);
-
     }
 
-    private void refreshCityHistoricalData(String cityId) throws JsonProcessingException{
+    private void refreshCityHistoricalData(String cityId) throws Exception{
 
         try {
             CityDTO cityDTO = cityService.getCityWithID(cityId);
@@ -143,12 +131,12 @@ public class DataRefreshService {
             String hourly_endDate = LocalDate.now(zoneId)
                 .minusDays(1)
                 .toString();
+
             // Check if start date is greater than end date which means Data already updated
             if (LocalDate.parse(hourly_startDate).isAfter(LocalDate.parse(hourly_endDate))) {
-                // logger
                 return;
-                // throw new Exception("");
             }
+
             // Get data from Open-Meteo API
             APIResponseDTO apiResponseDTO = dataHarvestService.getCityHistoricalMeasurement(
                 cityDTO.getLatitude(),cityDTO.getLongitude(), hourly_startDate, hourly_endDate);
@@ -157,44 +145,14 @@ public class DataRefreshService {
             //Save to MongoDB
             hourlyMeasurementService.saveHourlyMeasurements(apiResponseDTO.getHourly());
 
-            // STEP 2: Delete the Stale Historical Data
-            // Calcuate the new start date for removal of the stale data
-            // Parse the endDate into LocalDate
-            // Convert LocalDate to ZonedDateTime at midnight UTC
-            // Subtract 1 hour and 25 years
-            // hourly_endDate "2025-05-02"-->city_newStartDate Date@124 "Sun May 07 00:00:00 UTC 2000"
-            Date city_newStartDate = Date.from(
-                LocalDate.parse(hourly_endDate)
-                .atStartOfDay(zoneId)
-                .minusYears(25)
-                .toInstant());
-            // Calcuate the  old start date
-            // "2025-05-07" -->
-            Date city_oldStartDate = Date.from(
-                ZonedDateTime.parse(cityDTO.getStartDate(), zonedFormatter)
-                .minusHours(1)
-                .toInstant());
-            // Delete all data before newStartDate
-            hourlyMeasurementService.deleteHourlyMeasurements(cityId, city_oldStartDate, city_newStartDate);
-
-            // STEP 3: Update the City Start and End Date
-            // Convert the Date back to LocalDate
-            // Format the LocalDate to the desired string format "yyyy-MM-dd"
-            String formattedDate = city_newStartDate.toInstant()
-                .atZone(zoneId)
-                .toLocalDate()
-                .format(isoFormatter);
-            cityService.updateStartEndDate(formattedDate + "T00:00", hourly_endDate + "T23:00", cityId);
-
             // Update lastMeasurementUpdate
             cityService.setLastMeasurementUpdateById(cityId, LocalDate.now().minusDays(1).atTime(23, 0));
+            logger.info("cityService.setLastMeasurementUpdateById: cityId:"+cityId+" lastMeas.Update:"+LocalDate.now().minusDays(1).atTime(23, 0));
 
         } catch (NoSuchElementException e) {
-            // From CityDTO cityDTO = cityService.getCityWithID(cityId);
-            // TODO: log
-            return;
+            logger.error("Trying to refreshCityHistoricalData on not found cityId {}" , cityId);
         }
-        catch( DuplicateKeyException e){
+        catch(Exception ignored){
 
         }
     }
@@ -215,12 +173,8 @@ public class DataRefreshService {
                 refreshCityForecast(cityId);
             }
         }
-        catch (IOException e) {
-            // TODO: handle exception
-            System.out.println("eccezione IO");
-        }
         catch (Exception e){
-            System.out.println("eccezione");
+            System.out.println("refreshForecast: Exception: " + e.getMessage());
         }
 
     }

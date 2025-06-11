@@ -29,15 +29,17 @@ import java.util.stream.StreamSupport;
 public class AnalyticsService{
 
     private final MongoCollection<Document> measurementCollection;
+    private final MongoCollection<Document> cityCollection;
 
     public AnalyticsService() {
         MongoClient mongoClient = MongoClients.create(
                 MongoClientSettings.builder()
-                        .applyConnectionString(new ConnectionString("mongodb://localhost:27017"))
+                        .applyConnectionString(new ConnectionString("mongodb://localhost:27018"))
                         .build()
         );
         MongoDatabase database = mongoClient.getDatabase("WeatherApp");
         this.measurementCollection = database.getCollection("hourly_measurements");
+        this.cityCollection = database.getCollection("cities");
     }
 
     // <editor-fold desc="Measurements analytics with single city as target [ measurement/city/ ]">
@@ -56,6 +58,8 @@ public class AnalyticsService{
             LocalDateTime endDate
     ) {
         String projectedName = "Number of measurements";
+        // TODO delete
+        System.out.println("TODO: getMeasurementCountByCityInRange");
         return StreamSupport.stream(measurementCollection.aggregate(
                 Arrays.asList(
                         match(and(

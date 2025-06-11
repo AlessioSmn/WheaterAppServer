@@ -154,8 +154,6 @@ public class ExtremeWeatherEventService {
         Date startTime = Date.from(startTimeInterval.toInstant(ZoneOffset.UTC));
         Date endTime = Date.from(endTimeInterval.toInstant(ZoneOffset.UTC));
         List<HourlyMeasurement> hourlyMeasurements = hourlyMeasurementRepository.findByCityIdAndTimeBetweenOrderByTimeTimeAsc(cityId, startTime, endTime);
-        System.out.println(startTime + " " + endTime);
-        System.out.println(hourlyMeasurements.size());
 
         // Gets the target city, in order to get the thresholds
         Optional<City> city = cityRepository.findById(cityId);
@@ -228,10 +226,9 @@ public class ExtremeWeatherEventService {
                     //ExtremeWeatherEvent insertedEwe = eweRepository.save(newEWE);
                     newEWE.setId(new ObjectId().toHexString());
                     city.get().getEweList().add(newEWE);
-                    cityRepository.save(city.get());
+
                     // Add its id to the list of completed EWEs
                     compltedEWEs.add(newEWE);
-                    System.out.println(newEWE);
 
                     // Reset the strength to zero and both dates to null
                     ongoingExtremeWeatherEvents.get(i).resetData();
@@ -252,13 +249,11 @@ public class ExtremeWeatherEventService {
                 //ExtremeWeatherEvent insertedEwe = eweRepository.save(newEWE);
                 newEWE.setId(new ObjectId().toHexString());
                 city.get().getEweList().add(newEWE);
-                cityRepository.save(city.get());
-                // Add its id to the list of completed EWEs
-                compltedEWEs.add(newEWE);
-                // Add its id to the list of completed EWEs
-                //compltedEWEs.add(insertedEwe);
             }
         }
+
+        // Update the city, with all new EWEs inserted in the list
+        cityRepository.save(city.get());
 
         // Returns a list of found and inserted EWEs
         return compltedEWEs;
