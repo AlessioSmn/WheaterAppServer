@@ -40,30 +40,6 @@ public class DataHarvestService {
         this.restTemplate = new RestTemplate(factory);
     }
 
-    /*
-    // Get the historical weather data of the city for specific time frame
-    // https://archive-api.open-meteo.com/v1/archive?latitude=43.690685&longitude=10.452489&start_date=2025-04-14&end_date=2025-04-15&hourly=temperature_2m,rain,snowfall,wind_speed_10m&=
-    @Retry(name = "OpenMeteoApiRetry")
-    public APIResponseDTO getCityHistoricalMeasurement(double latitude, double longitude, String startDate, String endDate) throws JsonProcessingException{
-        // Append the parameters (Hourly Measurements of Temperature_2m, Rain, Snowfall and Wind_speed_10m) to the base URL
-        String url = String.format(Locale.US, "%s?latitude=%f&longitude=%f&start_date=%s&end_date=%s&hourly=temperature_2m,rain,snowfall,wind_speed_10m",
-            API_URL_HISTORY, latitude, longitude, startDate, endDate);
-        ResponseEntity<String> apiResponse = restTemplate.getForEntity(url, String.class);
-
-        // Handle Unsucessful Requests
-        checkAPIresponse(apiResponse);
-
-        // On success get the data and Map to the DTO
-        APIResponseDTO responseDTO = Mapper.mapAPIResponse(apiResponse.getBody());
-        return responseDTO;
-
-        // TODO
-        //  Dividi i range di date in [start; 2 days ago] - [1 day ago-end]
-        //  Chiama ARCHIVE sul primo, FORECAST sul secondo
-        //  Fondi i due risulatit
-    }
-    */
-
     /**
      * Retrieves a complete set of meteorological data (historical and forecasted) for the given location and date range,
      * by delegating to the Open-Meteo API archive and forecast endpoints.
