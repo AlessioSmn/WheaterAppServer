@@ -37,8 +37,6 @@ public class ExtremeWeatherEvent {
 
     public String getCityId() { return cityId; }
 
-    public void setCityId(String cityId) { this.cityId = cityId; }
-
     public ExtremeWeatherEventCategory getCategory() { return category; }
 
     public void setCategory(ExtremeWeatherEventCategory category) { this.category = category; }

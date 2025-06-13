@@ -176,7 +176,7 @@ public class RedisForecastService {
      */
     public void deleteAllForecast() {
         for (Map.Entry<String, ConnectionPool> entry : jedisCluster.getClusterNodes().entrySet()) {
-            String node = entry.getKey(); // es: "127.0.0.1:7000"
+            String node = entry.getKey();
             String[] hostPort = node.split(":");
             String host = hostPort[0];
             int port = Integer.parseInt(hostPort[1]);
@@ -190,12 +190,14 @@ public class RedisForecastService {
                     ScanParams params = new ScanParams().match("forecast:*").count(100);
                     ScanResult<String> scanResult = jedis.scan(cursor, params);
                     List<String> keys = scanResult.getResult();
-                    if (!keys.isEmpty()) {
-                        jedis.del(keys.toArray(new String[0]));
+                    for (String key : keys) {
+                        jedis.del(key);  // safe DEL, one key at a time
                     }
                     cursor = scanResult.getCursor();
+
                 } while (!cursor.equals("0"));
             }
+
         }
     }
 
@@ -279,6 +281,7 @@ public class RedisForecastService {
             String region,
             Double latitude,
             Double longitude,
+            Double elevation,
             LocalDate targetDay
     ) {
         // Need to have first letter uppercase, last in lowercase
@@ -296,10 +299,18 @@ public class RedisForecastService {
                 city.setName(cityHash.get("name"));
                 city.setRegion(cityHash.get("region"));
                 city.setId(cityKey.split(":")[1].substring(1, 4) + cityKey.split(":")[1].substring(5));
-                System.out.println(city.getId());
+
                 String[] parts = cityKey.split("-");
                 city.setLatitude(Double.parseDouble(parts[2]));
                 city.setLongitude(Double.parseDouble(parts[3]));
+
+                String elevationStr = cityHash.get("elevation");
+                if (elevationStr != null) {
+                    city.setElevation(Double.parseDouble(elevationStr));
+                } else {
+                    city.setElevation(0.0);
+                }
+
                 targetCities.add(city);
             }
         }
@@ -319,7 +330,14 @@ public class RedisForecastService {
         int iter = 0;
         for (City city : targetCities) {
             double distance = haversine(latitude, longitude, city.getLatitude(), city.getLongitude());
-            double weight = distance == 0 ? 1000 : 1000 / distance;
+            double elevationDiff = Math.abs(elevation - city.getElevation());
+
+            // Normalizzing factors
+            double alpha = 1.0; // distance factor
+            double beta = 0.1; // elevation difference factor
+
+            double effectiveDistance = alpha * distance + beta * elevationDiff;
+            double weight = effectiveDistance == 0 ? 1000 : 1000 / effectiveDistance;
             weightSum += weight;
             arrayWeight[iter++] = weight;
 

@@ -49,7 +49,7 @@ public class DataInitializeService {
     @Autowired
     private JedisCluster jedisCluster;
 
-    private static final double PERCENTILE = 1;
+    private static final double PERCENTILE = 0.01;
 
     private static final Logger logger = LoggerFactory.getLogger(MongoInitializer.class);
     private final ObjectMapper objectMapper;
@@ -75,28 +75,12 @@ public class DataInitializeService {
 
         try (InputStream is = resource.getInputStream()) {
             List<CityDTO> cities = objectMapper.readValue(is, new TypeReference<List<CityDTO>>() {});
-            /*
-            old non-cluster version
 
-            try (Jedis jedis = jedisPool.getResource()) {
-                for (CityDTO c : cities) {
-                    Map<String, String> cityFields = new HashMap<>();
-                    cityFields.put("name", c.getName());
-                    cityFields.put("region", c.getRegion());
-
-                    String cityKey = String.format("city:{%s}%s", c.get_id().substring(0, 3), c.get_id().substring(3));
-
-                    String regionSetKey = String.format("region:{%s}", c.get_id().substring(0, 3));
-
-                    jedis.hset(cityKey, cityFields);
-                    jedis.sadd(regionSetKey, cityKey);
-                }
-            }
-            */
             for (CityDTO c : cities) {
                 Map<String, String> cityFields = new HashMap<>();
                 cityFields.put("name", c.getName());
                 cityFields.put("region", c.getRegion());
+                cityFields.put("elevation", c.getElevation().toString());
 
                 String cityKey = String.format("city:{%s}%s", c.get_id().substring(0, 3), c.get_id().substring(3));
 
@@ -108,33 +92,6 @@ public class DataInitializeService {
         }
     }
 
-
-    // public void initializeHourlyHistoricalMeasurement() throws IOException{
-    //     String cityId = "pis-tus-43.7085-10.4036";
-    //     InputStream is = getClass().getResourceAsStream("/data_init/measurements/pis-tus-43.7085-10.4036.json");
-    //     if (is == null) {
-    //         throw new FileNotFoundException("Resource file not found");
-    //     }
-    //     ObjectMapper mapper = new ObjectMapper();
-    //     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false); // Ignore unknown fields from JSON
-    //     APIResponseDTO responseDTO = mapper.readValue(is, new TypeReference<APIResponseDTO>() {});
-    //     HourlyMeasurementDTO hourlyMeasurementDTO = responseDTO.getHourly();
-
-    //     hourlyMeasurementDTO.setCityId(cityId);
-    //     hourlyMeasurementService.saveHourlyMeasurements(hourlyMeasurementDTO);
-
-    //     // NOTE: Assumption that the last element of the time list is the latest date
-    //     // Save the first and last element of the time as timeframe of the historical data
-    //     List<String> timeList = hourlyMeasurementDTO.getTime(); 
-    //     String endDate = timeList.get(timeList.size() - 1);
-    //     String startDate = timeList.get(0);
-    //     // Update the city Last Update date
-    //     cityService.updateStartEndDate(startDate, endDate, cityId);
-
-    //     logger.info("Added HourlyMeasurement for "+ startDate + " and updated city.lastUpdate = "+ endDate);
-
-    //     return;
-    // }
 
     public void initializeMeasurements() throws IOException {
         // Finds all JSON files under resources/data_init/measurements/

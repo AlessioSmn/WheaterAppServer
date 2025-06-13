@@ -72,12 +72,13 @@ public class HourlyMeasurementController {
     public ResponseEntity<Object> get24HrForecastArbCity(
             @RequestParam String region,
             @RequestParam Double latitude,
-            @RequestParam Double longitude
+            @RequestParam Double longitude,
+            @RequestParam Double elevation
     ) {
 
         LocalDate today = LocalDate.now();
 
-        String jsonForecast = forecastRedisService.getForecastArbitraryCityTargetDay(region, latitude, longitude, today);
+        String jsonForecast = forecastRedisService.getForecastArbitraryCityTargetDay(region, latitude, longitude, elevation, today);
         return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
     }
 
@@ -86,10 +87,11 @@ public class HourlyMeasurementController {
             @RequestParam String region,
             @RequestParam Double latitude,
             @RequestParam Double longitude,
+            @RequestParam Double elevation,
             @RequestParam LocalDate targetDate
     ) {
 
-        String jsonForecast = forecastRedisService.getForecastArbitraryCityTargetDay(region, latitude, longitude, targetDate);
+        String jsonForecast = forecastRedisService.getForecastArbitraryCityTargetDay(region, latitude, longitude, elevation, targetDate);
         return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
     }
 

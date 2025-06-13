@@ -148,7 +148,6 @@ public class ExtremeWeatherEventService {
             LocalDateTime startTimeInterval,
             LocalDateTime endTimeInterval
     ) throws CityNotFoundException, ThresholdsNotPresentException {
-        System.out.println(cityId);
 
         // Gets all measurements for a given city
         Date startTime = Date.from(startTimeInterval.toInstant(ZoneOffset.UTC));
@@ -471,9 +470,6 @@ public class ExtremeWeatherEventService {
         if(terminated){
             ewe.setDateEnd(eweInfo.getDateEnd().toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime());
         }
-
-        // Set city id
-        ewe.setCityId(city.getId());
 
         return ewe;
     }
