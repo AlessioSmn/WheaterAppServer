@@ -36,7 +36,7 @@ public class DataManagerController {
     @PutMapping("/update/forecasts")
     public ResponseEntity<Object> updateForecasts(@RequestHeader("Authorization") String token) {
         try{
-            automatingService.updateForecasts(token);
+            automatingService.updateForecastsAsync(token);
             return ResponseEntity
                     .status(HttpStatus.OK).build();
         }
@@ -54,7 +54,7 @@ public class DataManagerController {
     @PutMapping("/update/measurements")
     public ResponseEntity<Object> updateMeasurements(@RequestHeader("Authorization") String token) {
         try{
-            automatingService.updateMeasurements(token);
+            automatingService.updateMeasurementsAsync(token);
             return ResponseEntity
                     .status(HttpStatus.OK).build();
         }
@@ -72,7 +72,7 @@ public class DataManagerController {
     @PutMapping("/update/ewes")
     public ResponseEntity<Object> updateEWEs(@RequestHeader("Authorization") String token) {
         try{
-            automatingService.updateExtremeWeatherEvents(token);
+            automatingService.updateExtremeWeatherEventsAsync(token);
             return ResponseEntity
                     .status(HttpStatus.OK).build();
         }
@@ -93,18 +93,53 @@ public class DataManagerController {
             @RequestHeader("Authorization") String token) throws IOException{
         try {
             userService.getAndCheckUserFromToken(token, Role.ADMIN);
-
-            // Step 1
+// Step 1
             dataInitializeService.initializeCitiesMongo();
+            System.out.println();
+            System.out.println("===========================================");
+            System.out.println("== [STEP 1A COMPLETED] initializeCitiesMongo");
+            System.out.println("===========================================");
+            System.out.println();
+
             dataInitializeService.initializeCitiesRedis();
-            // Step 2
+            System.out.println();
+            System.out.println("===========================================");
+            System.out.println("== [STEP 1B COMPLETED] initializeCitiesRedis");
+            System.out.println("===========================================");
+            System.out.println();
+
+// Step 2
             dataInitializeService.initializeMeasurements();
-            // Step 3
+            System.out.println();
+            System.out.println("===========================================");
+            System.out.println("== [STEP 2 COMPLETED] initializeMeasurements");
+            System.out.println("===========================================");
+            System.out.println();
+
+// Step 3
             dataRefreshService.refreshHistoricalMeasurement();
-            // Step 4
+            System.out.println();
+            System.out.println("===========================================");
+            System.out.println("== [STEP 3 COMPLETED] refreshHistoricalMeasurement");
+            System.out.println("===========================================");
+            System.out.println();
+
+// Step 4
             dataRefreshService.initializeExtremeWeatherEvents();
-            // Step 5
+            System.out.println();
+            System.out.println("===========================================");
+            System.out.println("== [STEP 4 COMPLETED] initializeExtremeWeatherEvents");
+            System.out.println("===========================================");
+            System.out.println();
+
+// Step 5
             dataRefreshService.refreshForecast();
+            System.out.println();
+            System.out.println("===========================================");
+            System.out.println("== [STEP 5 COMPLETED] refreshForecast");
+            System.out.println("===========================================");
+            System.out.println();
+
         }
         catch(UnauthorizedException Ue){
             return ResponseEntity
