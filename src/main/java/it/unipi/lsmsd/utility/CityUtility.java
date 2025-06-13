@@ -8,7 +8,9 @@ import it.unipi.lsmsd.model.City;
 import it.unipi.lsmsd.model.EWEThreshold;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.io.IOException;
 
@@ -23,7 +25,8 @@ public final class CityUtility {
     // 23 characters long
     // Static function for reusuabilty
     public static String generateCityId(String name, String region, Double latitude, Double longitude) {
-        DecimalFormat df = new DecimalFormat("0.0000");  // Format coordinates to 4 decimal places
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        DecimalFormat df = new DecimalFormat("0.0000", symbols);  // Format coordinates to 4 decimal places
         // Generate code based on each inputs
         String latCode = df.format(latitude);
         String lonCode = df.format(longitude);

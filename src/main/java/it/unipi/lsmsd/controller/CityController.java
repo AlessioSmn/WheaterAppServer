@@ -8,6 +8,7 @@ import it.unipi.lsmsd.model.CityBasicProjection;
 import it.unipi.lsmsd.model.Role;
 import it.unipi.lsmsd.repository.CityRepository;
 import it.unipi.lsmsd.service.CityService;
+import it.unipi.lsmsd.service.HourlyMeasurementService;
 import it.unipi.lsmsd.service.UserService;
 import it.unipi.lsmsd.utility.Mapper;
 import org.springframework.dao.DuplicateKeyException;
@@ -28,12 +29,15 @@ public class CityController {
     private UserService userService;
     @Autowired
     private CityRepository cityRepository;
+    @Autowired
+    private HourlyMeasurementService hourlyMeasurementService;
 
     @PostMapping("/add")
     public ResponseEntity<String> addCity(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
         try{
             userService.getAndCheckUserFromToken(token, Role.ADMIN);
-            cityService.saveCity(cityDTO, token);
+            String cityId = cityService.saveCity(cityDTO, token);
+            hourlyMeasurementService.refreshHourlyMeasurementsLastweekFromOpenMeteo(cityId);
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)  // 201 for creation
@@ -65,7 +69,8 @@ public class CityController {
     public ResponseEntity<String> addCityWithThresholds(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
         try{
             userService.getAndCheckUserFromToken(token, Role.ADMIN);
-            cityService.saveCityWithThresholds(cityDTO, token);
+            String cityId = cityService.saveCityWithThresholds(cityDTO, token);
+            hourlyMeasurementService.refreshHourlyMeasurementsLastweekFromOpenMeteo(cityId);
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)  // 201 for creation
@@ -93,7 +98,7 @@ public class CityController {
         }
     }
 
-    @PostMapping("/update-thresholds")
+    @PutMapping("/thresholds")
     public ResponseEntity<Object> updateCityThresholds(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
         try{
             userService.getAndCheckUserFromToken(token, Role.ADMIN);

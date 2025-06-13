@@ -161,7 +161,7 @@ public class ExtremeWeatherEventService {
 
         // Check that the city has all the necessary thresholds
         if(!hasCityAllThresholdsFields(city.get()))
-            throw new ThresholdsNotPresentException("City doesn't have all threshold fields correctly specified");
+            throw new ThresholdsNotPresentException("City " + cityId + " doesn't have all threshold fields correctly specified");
 
         // Retrieve the city's extreme weather event thresholds
         EWEThreshold eweThresholds = city.get().getEweThresholds();

@@ -79,11 +79,25 @@ public class CityService {
 
     // Saves the city to the DB and returns the cityID
     // Alert!!! : Throws DuplicateKeyException -> Need to handle it by the class that calls this method
-    public String saveCity(CityDTO cityDTO, String token) throws DuplicateKeyException{
+    public String saveCity(CityDTO cityDTO, String token) throws DuplicateKeyException, JsonProcessingException {
         // Check if the user's role is ADMIN
         userService.getAndCheckUserFromToken(token, Role.ADMIN);
         // Map the DTO and get the city
         City city = Mapper.mapCity(cityDTO);
+        // Insert to the DB
+        // NOTE: Attempt to "insert" a document with an existing id throws DuplicateKeyException
+        cityRepository.insert(city);
+        addInRedis(city);
+        return city.getId();
+    }
+
+    // Saves the city to the DB and returns the cityID
+    // Alert!!! : Throws DuplicateKeyException -> Need to handle it by the class that calls this method
+    public String saveCityWithThresholds(CityDTO cityDTO, String token) throws DuplicateKeyException, JsonProcessingException {
+        // Check if the user's role is ADMIN
+        userService.getAndCheckUserFromToken(token, Role.ADMIN);
+        // Map the DTO and get the city
+        City city = Mapper.mapCityWithThresholds(cityDTO);
         // Insert to the DB
         // NOTE: Attempt to "insert" a document with an existing id throws DuplicateKeyException
         cityRepository.insert(city);
@@ -112,20 +126,6 @@ public class CityService {
         for(CityDTO cityDTO: cityDTOs){ cities.add(Mapper.mapCity(cityDTO));}
         cityRepository.saveAll(cities);
         return "Saved";
-    }
-
-    // Saves the city to the DB and returns the cityID
-    // Alert!!! : Throws DuplicateKeyException -> Need to handle it by the class that calls this method
-    public String saveCityWithThresholds(CityDTO cityDTO, String token) throws DuplicateKeyException{
-        // Check if the user's role is ADMIN
-        userService.getAndCheckUserFromToken(token, Role.ADMIN);
-        // Map the DTO and get the city
-        City city = Mapper.mapCityWithThresholds(cityDTO);
-        // Insert to the DB
-        // NOTE: Attempt to "insert" a document with an existing id throws DuplicateKeyException
-        cityRepository.insert(city);
-        addInRedis(city);
-        return city.getId();
     }
 
     /**
