@@ -40,12 +40,12 @@ public class RedisConfig {
     @Bean
     public JedisCluster jedisCluster() {
         Set<HostAndPort> clusterNodes = new HashSet<>();
-        clusterNodes.add(new HostAndPort("localhost", 7000));
-        clusterNodes.add(new HostAndPort("localhost", 7001));
-        clusterNodes.add(new HostAndPort("localhost", 7002));
-        clusterNodes.add(new HostAndPort("localhost", 7003));
-        clusterNodes.add(new HostAndPort("localhost", 7004));
-        clusterNodes.add(new HostAndPort("localhost", 7005));
+        clusterNodes.add(new HostAndPort("10.1.1.9", 6379));
+        clusterNodes.add(new HostAndPort("10.1.1.9", 6380));
+        clusterNodes.add(new HostAndPort("10.1.1.84", 6379));
+        clusterNodes.add(new HostAndPort("10.1.1.84", 6380));
+        clusterNodes.add(new HostAndPort("10.1.1.87", 6379));
+        clusterNodes.add(new HostAndPort("10.1.1.87", 6380));
 
         return new JedisCluster(clusterNodes);
     }
