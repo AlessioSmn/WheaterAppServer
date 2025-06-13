@@ -8,7 +8,6 @@ import it.unipi.lsmsd.model.EWEThreshold;
 
 @JsonIgnoreProperties(ignoreUnknown = true) // Ignore the properites that are not included in the DTO
 public class CityDTO {
-    // TODO: use id instead, used _id to match with Mongo for easier but recommended id to match City Model
     private String _id;
     private String name;
     private String region;
@@ -16,16 +15,13 @@ public class CityDTO {
     private Double longitude;
     private Double elevation;
     private EWEThreshold eweThresholds;
+    private Integer pastDaysMeasurementsUpdate;
     
     // Json Write only properties - ignores when serializing to JSON
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String startDate; 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String endDate;
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private Integer pastDays = 0; // Default Open-Meteo provides 0 past day forecast
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private Integer forecastDays = 7; // Default Open-Meteo provides 7 day forecast
     
     // Setters and Getters
 
@@ -55,19 +51,14 @@ public class CityDTO {
     public void setEndDate(String endDate) { this.endDate = endDate; }
     public String getEndDate() { return endDate; }
 
-    public Integer getPastDays() { return pastDays; }
-
-    public void setPastDays(Integer pastHours) { this.pastDays = pastHours; }
-
-    public Integer getForecastDays() { return forecastDays; }
-
-    public void setForecastDays(Integer forecastHours) { this.forecastDays = forecastHours; }
-
     public Double getElevation() { return elevation; }
     public void setElevation(Double elevation) { this.elevation = elevation; }
 
     public EWEThreshold getEweThresholds() { return eweThresholds; }
     public void setEweThresholds(EWEThreshold eweThresholds) { this.eweThresholds = eweThresholds;}
+
+    public Integer getPastDaysMeasurementsUpdate() { return pastDaysMeasurementsUpdate; }
+    public void setPastDaysMeasurementsUpdate(Integer pastDaysMeasurementsUpdate) { this.pastDaysMeasurementsUpdate = pastDaysMeasurementsUpdate; }
 
     /**
      * Checks if the DTO has the necessary fields to construct the id (Name, region, latitude and longitude)

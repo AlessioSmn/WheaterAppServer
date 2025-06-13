@@ -37,7 +37,7 @@ public class CityController {
         try{
             userService.getAndCheckUserFromToken(token, Role.ADMIN);
             String cityId = cityService.saveCity(cityDTO, token);
-            hourlyMeasurementService.refreshHourlyMeasurementsLastweekFromOpenMeteo(cityId);
+            hourlyMeasurementService.refreshHourlyMeasurementsFromOpenMeteoAsync(cityId, cityDTO.getPastDaysMeasurementsUpdate());
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)  // 201 for creation
@@ -70,7 +70,7 @@ public class CityController {
         try{
             userService.getAndCheckUserFromToken(token, Role.ADMIN);
             String cityId = cityService.saveCityWithThresholds(cityDTO, token);
-            hourlyMeasurementService.refreshHourlyMeasurementsLastweekFromOpenMeteo(cityId);
+            hourlyMeasurementService.refreshHourlyMeasurementsFromOpenMeteoAsync(cityId, cityDTO.getPastDaysMeasurementsUpdate());
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)  // 201 for creation
