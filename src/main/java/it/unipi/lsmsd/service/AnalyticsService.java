@@ -73,6 +73,29 @@ public class AnalyticsService{
                 .collect(Collectors.toList());
     }
 
+    public List<Document> getMeasurementsList(
+            String cityId,
+            MeasurementField measurementField,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    ){
+        String fieldName = getFieldName(measurementField);
+
+        return StreamSupport.stream(measurementCollection.aggregate(
+                        Arrays.asList(
+                                match(and(
+                                        eq("cityId", cityId),
+                                        gte("time", startDate),
+                                        lte("time", endDate)
+                                )),
+                                project(fields(
+                                        excludeId(),
+                                        include("time", fieldName)
+                                ))
+                        )).spliterator(), false)
+                .collect(Collectors.toList());
+    }
+
     /**
      * Computes the average measurement field value measured in a specific city during a given time interval.
      *

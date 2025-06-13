@@ -138,14 +138,18 @@ public class DataRefreshService {
             }
 
             // Get data from Open-Meteo API
+            // System.out.print("Refreshing: "+ cityId+" FROM:"+hourly_startDate+"TO"+hourly_endDate+" START");
             APIResponseDTO apiResponseDTO = dataHarvestService.getCityHistoricalMeasurement(
                 cityDTO.getLatitude(),cityDTO.getLongitude(), hourly_startDate, hourly_endDate);
             HourlyMeasurementDTO hourlyMeasurementDTO = apiResponseDTO.getHourly();
             hourlyMeasurementDTO.setCityId(cityId);
+            // System.out.print("Refreshing: "+ cityId+" FROM:"+hourly_startDate+"TO"+hourly_endDate+" DONE, saving to MongoDB");
             //Save to MongoDB
             hourlyMeasurementService.saveHourlyMeasurements(apiResponseDTO.getHourly());
+            // System.out.print("Refreshing: "+ cityId+" FROM:"+hourly_startDate+"TO"+hourly_endDate+" MongoDB done");
 
             // Update lastMeasurementUpdate
+            // System.out.print("LastMeasurementUpdate: "+ cityId+" BEFORE:"+cityRepository.findById(cityId).get().getLastMeasurementUpdate()+" -> AFTER:"+LocalDate.now().minusDays(1).atTime(23, 0));
             cityService.setLastMeasurementUpdateById(cityId, LocalDate.now().minusDays(1).atTime(23, 0));
             logger.info("cityService.setLastMeasurementUpdateById: cityId:"+cityId+" lastMeas.Update:"+LocalDate.now().minusDays(1).atTime(23, 0));
 

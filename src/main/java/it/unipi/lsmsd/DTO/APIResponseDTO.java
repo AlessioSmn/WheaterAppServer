@@ -34,4 +34,21 @@ public class APIResponseDTO {
     public double getLongitude() { return longitude; }
     public double getElevation() { return elevation; }
     public HourlyMeasurementDTO getHourly() { return hourly; }
+
+    public static APIResponseDTO merge(APIResponseDTO a, APIResponseDTO b) {
+        if (a == null) return b;
+        if (b == null) return a;
+
+        APIResponseDTO merged = new APIResponseDTO();
+
+        merged.latitude = a.latitude;
+        merged.longitude = a.longitude;
+        merged.elevation = a.elevation;
+
+        // Merge Hourly Measurements
+        merged.hourly = HourlyMeasurementDTO.merge(a.hourly, b.hourly);
+
+        return merged;
+    }
+
 }

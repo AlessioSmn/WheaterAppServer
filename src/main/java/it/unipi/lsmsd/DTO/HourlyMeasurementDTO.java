@@ -36,4 +36,41 @@ public class HourlyMeasurementDTO {
     public void setSnowfall(List<Double> snowfall) { this.snowfall = snowfall; }
     public void setWindspeed(List<Double> windspeed) { this.windspeed = windspeed; }
 
+    /**
+     * Merges two {@link HourlyMeasurementDTO} instances by concatenating their time-series data.
+     * <p>
+     * This method assumes that both DTOs refer to the same location. No checks are performed on coordinate consistency.
+     * </p>
+     *
+     * @param a the first DTO (can be null)
+     * @param b the second DTO (can be null)
+     * @return a new {@link HourlyMeasurementDTO} instance containing merged hourly data
+     */
+    public static HourlyMeasurementDTO merge(HourlyMeasurementDTO a, HourlyMeasurementDTO b) {
+        if (a == null) return b;
+        if (b == null) return a;
+
+        HourlyMeasurementDTO merged = new HourlyMeasurementDTO();
+
+        // Set CityId (prioritize A)
+        merged.setCityId(a.cityId != null ? a.cityId : b.cityId);
+
+        // Merge all fields safely
+        merged.setTime(mergeLists(a.time, b.time));
+        merged.setTemperature(mergeLists(a.temperature, b.temperature));
+        merged.setRain(mergeLists(a.rain, b.rain));
+        merged.setSnowfall(mergeLists(a.snowfall, b.snowfall));
+        merged.setWindspeed(mergeLists(a.windspeed, b.windspeed));
+
+        return merged;
+    }
+
+    // Helper to merge two lists handling nulls safely
+    private static <T> List<T> mergeLists(List<T> first, List<T> second) {
+        List<T> result = new java.util.ArrayList<>();
+        if (first != null) result.addAll(first);
+        if (second != null) result.addAll(second);
+        return result;
+    }
+
 }

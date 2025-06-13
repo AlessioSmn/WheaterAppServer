@@ -23,6 +23,16 @@ public class AnalyticsController {
     @Autowired
     private AnalyticsService analyticsService;
 
+    @GetMapping("/measurement")
+    public ResponseEntity<Object> getMeasurements(
+            @RequestParam String cityId,
+            @RequestParam MeasurementField measurementField,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
+    ) {
+        List<Document> response = analyticsService.getMeasurementsList(cityId, measurementField, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 
     // <editor-fold desc="Measurements analytics with single city as target [ measurement/city/ ]">
 
@@ -76,7 +86,7 @@ public class AnalyticsController {
 
     // <editor-fold desc="Measurements analytics across multiple cities [ measurement/ ]">
 
-    @GetMapping("/measurement/region/average-highest")
+    @GetMapping("/measurement/region/average")
     public ResponseEntity<Object> highestAverageMeasurementAcrossCities(
             @RequestParam String region,
             @RequestParam MeasurementField measurementField,
@@ -86,17 +96,7 @@ public class AnalyticsController {
         List<Document> response = analyticsService.highestAverageMeasurementInRegion(measurementField, startDate, endDate, region);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-    @GetMapping("/measurement/region/average-lowest")
-    public ResponseEntity<Object> lowestAverageMeasurementAcrossCities(
-            @RequestParam String region,
-            @RequestParam MeasurementField measurementField,
-            @RequestParam LocalDateTime startDate,
-            @RequestParam LocalDateTime endDate
-    ){
-        List<Document> response = analyticsService.lowestAverageMeasurementInRegion(measurementField, startDate, endDate, region);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-    @GetMapping("/measurement/region/absolute-highest")
+    @GetMapping("/measurement/region/highest")
     public ResponseEntity<Object> highestMeasurementPerCity(
             @RequestParam String region,
             @RequestParam MeasurementField measurementField,
@@ -106,7 +106,7 @@ public class AnalyticsController {
         List<Document> response = analyticsService.highestMeasurementInRegion(measurementField, startDate, endDate, region);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-    @GetMapping("/measurement/region/absolute-lowest")
+    @GetMapping("/measurement/region/lowest")
     public ResponseEntity<Object> lowestMeasurementPerCity(
             @RequestParam String region,
             @RequestParam MeasurementField measurementField,
@@ -170,10 +170,10 @@ public class AnalyticsController {
     public ResponseEntity<Object> citiesMostAffectedByEweInTimeRange(
             @RequestParam ExtremeWeatherEventCategory extremeWeatherEventCategory,
             @RequestParam String region,
-            @RequestParam LocalDateTime start,
-            @RequestParam LocalDateTime end
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
     ) {
-        List<Document> serviceResponse = analyticsService.citiesMostAffectedByEweInTimeRange(extremeWeatherEventCategory, start, end, region);
+        List<Document> serviceResponse = analyticsService.citiesMostAffectedByEweInTimeRange(extremeWeatherEventCategory, startDate, endDate, region);
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
@@ -182,10 +182,10 @@ public class AnalyticsController {
             @RequestParam ExtremeWeatherEventCategory extremeWeatherEventCategory,
             @RequestParam String region,
             @RequestParam int minimumStrength,
-            @RequestParam LocalDateTime start,
+            @RequestParam LocalDateTime startDate,
             @RequestParam LocalDateTime end
     ) {
-        List<Document> serviceResponse = analyticsService.numberOfEweOfStrengthInTimeRange(minimumStrength, extremeWeatherEventCategory, start, end, region);
+        List<Document> serviceResponse = analyticsService.numberOfEweOfStrengthInTimeRange(minimumStrength, extremeWeatherEventCategory, startDate, end, region);
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
@@ -193,10 +193,10 @@ public class AnalyticsController {
     public ResponseEntity<Object> eweCountMonthlyAverage(
             @RequestParam String cityId,
             @RequestParam ExtremeWeatherEventCategory extremeWeatherEventCategory,
-            @RequestParam LocalDateTime start,
-            @RequestParam LocalDateTime end
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
     ){
-        List<Document> serviceResponse = analyticsService.eweCountByMonth(cityId, extremeWeatherEventCategory, start, end);
+        List<Document> serviceResponse = analyticsService.eweCountByMonth(cityId, extremeWeatherEventCategory, startDate, endDate);
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
@@ -204,10 +204,10 @@ public class AnalyticsController {
     public ResponseEntity<Object> maximumEweStrengthInTimeRange(
             @RequestParam ExtremeWeatherEventCategory extremeWeatherEventCategory,
             @RequestParam String region,
-            @RequestParam LocalDateTime start,
-            @RequestParam LocalDateTime end
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
     ) {
-        List<Document> serviceResponse = analyticsService.maximumEweStrengthInTimeRange(extremeWeatherEventCategory, start, end, region);
+        List<Document> serviceResponse = analyticsService.maximumEweStrengthInTimeRange(extremeWeatherEventCategory, startDate, endDate, region);
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
@@ -215,10 +215,10 @@ public class AnalyticsController {
     public ResponseEntity<Object> averageEweStrengthInTimeRange(
             @RequestParam ExtremeWeatherEventCategory extremeWeatherEventCategory,
             @RequestParam String region,
-            @RequestParam LocalDateTime start,
-            @RequestParam LocalDateTime end
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
     ) {
-        List<Document> serviceResponse = analyticsService.averageEweStrengthInTimeRange(extremeWeatherEventCategory, start, end, region);
+        List<Document> serviceResponse = analyticsService.averageEweStrengthInTimeRange(extremeWeatherEventCategory, startDate, endDate, region);
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
@@ -226,10 +226,10 @@ public class AnalyticsController {
     public ResponseEntity<Object> longestEweDurationInTimeRange(
             @RequestParam ExtremeWeatherEventCategory extremeWeatherEventCategory,
             @RequestParam String region,
-            @RequestParam LocalDateTime start,
-            @RequestParam LocalDateTime end
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
     ){
-        List<Document> serviceResponse = analyticsService.longestDurationEweInTimeRange(extremeWeatherEventCategory, start, end, region);
+        List<Document> serviceResponse = analyticsService.longestDurationEweInTimeRange(extremeWeatherEventCategory, startDate, endDate, region);
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
@@ -237,10 +237,10 @@ public class AnalyticsController {
     public ResponseEntity<Object> averageEweDurationInTimeRange(
             @RequestParam ExtremeWeatherEventCategory extremeWeatherEventCategory,
             @RequestParam String region,
-            @RequestParam LocalDateTime start,
-            @RequestParam LocalDateTime end
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate
     ){
-        List<Document> serviceResponse = analyticsService.averageDurationEweInTimeRange(extremeWeatherEventCategory, start, end, region);
+        List<Document> serviceResponse = analyticsService.averageDurationEweInTimeRange(extremeWeatherEventCategory, startDate, endDate, region);
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
