@@ -643,15 +643,12 @@ public class AnalyticsService{
             ExtremeWeatherEventCategory EweCategory,
             LocalDateTime startDate,
             LocalDateTime endDate,
-            String region
+            String cityId
     ) {
-
-        String regionPrefix = region.substring(0, 3).toLowerCase();
-
         String projectedName = "ExtremeWeatherEvent count";
         return StreamSupport.stream(cityCollection.aggregate(
                         Arrays.asList(
-                                match(regex("_id", "^" + regionPrefix + "-")),
+                                match(eq("_id", cityId)),
                                 unwind("$eweList"),
                                 match(and(
                                         eq("eweList.category", EweCategory.name().toUpperCase()),
@@ -696,13 +693,12 @@ public class AnalyticsService{
             ExtremeWeatherEventCategory EweCategory,
             LocalDateTime startDate,
             LocalDateTime endDate,
-            String region
+            String cityId
     ) {
-        String regionPrefix = region.substring(0, 3).toLowerCase();
         String projectedName = "ExtremeWeatherEvent count";
 
         return StreamSupport.stream(cityCollection.aggregate(Arrays.asList(
-                        match(regex("_id", "^" + regionPrefix + "-")),         // seleziona città della regione
+                        match(eq("_id", cityId)),         // seleziona città della regione
                         unwind("$eweList"),                                    // eventi singoli
                         match(and(
                                 eq("eweList.category", EweCategory.name().toUpperCase()),
@@ -747,13 +743,12 @@ public class AnalyticsService{
             ExtremeWeatherEventCategory EweCategory,
             LocalDateTime startDate,
             LocalDateTime endDate,
-            String region
+            String cityId
     ) {
-        String regionPrefix = region.substring(0, 3).toLowerCase();
         String projectedName = "Maximum strength";
 
         return StreamSupport.stream(cityCollection.aggregate(Arrays.asList(
-                        match(regex("_id", "^" + regionPrefix + "-")),
+                        match(eq("_id", cityId)),
                         unwind("$eweList"),
                         match(and(
                                 eq("eweList.category", EweCategory.name().toUpperCase()),
@@ -800,13 +795,12 @@ public class AnalyticsService{
             ExtremeWeatherEventCategory EweCategory,
             LocalDateTime startDate,
             LocalDateTime endDate,
-            String region
+            String cityId
     ) {
-        String regionPrefix = region.substring(0, 3).toLowerCase();
         String projectedName = "Average strength";
 
         return StreamSupport.stream(cityCollection.aggregate(Arrays.asList(
-                        match(regex("_id", "^" + regionPrefix + "-")),
+                        match(eq("_id", cityId)),
                         unwind("$eweList"),
                         match(and(
                                 eq("eweList.category", EweCategory.name().toUpperCase()),
@@ -841,15 +835,12 @@ public class AnalyticsService{
             ExtremeWeatherEventCategory EweCategory,
             LocalDateTime startDate,
             LocalDateTime endDate,
-            String region
+            String cityId
     ) {
-
-        String regionPrefix = region.substring(0, 3).toLowerCase();
-
         String projectedName = "ExtremeWeatherEvent duration (hours)";
         return StreamSupport.stream(cityCollection.aggregate(
                         Arrays.asList(
-                                match(regex("_id", "^" + regionPrefix + "-")),
+                                match(eq("_id", cityId)),
                                 unwind("$eweList"),
                                 match(and(
                                         eq("eweList.category", EweCategory.name().toUpperCase()),
@@ -901,15 +892,12 @@ public class AnalyticsService{
             ExtremeWeatherEventCategory EweCategory,
             LocalDateTime startDate,
             LocalDateTime endDate,
-            String region
+            String cityId
     ) {
-
-        String regionPrefix = region.substring(0, 3).toLowerCase();
-
         String projectedName = "ExtremeWeatherEvent average duration (hours)";
         return StreamSupport.stream(cityCollection.aggregate(
                         Arrays.asList(
-                                match(regex("_id", "^" + regionPrefix + "-")),
+                                match(eq("_id", cityId)),
                                 unwind("$eweList"),
                                 match(and(
                                         eq("eweList.category", EweCategory.name().toUpperCase()),
