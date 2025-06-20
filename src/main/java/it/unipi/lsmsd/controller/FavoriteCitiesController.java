@@ -35,7 +35,7 @@ public class FavoriteCitiesController {
         }
     }
 
-        @PutMapping()
+    @PutMapping()
     public ResponseEntity<String> addToFavorites(@RequestHeader("Authorization") String token, @RequestParam String targetCityId){
         try{
             String response = favoriteCityService.addToFavorites(token, targetCityId);
