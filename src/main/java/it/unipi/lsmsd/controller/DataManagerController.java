@@ -155,13 +155,31 @@ public class DataManagerController {
         return ResponseEntity.status(HttpStatus.OK).body("Initialization complete. Check Log to Verify");
     }
 
-    /* Methods for Initialize Data*/
-    @PostMapping("initialize-1-cities")
-    public ResponseEntity<String> initializeCityData(
+    @PostMapping("initialize-1A-cities-mongo")
+    public ResponseEntity<String> initializeCityDataMongo(
             @RequestHeader("Authorization") String token) throws IOException{
         try {
             userService.getAndCheckUserFromToken(token, Role.ADMIN);
             dataInitializeService.initializeCitiesMongo();
+        }
+        catch(UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: " + Ue.getMessage());
+        }
+        catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal server error: " + e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.OK).body("Citites Data Initialized successfully. Check Log to Verify");
+    }
+
+    @PostMapping("initialize-1B-cities-redis")
+    public ResponseEntity<String> initializeCityDataRedis(
+            @RequestHeader("Authorization") String token) throws IOException{
+        try {
+            userService.getAndCheckUserFromToken(token, Role.ADMIN);
             dataInitializeService.initializeCitiesRedis();
         }
         catch(UnauthorizedException Ue){

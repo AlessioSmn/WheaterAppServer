@@ -162,23 +162,8 @@ public class DataRefreshService {
 
     public void refreshForecast() throws JsonProcessingException{
         //Make Sure no stale Forecast exists in DB
-        System.out.println(".");
         forecastRedisService.deleteAllForecast();
-/*
-        // Use PathMatchingResourcePatternResolver to load the resource from the correct path
-        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        Resource resource = resolver.getResource("classpath:data_init/citiesId.json");
-        try (InputStream is = resource.getInputStream()){
-            List<String> cityIdList = objectMapper.readValue(is, new TypeReference<List<String>>() {});
 
-            for(String cityId : cityIdList){
-                refreshCityForecast(cityId);
-            }
-        }
-        catch (Exception e){
-            System.out.println("refreshForecast: Exception: " + e.getMessage());
-        }
-*/
         String[] regCodesList = new String[] {
                 "lom", "emi", "cal", "sar", "umb", "aos", "lat", "cam", "apu", "lig",
                 "tre", "mol", "sic", "ven", "pie", "tus", "the", "abr", "bas", "fri"
@@ -200,6 +185,7 @@ public class DataRefreshService {
         HourlyMeasurementDTO hourlyMeasurementDTO = apiResponseDTO.getHourly();
         hourlyMeasurementDTO.setCityId(cityId);
         forecastRedisService.saveForecast(hourlyMeasurementDTO);
+        System.out.println("refreshCityForecast: Done " + cityId);
     }
 
 
@@ -215,6 +201,7 @@ public class DataRefreshService {
         for (City city : cities) {
             try {
                 extremeWeatherEventService.updateExtremeWeatherEventAutomatic(city.getId());
+                System.out.println("ExtremeWeatherEvent updated for "+ city.getId() + "(" +city.getName() + ")");
                 logger.info("ExtremeWeatherEvent updated for {} ({})", city.getId(), city.getName());
             }
             catch (ThresholdsNotPresentException e){

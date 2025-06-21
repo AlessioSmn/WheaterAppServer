@@ -49,7 +49,7 @@ public class DataInitializeService {
     @Autowired
     private JedisCluster jedisCluster;
 
-    private static final double PERCENTILE = 0.01;
+    private static final double PERCENTILE = 0.075;
 
     private static final Logger logger = LoggerFactory.getLogger(MongoInitializer.class);
     private final ObjectMapper objectMapper;
