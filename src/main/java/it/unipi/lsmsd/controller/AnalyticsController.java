@@ -169,23 +169,23 @@ public class AnalyticsController {
     @GetMapping("/ewe/count")
     public ResponseEntity<Object> citiesMostAffectedByEweInTimeRange(
             @RequestParam ExtremeWeatherEventCategory extremeWeatherEventCategory,
-            @RequestParam String region,
+            @RequestParam String cityId,
             @RequestParam LocalDateTime startDate,
             @RequestParam LocalDateTime endDate
     ) {
-        List<Document> serviceResponse = analyticsService.citiesMostAffectedByEweInTimeRange(extremeWeatherEventCategory, startDate, endDate, region);
+        List<Document> serviceResponse = analyticsService.citiesMostAffectedByEweInTimeRange(extremeWeatherEventCategory, startDate, endDate, cityId);
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
     @GetMapping("/ewe/count-of-at-least-strength")
     public ResponseEntity<Object> numberOfEweOfStrengthInTimeRange(
             @RequestParam ExtremeWeatherEventCategory extremeWeatherEventCategory,
-            @RequestParam String region,
+            @RequestParam String cityId,
             @RequestParam int minimumStrength,
             @RequestParam LocalDateTime startDate,
             @RequestParam LocalDateTime end
     ) {
-        List<Document> serviceResponse = analyticsService.numberOfEweOfStrengthInTimeRange(minimumStrength, extremeWeatherEventCategory, startDate, end, region);
+        List<Document> serviceResponse = analyticsService.numberOfEweOfStrengthInTimeRange(minimumStrength, extremeWeatherEventCategory, startDate, end, cityId);
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
@@ -203,44 +203,44 @@ public class AnalyticsController {
     @GetMapping("/ewe/strength/maximum")
     public ResponseEntity<Object> maximumEweStrengthInTimeRange(
             @RequestParam ExtremeWeatherEventCategory extremeWeatherEventCategory,
-            @RequestParam String region,
+            @RequestParam String cityId,
             @RequestParam LocalDateTime startDate,
             @RequestParam LocalDateTime endDate
     ) {
-        List<Document> serviceResponse = analyticsService.maximumEweStrengthInTimeRange(extremeWeatherEventCategory, startDate, endDate, region);
+        List<Document> serviceResponse = analyticsService.maximumEweStrengthInTimeRange(extremeWeatherEventCategory, startDate, endDate, cityId);
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
     @GetMapping("/ewe/strength/average")
     public ResponseEntity<Object> averageEweStrengthInTimeRange(
             @RequestParam ExtremeWeatherEventCategory extremeWeatherEventCategory,
-            @RequestParam String region,
+            @RequestParam String cityId,
             @RequestParam LocalDateTime startDate,
             @RequestParam LocalDateTime endDate
     ) {
-        List<Document> serviceResponse = analyticsService.averageEweStrengthInTimeRange(extremeWeatherEventCategory, startDate, endDate, region);
+        List<Document> serviceResponse = analyticsService.averageEweStrengthInTimeRange(extremeWeatherEventCategory, startDate, endDate, cityId);
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
     @GetMapping("/ewe/duration/longest")
     public ResponseEntity<Object> longestEweDurationInTimeRange(
             @RequestParam ExtremeWeatherEventCategory extremeWeatherEventCategory,
-            @RequestParam String region,
+            @RequestParam String cityId,
             @RequestParam LocalDateTime startDate,
             @RequestParam LocalDateTime endDate
     ){
-        List<Document> serviceResponse = analyticsService.longestDurationEweInTimeRange(extremeWeatherEventCategory, startDate, endDate, region);
+        List<Document> serviceResponse = analyticsService.longestDurationEweInTimeRange(extremeWeatherEventCategory, startDate, endDate, cityId);
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
     @GetMapping("/ewe/duration/average")
     public ResponseEntity<Object> averageEweDurationInTimeRange(
             @RequestParam ExtremeWeatherEventCategory extremeWeatherEventCategory,
-            @RequestParam String region,
+            @RequestParam String cityId,
             @RequestParam LocalDateTime startDate,
             @RequestParam LocalDateTime endDate
     ){
-        List<Document> serviceResponse = analyticsService.averageDurationEweInTimeRange(extremeWeatherEventCategory, startDate, endDate, region);
+        List<Document> serviceResponse = analyticsService.averageDurationEweInTimeRange(extremeWeatherEventCategory, startDate, endDate, cityId);
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 

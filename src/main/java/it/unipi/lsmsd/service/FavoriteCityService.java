@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -22,6 +23,30 @@ public class FavoriteCityService {
     private UserRepository userRepository; // Dependency injection for the User repository
     @Autowired
     private CityRepository cityRepository; // Dependency injection for the City repository
+
+    public List<String> getFavorites(String token) throws Exception {
+        // Retrieve the user and their followed cities
+        User user = userService.getUserFromToken(token);
+        List<String> listCityId = user.getListCityId();
+
+        List<String> favoriteCities = new ArrayList<>();
+
+        for (String cityId : listCityId) {
+            Optional<City> cityOptional = cityRepository.findById(cityId);
+
+            if (cityOptional.isEmpty()) {
+                throw new NoSuchElementException("City not found with id: " + cityId);
+            }
+
+            City city = cityOptional.get();
+            String name = city.getName();
+            String region = city.getRegion();
+
+            favoriteCities.add(name + ", " + region);
+        }
+
+        return favoriteCities;
+    }
 
     // Method to add a city to the user's favorite cities list
     // Transcational since we are updating two DB classes User and City

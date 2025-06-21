@@ -1,0 +1,70 @@
+[33m0e8ef34[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mvmCluster[m[33m, [m[1;31morigin/vmCluster[m[33m)[m HEAD@{0}: checkout: moving from devLorenzo to vmCluster
+[33m6b23c96[m[33m ([m[1;31morigin/devAlessio[m[33m, [m[1;31morigin/dev[m[33m, [m[1;32mdevLorenzo[m[33m)[m HEAD@{1}: reset: moving to 6b23c96
+[33m0e8ef34[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mvmCluster[m[33m, [m[1;31morigin/vmCluster[m[33m)[m HEAD@{2}: merge vmCluster: Fast-forward
+[33m6b23c96[m[33m ([m[1;31morigin/devAlessio[m[33m, [m[1;31morigin/dev[m[33m, [m[1;32mdevLorenzo[m[33m)[m HEAD@{3}: checkout: moving from vmCluster to devLorenzo
+[33m0e8ef34[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mvmCluster[m[33m, [m[1;31morigin/vmCluster[m[33m)[m HEAD@{4}: checkout: moving from devLorenzo to vmCluster
+[33m6b23c96[m[33m ([m[1;31morigin/devAlessio[m[33m, [m[1;31morigin/dev[m[33m, [m[1;32mdevLorenzo[m[33m)[m HEAD@{5}: merge origin/dev: Fast-forward
+[33m860be6b[m HEAD@{6}: checkout: moving from vmCluster to devLorenzo
+[33m0e8ef34[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mvmCluster[m[33m, [m[1;31morigin/vmCluster[m[33m)[m HEAD@{7}: merge origin/vmCluster: Fast-forward
+[33mac4b344[m HEAD@{8}: checkout: moving from vmCluster to vmCluster
+[33mac4b344[m HEAD@{9}: checkout: moving from devLorenzo to vmCluster
+[33m860be6b[m HEAD@{10}: merge origin/dev: Fast-forward
+[33m5a29fea[m HEAD@{11}: checkout: moving from vmCluster to devLorenzo
+[33mac4b344[m HEAD@{12}: checkout: moving from devLorenzo to vmCluster
+[33m5a29fea[m HEAD@{13}: merge origin/dev: Fast-forward
+[33m93d1446[m[33m ([m[1;31morigin/devLorenzo[m[33m, [m[1;32mdev[m[33m)[m HEAD@{14}: checkout: moving from dev to devLorenzo
+[33m93d1446[m[33m ([m[1;31morigin/devLorenzo[m[33m, [m[1;32mdev[m[33m)[m HEAD@{15}: merge devLorenzo: Fast-forward
+[33mde148f2[m HEAD@{16}: checkout: moving from devLorenzo to dev
+[33m93d1446[m[33m ([m[1;31morigin/devLorenzo[m[33m, [m[1;32mdev[m[33m)[m HEAD@{17}: commit (merge): merge devAlessio into devLorenzo
+[33m1969211[m HEAD@{18}: commit: removing ewe repository
+[33m6fc590b[m HEAD@{19}: merge origin/devAlessio: updating HEAD
+[33m6fc590b[m HEAD@{20}: commit: extending add-city also in redis
+[33m873e3ee[m HEAD@{21}: commit: adding elevation in redis and using elevation in arb-city forecast
+[33m139a4cd[m HEAD@{22}: commit: embeddeding ewe inside cities
+[33m12127c6[m HEAD@{23}: merge origin/dev: Fast-forward
+[33mdf301ed[m HEAD@{24}: commit: changing redis config to operate in a cluster
+[33m3f3f9e8[m HEAD@{25}: commit: add {} brackets in redis inside city-id (didn know that was possible before)
+[33md274118[m HEAD@{26}: commit: optimazing arb-city forecast functionality and removing out-dated api
+[33mafc3e17[m HEAD@{27}: commit: complete authorization
+[33ma0bd739[m HEAD@{28}: merge origin/devAlessio: Fast-forward
+[33m17cdd05[m HEAD@{29}: commit: change redis key structure for measurements: adding {buckets}
+[33m14d8b18[m HEAD@{30}: merge origin/devAlessio: Fast-forward
+[33m8ada9ba[m HEAD@{31}: commit: update .gitignore with /logs
+[33m28d2bc8[m HEAD@{32}: commit: update city-id from cit-reg-lat-long to reg-cit-lat-long
+[33mde148f2[m HEAD@{33}: checkout: moving from dev to devLorenzo
+[33mde148f2[m HEAD@{34}: merge devLorenzo: Fast-forward
+[33mefc2ad5[m HEAD@{35}: checkout: moving from devLorenzo to dev
+[33mde148f2[m HEAD@{36}: merge origin/devAlessio: Merge made by the 'ort' strategy.
+[33m214832f[m HEAD@{37}: checkout: moving from devLorenzo to devLorenzo
+[33m214832f[m HEAD@{38}: commit: added and tested arbitrary-city forecast functionality, with controller and service
+[33mfcc9f62[m HEAD@{39}: checkout: moving from devLorenzo to devLorenzo
+[33mfcc9f62[m HEAD@{40}: merge origin/dev: Fast-forward
+[33m2ab1271[m HEAD@{41}: checkout: moving from devLorenzo to devLorenzo
+[33m2ab1271[m HEAD@{42}: merge origin/devAlessio: Fast-forward
+[33mefc2ad5[m HEAD@{43}: checkout: moving from dev to devLorenzo
+[33mefc2ad5[m HEAD@{44}: merge devLorenzo: Fast-forward
+[33m212f8be[m HEAD@{45}: pull: Fast-forward
+[33m58d394e[m HEAD@{46}: checkout: moving from devLorenzo to dev
+[33mefc2ad5[m HEAD@{47}: commit (merge): merge with devAlessio
+[33m783481c[m HEAD@{48}: commit: added specific and tested exceptions. added a get-favorites function. tested token mechanism
+[33m2dd60d9[m HEAD@{49}: commit: Add authentication where it's needed
+[33mcfc0388[m HEAD@{50}: commit (merge): Merge remote-tracking branch 'origin/dev' into devLorenzo
+[33m91eb594[m HEAD@{51}: commit: add lastupdate to citydto
+[33m116dcd5[m HEAD@{52}: merge origin/dev: Merge made by the 'ort' strategy.
+[33m8480d03[m HEAD@{53}: checkout: moving from devLorenzo to devLorenzo
+[33m8480d03[m HEAD@{54}: merge origin/devAlessio: Fast-forward
+[33m3e497c1[m HEAD@{55}: merge origin/dev: Fast-forward
+[33madaba1e[m HEAD@{56}: checkout: moving from devLorenzo to devLorenzo
+[33madaba1e[m HEAD@{57}: commit: Changes on the structure of DataHarvestService: now it's possible to obtain recent and historical measurments. In particular, it's possible to specify pastHours and forecastHours in the request (More info in HourlyMeasurementController). To test the changes, I upgraded also cityDTO, HourlyMeasurementService, HourlyMeasurementController
+[33mc1abeb6[m HEAD@{58}: checkout: moving from devLorenzo to devLorenzo
+[33mc1abeb6[m HEAD@{59}: merge origin/dev: Merge made by the 'ort' strategy.
+[33m3942135[m HEAD@{60}: commit: solving merge issues
+[33m2f4073d[m HEAD@{61}: merge origin/dev: updating HEAD
+[33m2f4073d[m HEAD@{62}: merge origin/devAlessio: Merge made by the 'ort' strategy.
+[33m8f0df8b[m HEAD@{63}: checkout: moving from devLorenzo to devLorenzo
+[33m8f0df8b[m HEAD@{64}: checkout: moving from devAlessio to devLorenzo
+[33ma6e319e[m HEAD@{65}: checkout: moving from devLorenzo to devAlessio
+[33m8f0df8b[m HEAD@{66}: checkout: moving from dev to devLorenzo
+[33m58d394e[m HEAD@{67}: checkout: moving from devLorenzo to dev
+[33m8f0df8b[m HEAD@{68}: checkout: moving from master to devLorenzo
+[33mc781fa1[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{69}: clone: from https://github.com/AlessioSmn/WheaterAppServer.git

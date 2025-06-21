@@ -65,39 +65,6 @@ public class CityController {
         }
     }
 
-    @PostMapping("/add-with-thresholds")
-    public ResponseEntity<String> addCityWithThresholds(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
-        try{
-            userService.getAndCheckUserFromToken(token, Role.ADMIN);
-            String cityId = cityService.saveCityWithThresholds(cityDTO, token);
-            hourlyMeasurementService.refreshHourlyMeasurementsFromOpenMeteoAsync(cityId, cityDTO.getPastDaysMeasurementsUpdate());
-
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)  // 201 for creation
-                    .body("City added successfully");
-        }
-        catch(DuplicateKeyException ex){
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body("City already exits: " + ex.getMessage());
-        }
-        catch(IllegalArgumentException IAe){
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body("Illegal argument: " + IAe.getMessage());
-        }
-        catch(UnauthorizedException Ue){
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body("Unauthorized: " + Ue.getMessage());
-        }
-        catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An unexpected error occurred: " + e.getMessage());
-        }
-    }
-
     @PutMapping("/thresholds")
     public ResponseEntity<Object> updateCityThresholds(@RequestHeader("Authorization") String token, @RequestBody CityDTO cityDTO) {
         try{
