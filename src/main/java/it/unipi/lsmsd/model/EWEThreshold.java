@@ -33,5 +33,16 @@ public class EWEThreshold {
     public void setMaxTemperature(double maxTemperature) { this.maxTemperature = maxTemperature; }
     public void setMinTemperature(double minTemperature) { this.minTemperature = minTemperature; }
     public void setWindSpeed(double windSpeed) { this.windSpeed = windSpeed; }
+
+    @Override
+    public String toString() {
+        return "EWEThreshold{" +
+                "rainfall=" + rainfall +
+                ", snowfall=" + snowfall +
+                ", maxTemperature=" + maxTemperature +
+                ", minTemperature=" + minTemperature +
+                ", windSpeed=" + windSpeed +
+                '}';
+    }
 }
 

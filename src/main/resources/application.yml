@@ -5,8 +5,14 @@ debug: true
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/WeatherApp
+      uri: mongodb://localhost:27017,localhost:27018,localhost:27019/WeatherApp?replicaSet=rs0
+      auto-index-creation: true
       database: WeatherApp
+  mongo:
+    measurement-collection: hourly_measurements
+    city-collection: cities
+    user-collection: users
+
 
 # Open-Meteo API Retry Configuration (Resilience4j)
 resilience4j:
@@ -22,8 +28,6 @@ resilience4j:
           - org.springframework.web.client.ResourceAccessException
           - org.springframework.web.client.HttpServerErrorException
 
-# Logging Configuration
-# logging:
-#   level:
-#     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
-#     org.mongodb.driver: DEBUG
+#Logging Configuration
+logging:
+  config: classpath:logback-spring.xml

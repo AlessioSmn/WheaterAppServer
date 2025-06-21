@@ -11,7 +11,7 @@ public class HourlyMeasurement {
     @Id
     private String id; // MongoDB auto generated
     private String cityId; // Metadata field (metaField)
-    private Date time; // Measurement time (ISO format)
+    private Date time; // Measurement time in UTC in ISO format
     private Double temperature;
     private Double rainfall;
     private Double snowfall;

@@ -1,0 +1,7 @@
+2025-05-19 16:38:16 [main] INFO  it.unipi.lsmsd.Application - Starting Application using Java 17.0.14 with PID 29359 (/home/lorenzo/IdeaProjects/WheaterAppServer/target/classes started by lorenzo in /home/lorenzo/IdeaProjects/WheaterAppServer)
+2025-05-19 16:38:16 [main] INFO  it.unipi.lsmsd.Application - No active profile set, falling back to 1 default profile: "default"
+2025-05-19 16:46:27 [main] INFO  it.unipi.lsmsd.Application - Starting Application using Java 17.0.14 with PID 30161 (/home/lorenzo/IdeaProjects/WheaterAppServer/target/classes started by lorenzo in /home/lorenzo/IdeaProjects/WheaterAppServer)
+2025-05-19 16:46:27 [main] INFO  it.unipi.lsmsd.Application - No active profile set, falling back to 1 default profile: "default"
+2025-05-19 16:46:31 [main] INFO  it.unipi.lsmsd.Application - Started Application in 4.6 seconds (process running for 5.091)
+2025-05-19 16:46:31 [main] INFO  it.unipi.lsmsd.Application - Successful Application Run 
+

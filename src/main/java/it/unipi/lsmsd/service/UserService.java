@@ -1,6 +1,8 @@
 package it.unipi.lsmsd.service;
 
 import it.unipi.lsmsd.DTO.UserDTO;
+import it.unipi.lsmsd.exception.EmailFormatException;
+import it.unipi.lsmsd.exception.UnauthorizedException;
 import it.unipi.lsmsd.model.Role;
 import it.unipi.lsmsd.model.User;
 import it.unipi.lsmsd.repository.UserRepository;
@@ -10,9 +12,10 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.dao.DuplicateKeyException;
 
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class UserService {
@@ -21,7 +24,38 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private SessionRedisService sessionRedisService;
+    private RedisSessionService sessionRedisService;
+
+    private static final String ADMIN_SECRET_CODE = "ABC123SECRET";
+
+    private void checkRole(User user, Role requiredRole) {
+        if (user.getRole().ordinal() < requiredRole.ordinal()) {
+            throw new UnauthorizedException("Required role: " + requiredRole);
+        }
+    }
+
+    // Helper method to retrieve the User object using the provided token
+    public User getUserFromToken(String token) throws RuntimeException {
+        // Extract the reduced user (just username and role) from the token
+        User reducedUser = JWTUtil.extractUser(token);
+
+        // Fetch the complete user from the database using the username
+        Optional<User> userOpt = userRepository.findByUsername(reducedUser.getUsername());
+
+        // If the user is not found in the database, throw an exception
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+
+        // Return the complete User object if found
+        return userOpt.get();
+    }
+
+    public User getAndCheckUserFromToken(String token, Role requiredRole) throws RuntimeException {
+        User user = getUserFromToken(token);
+        checkRole(user, requiredRole);
+        return user;
+    }
 
     // Login 
     public String login(UserDTO userDTO) throws Exception{      
@@ -42,40 +76,63 @@ public class UserService {
             sessionRedisService.saveSession(token, userDTO.getUsername());
             return token;
         } catch (JedisConnectionException e) {
-            // TODO: LOG exception
             throw new JedisConnectionException("Reddis Server Error: " + e.getMessage(), e);
         } catch (Exception ex) {
-            // TODO: LOG exception
             throw ex;
         }  
     }
 
     // Logout
-    public void logout(String token) {
+    public void logout(String token) throws Exception{
         try {
             // delete the session
             sessionRedisService.deleteSession(token);
         } catch (Exception ex) {
-            // TODO: LOG Excpetion
             throw ex;
         }
         
     }
 
     // Register User 
-    public void register(UserDTO userDTO){
+    public void register(UserDTO userDTO) throws Exception{
         try {
-            // Hash the password to be stored in DB
+            // Validate user data (example: email validation)
+            if (!isValidEmail(userDTO.getEmail())) {
+                throw new EmailFormatException(userDTO.getEmail() + " is not a valid email format");
+            }
+
+            // Hash password
             String hashedPassword = PasswordHashUtil.hashPassword(userDTO.getPassword());
+
+            // Requested role or default
+            Role requestedRole = userDTO.getRole() != null ? userDTO.getRole() : Role.REGISTERED_USER;
+
             // Create User model from UserDTO
-            User user = new User(userDTO.getUsername(), hashedPassword, userDTO.getEmail(), Role.USER);
+            User user = new User(
+                    userDTO.getUsername(),
+                    hashedPassword,
+                    userDTO.getEmail(),
+                    requestedRole
+            );
+
+            if (requestedRole == Role.ADMIN) {
+                if (userDTO.getAdminCode() == null || !ADMIN_SECRET_CODE.equals(userDTO.getAdminCode())) {
+                    throw new UnauthorizedException("Invalid admin authorization code");
+                }
+            }
+
+            // Save the user in the database
             userRepository.save(user);
         } catch (Exception ex) {
-            if (!(ex instanceof DuplicateKeyException)) {
-                // TODO: Log Exceptions other than DuplicateKeyException
-            }
             throw ex;
         }
     }
-        
+
+    // Validate email format using regex
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+        Pattern pattern = Pattern.compile(emailRegex);
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
+    }
 }

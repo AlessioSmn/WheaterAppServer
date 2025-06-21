@@ -1,6 +1,8 @@
 package it.unipi.lsmsd.controller;
 
 import it.unipi.lsmsd.DTO.UserDTO;
+import it.unipi.lsmsd.exception.EmailFormatException;
+import it.unipi.lsmsd.exception.UnauthorizedException;
 import it.unipi.lsmsd.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -58,17 +60,28 @@ public class UserController {
             // User created
             return ResponseEntity
                     .status(HttpStatus.CREATED)
-                    .body(String.format("User %s created successfully.", userDTO.getUsername()));
+                    .body(String.format("User %s created successfully.", userDTO.getUsername()) + "\n");
         } catch (DuplicateKeyException ex) {
             // Duplicate Key Error
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
-                    .body("Error: User with this email/username already exists.");
-        } catch (Exception ex) {
+                    .body("Error Conflict: " +  ex.getMessage() + "\n");
+        } catch (EmailFormatException ex) {
+            // Email not correctly formatted
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Error Bad-request: " + ex.getMessage() + "\n");
+        }
+        catch (UnauthorizedException Ue){
+            return ResponseEntity
+                    .status(HttpStatus.NOT_ACCEPTABLE)
+                    .body(Ue.getMessage() + "\n");
+        }
+        catch (Exception ex) {
             // Other unexpected errors
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An unexpected error occurred: " + ex.getMessage());
+                    .body("An unexpected error occurred: " + ex.getMessage() + "\n");
         }
     }
 }

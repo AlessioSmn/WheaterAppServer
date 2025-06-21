@@ -33,7 +33,6 @@ public final class JWTUtil {
                 .setSubject(username) // Username as subject
                 .claim("role", role.name()) // Add role as a custom claim
                 .setIssuedAt(new Date()) // Token issue time
-                .setExpiration(new Date(System.currentTimeMillis() + 3600000)) // 1 hour validity
                 .signWith(SECRET_KEY, SignatureAlgorithm.HS256) // Signs the JWT with the SECRET_KEY 
                 .compact(); // Finalizes and returns the JWT as a compact, URL-safe String
         } catch (JwtException | IllegalArgumentException e) { throw e;}
@@ -65,4 +64,14 @@ public final class JWTUtil {
             throw e;
         }        
     }
+
+    // Extract claims from JWT token
+    public static Claims extractClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
 }

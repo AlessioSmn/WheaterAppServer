@@ -23,13 +23,7 @@
     </properties>
 
     <dependencies>
-
-        <!-- <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-sync</artifactId>
-            <version>5.2.0</version>
-        </dependency> -->
-
+        <!-- To communicate with Redis using the Jedis API -->
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
@@ -80,11 +74,16 @@
 
         <!-- Spring Security -->
         <!-- Spring Security automatically secures all endpoints by default and expects authentication for all requests -->
-        <!--
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
-        </dependency> -->
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>5.0.0</version>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- Resilience4j for Retry Mechanism -->
         <dependency>
@@ -103,6 +102,19 @@
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>2.13.0</version>
+        </dependency>
+
+        <!-- Springdoc OpenAPI 2.x -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.8.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>5.2.0</version>
         </dependency>
 
     </dependencies>
