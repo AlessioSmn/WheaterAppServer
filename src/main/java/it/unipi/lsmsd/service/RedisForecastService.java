@@ -216,14 +216,23 @@ public class RedisForecastService {
      * @param cityId the unique identifier of the city for which the forecast is requested
      * @param targetDate the {@link LocalDate} representing the day for which the forecast is desired (in UTC)
      * @return a JSON-formatted string containing the forecast for the specified date, or {@code null} if the data is not present in Redis
+     *
+     * @throws IllegalStateException If the get from redis returns an empty array
      */
     public String getForecastTargetDay(String cityId, LocalDate targetDate){
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-            String redisKey = String.format("forecast:{%s}%s:%s",
-                    cityId.substring(0, 3), cityId.substring(3), targetDate.format(formatter));
+        String redisKey = String.format("forecast:{%s}%s:%s",
+                cityId.substring(0, 3), cityId.substring(3), targetDate.format(formatter));
 
-            return jedisCluster.get(redisKey);
+        String redisString = jedisCluster.get(redisKey);
+
+        if (redisString == null || redisString.isEmpty()) {
+            throw new IllegalStateException();
+        }
+
+        return redisString;
     }
 
     // Get full 7-day forecast
@@ -276,6 +285,8 @@ public class RedisForecastService {
      * @param longitude the geographic longitude of the target location
      * @param targetDay the {@link LocalDate} (in UTC) for which the forecast is requested
      * @return a JSON-formatted string representing the 24-hour interpolated forecast for the specified location and date
+     *
+     * @throws IllegalStateException If the hget from redis returns an empty array
      */
     public String getForecastArbitraryCityTargetDay(
             String region,
@@ -283,7 +294,7 @@ public class RedisForecastService {
             Double longitude,
             Double elevation,
             LocalDate targetDay
-    ) {
+    ) throws IllegalStateException{
         // Need to have first letter uppercase, last in lowercase
         region = region.substring(0, 1).toUpperCase() + region.substring(1).toLowerCase();
 
@@ -356,8 +367,15 @@ public class RedisForecastService {
 
         List<String> results = jedisCluster.mget(redisKeys.toArray(new String[0]));
 
+        if (results == null || results.isEmpty()) {
+            throw new IllegalStateException();
+        }
+
         iter = 0;
         for (String result : results) {
+            if (result == null) {
+                throw new IllegalStateException();
+            }
             JsonNode root = null;
             try {
                 root = mapper.readTree(result);

@@ -37,27 +37,6 @@ public class CityService {
     @Autowired
     private RedisForecastService forecastRedisService;
 
-    private void addInRedis(City city){
-        Map<String, String> c = new HashMap<String, String>();
-        c.put("name", city.getName());
-        c.put("region", city.getRegion());
-        c.put("elevation", city.getRegion());
-        jedisCluster.hset
-                ("city:{" + city.getId().substring(0,3) + "}" + city.getId().substring(3), c);
-
-        CityDTO cityDTO = getCityWithID(city.getId());
-        // Get 7 days forecast and save
-        try{
-            APIResponseDTO apiResponseDTO = dataHarvestService.getCityForecast(cityDTO.getLatitude(), cityDTO.getLongitude(), 0, 7);
-            HourlyMeasurementDTO hourlyMeasurementDTO = apiResponseDTO.getHourly();
-            hourlyMeasurementDTO.setCityId(city.getId());
-            forecastRedisService.saveForecast(hourlyMeasurementDTO);
-        }
-        catch (JsonProcessingException jpe){
-            jpe.printStackTrace();
-        }
-    }
-
     // Get City info with City Name
     public List<CityDTO> getCity(String cityName) throws NoSuchElementException {
         List<City> cities = cityRepository.findAllByName(cityName);
@@ -79,30 +58,49 @@ public class CityService {
 
     // Saves the city to the DB and returns the cityID
     // Alert!!! : Throws DuplicateKeyException -> Need to handle it by the class that calls this method
+    /*
+    * needing of intra-db consistency if mongo and/or redis write fails everything is rollbacked
+    * */
     public String saveCity(CityDTO cityDTO, String token) throws DuplicateKeyException, JsonProcessingException {
-        // Check if the user's role is ADMIN
         userService.getAndCheckUserFromToken(token, Role.ADMIN);
-        // Map the DTO and get the city
         City city = Mapper.mapCity(cityDTO);
-        // Insert to the DB
-        // NOTE: Attempt to "insert" a document with an existing id throws DuplicateKeyException
-        cityRepository.insert(city);
-        addInRedis(city);
-        return city.getId();
-    }
+        String redisKey = "city:{" + city.getId().substring(0,3) + "}" + city.getId().substring(3);
+        boolean insertedMongo = false;
+        boolean insertedRedis = false;
 
-    // Saves the city to the DB and returns the cityID
-    // Alert!!! : Throws DuplicateKeyException -> Need to handle it by the class that calls this method
-    public String saveCityWithThresholds(CityDTO cityDTO, String token) throws DuplicateKeyException, JsonProcessingException {
-        // Check if the user's role is ADMIN
-        userService.getAndCheckUserFromToken(token, Role.ADMIN);
-        // Map the DTO and get the city
-        City city = Mapper.mapCityWithThresholds(cityDTO);
-        // Insert to the DB
-        // NOTE: Attempt to "insert" a document with an existing id throws DuplicateKeyException
-        cityRepository.insert(city);
-        addInRedis(city);
-        return city.getId();
+        try {
+            // 1. adding in MongoDB
+            cityRepository.insert(city);
+            insertedMongo = true;
+
+            // 2. adding in Redis
+            Map<String, String> c = new HashMap<>();
+            c.put("name", city.getName());
+            c.put("region", city.getRegion());
+            c.put("elevation", city.getElevation().toString());
+            jedisCluster.hset(redisKey, c);
+            insertedRedis = true;
+
+            // week forecast adding
+            CityDTO fullCityDTO = getCityWithID(city.getId());
+            APIResponseDTO apiResponseDTO = dataHarvestService.getCityForecast(
+                    fullCityDTO.getLatitude(), fullCityDTO.getLongitude(), 0, 7
+            );
+            HourlyMeasurementDTO hourlyMeasurementDTO = apiResponseDTO.getHourly();
+            hourlyMeasurementDTO.setCityId(city.getId());
+            forecastRedisService.saveForecast(hourlyMeasurementDTO);
+
+            return city.getId();
+        } catch (Exception e) {
+            // ROLLBACK if necesssary
+            if (insertedRedis) {
+                jedisCluster.del(redisKey);
+            }
+            if (insertedMongo) {
+                cityRepository.deleteById(city.getId());
+            }
+            throw e;
+        }
     }
     
     // Updates the city with the lastest date of historical data
