@@ -26,9 +26,16 @@ public class HourlyMeasurementController {
      */
     @GetMapping("/today")
     public ResponseEntity<Object> get24HrForecast(@RequestParam String cityId) {
-        LocalDate today = LocalDate.now();
-        String jsonForecast = forecastRedisService.getForecastTargetDay(cityId, today);
-        return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
+        try {
+            LocalDate today = LocalDate.now();
+            String jsonForecast = forecastRedisService.getForecastTargetDay(cityId, today);
+            return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
+        }
+        catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal server error: " + e.getMessage());
+        }
     }
 
     /**
@@ -40,8 +47,20 @@ public class HourlyMeasurementController {
      */
     @GetMapping("/day")
     public ResponseEntity<Object> get24HrForecast(@RequestParam String cityId, @RequestParam LocalDate targetDate) {
-        String jsonForecast = forecastRedisService.getForecastTargetDay(cityId, targetDate);
-        return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
+        try {
+            String jsonForecast = forecastRedisService.getForecastTargetDay(cityId, targetDate);
+            return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
+        }
+        catch(IllegalStateException ISe){
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Illegal argument: targetDate specified is not available");
+        }
+        catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal server error: " + e.getMessage());
+        }
     }
 
     /**
@@ -53,8 +72,15 @@ public class HourlyMeasurementController {
      */
     @GetMapping("/week")
     public ResponseEntity<Object> get7DayForecast(@RequestParam String cityId) throws IOException {
-        String jsonForecast = forecastRedisService.get7DayForecast(cityId);
-        return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
+        try {
+            String jsonForecast = forecastRedisService.get7DayForecast(cityId);
+            return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
+        }
+        catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal server error: " + e.getMessage());
+        }
     }
 
     /**
@@ -75,11 +101,17 @@ public class HourlyMeasurementController {
             @RequestParam Double longitude,
             @RequestParam Double elevation
     ) {
+        try {
+            LocalDate today = LocalDate.now();
 
-        LocalDate today = LocalDate.now();
-
-        String jsonForecast = forecastRedisService.getForecastArbitraryCityTargetDay(region, latitude, longitude, elevation, today);
-        return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
+            String jsonForecast = forecastRedisService.getForecastArbitraryCityTargetDay(region, latitude, longitude, elevation, today);
+            return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
+        }
+        catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal server error: " + e.getMessage());
+        }
     }
 
     @GetMapping("/day/arbitrary-city")
@@ -90,9 +122,20 @@ public class HourlyMeasurementController {
             @RequestParam Double elevation,
             @RequestParam LocalDate targetDate
     ) {
-
-        String jsonForecast = forecastRedisService.getForecastArbitraryCityTargetDay(region, latitude, longitude, elevation, targetDate);
-        return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
+        try {
+            String jsonForecast = forecastRedisService.getForecastArbitraryCityTargetDay(region, latitude, longitude, elevation, targetDate);
+            return ResponseEntity.status(HttpStatus.OK).body(jsonForecast);
+        }
+        catch(IllegalStateException ISe){
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Illegal argument: targetDate specified is not available");
+        }
+        catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal server error: " + e.getMessage());
+        }
     }
 
 }
