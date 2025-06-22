@@ -163,7 +163,6 @@ public class RedisForecastService {
             String json = mapper.writeValueAsString(dayDTO);
     
             jedisCluster.set(redisKey, json);                 // Save to Redis
-            jedisCluster.expire(redisKey, 86400);             // Set TTL: 24 hours
         }
     }
 
