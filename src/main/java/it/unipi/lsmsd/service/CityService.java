@@ -63,7 +63,7 @@ public class CityService {
     * */
     public String saveCity(CityDTO cityDTO, String token) throws DuplicateKeyException, JsonProcessingException {
         userService.getAndCheckUserFromToken(token, Role.ADMIN);
-        City city = Mapper.mapCity(cityDTO);
+        City city = Mapper.mapCityWithThresholds(cityDTO);
         String redisKey = "city:{" + city.getId().substring(0,3) + "}" + city.getId().substring(3);
         boolean insertedMongo = false;
         boolean insertedRedis = false;

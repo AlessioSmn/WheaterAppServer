@@ -1,5 +1,6 @@
 package it.unipi.lsmsd.service;
 
+import it.unipi.lsmsd.exception.ThresholdsNotPresentException;
 import it.unipi.lsmsd.exception.UnauthorizedException;
 import it.unipi.lsmsd.model.City;
 import it.unipi.lsmsd.model.Role;
@@ -40,8 +41,8 @@ public class AutomatingService {
             try {
                 hourlyMeasurementService.refreshHourlyMeasurementsAutomaticFromOpenMeteo(city.getId());
             }
-            catch (Exception ignored){
-
+            catch (Exception e){
+                System.out.println("Measurements not updated: " + city.getId());
             }
         }
     }
@@ -57,9 +58,17 @@ public class AutomatingService {
 
         // Loop over all cities
         for(City city : cities){
-            // Automatic update of the extreme weather event
-            extremeWeatherEventService.updateExtremeWeatherEventAutomatic(city.getId());
-            System.out.println("EWE Updated: " + city.getId());
+            try {
+                // Automatic update of the extreme weather event
+                extremeWeatherEventService.updateExtremeWeatherEventAutomatic(city.getId());
+                System.out.println("EWE Updated: " + city.getId());
+            }
+            catch (ThresholdsNotPresentException e){
+                System.out.println("Thresholds not present, EWE not updated: " + city.getId());
+            }
+            catch(Exception e){
+                System.out.println("EWE not Updated: " + city.getId());
+            }
         }
     }
     @Async
@@ -80,8 +89,8 @@ public class AutomatingService {
             try{
                 redisForecastService.refreshForecastAutomaticFromOpenMeteo(city.getId());
             }
-            catch (Exception ignored){
-
+            catch (Exception e){
+                System.out.println("Forecasts not updated: " + city.getId());
             }
         }
     }
