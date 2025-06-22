@@ -112,7 +112,7 @@ public class RedisForecastService {
             saveForecast(hourlyMeasurementDTO);
         }
         catch(JsonProcessingException ignored){
-
+            throw new RuntimeException("Error in refreshForecastAutomaticFromOpenMeteo");
         }
     }
 
