@@ -5,16 +5,26 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.3</version>
-		<relativePath/>
-	</parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.3</version>
+        <relativePath/>
+    </parent>
 
     <groupId>it.unipi-lsmsd</groupId>
     <artifactId>WheaterApp</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>WeatherApp</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

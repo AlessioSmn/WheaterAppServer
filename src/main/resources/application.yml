@@ -5,7 +5,7 @@ debug: true
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017,localhost:27018,localhost:27019/WeatherApp?replicaSet=rs0
+      uri: mongodb://10.1.1.9:27020,10.1.1.84:27020,10.1.1.87:27020/WeatherApp?replicaSet=lsmdb
       auto-index-creation: true
       database: WeatherApp
   mongo:
